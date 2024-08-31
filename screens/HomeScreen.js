@@ -40,9 +40,6 @@ export default function HomeScreen() {
           <View style={styles.dashboardItem}>
             <Text style={styles.summaryLabel}>Retirement Account Balance</Text>
             <Text style={styles.summaryValue}>$XXX,XXX</Text>
-            <View style={styles.placeholderGraph}>
-              <Text style={styles.placeholderText}>Graph Placeholder</Text>
-            </View>
           </View>
 
           <View style={styles.dashboardItem}>
@@ -143,3 +140,4 @@ const styles = StyleSheet.create({
     color: '#004D40',
   },
 });
+
