@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { View, StyleSheet, ScrollView, TouchableOpacity, Animated, StatusBar } from 'react-native';
+import { View, StyleSheet, ScrollView, TouchableOpacity, Animated, StatusBar, Text } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Title, Paragraph, Card, Avatar } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
@@ -9,7 +9,7 @@ export default function RetirementScreen() {
 
   React.useLayoutEffect(() => {
     navigation.setOptions({
-      headerShown: false, 
+      headerShown: false,
     });
   }, [navigation]);
 
@@ -56,18 +56,20 @@ export default function RetirementScreen() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="light-content" backgroundColor="#e0e0e0" />
-      <View style={styles.headerBackground} />
-      <ScrollView contentContainerStyle={styles.container}>
-        {/* Integrated Header section */}
+      <StatusBar barStyle="light-content" backgroundColor="#004D40" />
+
+      {/* Header Section */}
+      <View style={styles.headerBackground}>
         <View style={styles.header}>
-          <Avatar.Image size={60} source={require('../assets/avatar.png')} style={styles.avatar} />
+          <Avatar.Image size={50} source={require('../assets/avatar.png')} style={styles.avatar} />
           <View style={styles.headerText}>
-            <Title style={styles.greeting}>Retirement Accounts</Title>
-            <Paragraph style={styles.subGreeting}>Plan and secure your future</Paragraph>
+            <Text style={styles.greeting}>Retirement Accounts</Text>
+            <Text style={styles.subGreeting}>Plan and secure your future</Text>
           </View>
         </View>
+      </View>
 
+      <ScrollView contentContainerStyle={styles.container}>
         <Title style={styles.sectionTitle}>Retirement Tools</Title>
 
         {/* Cards for each feature of the Retirement screen */}
@@ -83,31 +85,23 @@ export default function RetirementScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#f7f9fc',
-  },
-  container: {
-    flexGrow: 1,
-    padding: 20,
-    backgroundColor: '#f7f9fc',
+    backgroundColor: '#F5F5F5',
   },
   headerBackground: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: 200, // This should cover the entire header area
-    backgroundColor: '#e0e0e0',
+    backgroundColor: '#004D40',
+    paddingBottom: 20,
+    paddingHorizontal: 20,
+    paddingTop: 25,
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 30,
-    paddingVertical: 20,
-    paddingHorizontal: 15,
-    zIndex: 1, // Ensure the header content stays above the background
+    marginTop: 10,
   },
   avatar: {
-    backgroundColor: '#4CAF50',
+    backgroundColor: '#00796B',
   },
   headerText: {
     marginLeft: 15,
@@ -115,10 +109,16 @@ const styles = StyleSheet.create({
   greeting: {
     fontSize: 24,
     fontWeight: '700',
-    color: '#333',
+    color: '#FFFFFF',
   },
   subGreeting: {
-    color: '#777',
+    fontSize: 16,
+    color: '#B2DFDB',
+  },
+  container: {
+    flexGrow: 1,
+    padding: 20,
+    backgroundColor: '#f7f9fc',
   },
   sectionTitle: {
     fontSize: 22,
