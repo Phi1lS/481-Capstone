@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Platform } from 'react-native';
+import { Platform, useColorScheme } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Provider as PaperProvider, IconButton } from 'react-native-paper';
@@ -11,8 +11,52 @@ import UserAccountsScreen from './screens/UserAccountsScreen';
 
 const Tab = createBottomTabNavigator();
 
-// Bottom Tab Navigator
+const CombinedDefaultTheme = {
+  dark: false,
+  colors: {
+    primary: '#004D40',
+    background: '#F5F5F5',
+    card: '#FFFFFF',
+    text: '#333333',
+    border: '#e0e0e0',
+    notification: '#00796B',
+    accent: '#00796B',
+    surface: '#FFFFFF',
+    onSurface: '#333333',
+    placeholder: '#666666',
+    headerText: '#FFFFFF',
+    placeholderValue: '#00796B',
+    tabBarBackground: '#f7f9fc',
+    tabBarText: 'gray',
+    tabBarActiveText: '#4CAF50', // Brighter green for active tab text
+  },
+};
+
+const CombinedDarkTheme = {
+  dark: true,
+  colors: {
+    primary: '#004D40',
+    background: '#121212',
+    card: '#1E1E1E',
+    text: '#FFFFFF',
+    border: '#333333',
+    notification: '#004D40',
+    accent: '#004D40',
+    surface: '#1E1E1E',
+    onSurface: '#FFFFFF',
+    placeholder: '#888888',
+    headerText: '#FFFFFF',
+    placeholderValue: '#4CAF50',
+    tabBarBackground: '#1E1E1E',
+    tabBarText: '#FFFFFF',
+    tabBarActiveText: '#4CAF50', // Brighter green for active tab text in dark mode
+  },
+};
+
 function BottomTabs() {
+  const scheme = useColorScheme();
+  const theme = scheme === 'dark' ? CombinedDarkTheme : CombinedDefaultTheme;
+
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
@@ -39,8 +83,8 @@ function BottomTabs() {
 
           return <IconButton icon={iconName} color={color} size={size + 8} />;
         },
-        tabBarActiveTintColor: '#4CAF50',
-        tabBarInactiveTintColor: 'gray',
+        tabBarActiveTintColor: theme.colors.tabBarActiveText, // Set the active text color
+        tabBarInactiveTintColor: theme.colors.tabBarText,
         tabBarLabelStyle: {
           fontSize: 14,
         },
@@ -48,8 +92,8 @@ function BottomTabs() {
           paddingBottom: Platform.OS === 'ios' ? 40 : 10,
           paddingTop: 10,
           height: Platform.OS === 'ios' ? 120 : 70,
-          backgroundColor: '#f7f9fc',
-          borderTopColor: '#e0e0e0',
+          backgroundColor: theme.colors.tabBarBackground,
+          borderTopColor: theme.colors.border,
           borderTopWidth: 7,
         },
         headerShown: false,
@@ -65,9 +109,12 @@ function BottomTabs() {
 }
 
 export default function App() {
+  const scheme = useColorScheme();
+  const theme = scheme === 'dark' ? CombinedDarkTheme : CombinedDefaultTheme;
+
   return (
-    <PaperProvider>
-      <NavigationContainer>
+    <PaperProvider theme={theme}>
+      <NavigationContainer theme={theme}>
         <BottomTabs />
       </NavigationContainer>
     </PaperProvider>
