@@ -3,6 +3,7 @@ import { View, StyleSheet, ScrollView, Text, useColorScheme, Dimensions } from '
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Title, Card, Avatar } from 'react-native-paper';
 import { LineChart } from 'react-native-chart-kit';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 export default function InvestmentAnalyticsScreen() {
   const scheme = useColorScheme();
@@ -63,9 +64,23 @@ export default function InvestmentAnalyticsScreen() {
             titleStyle={isDarkMode ? styles.darkCardTitle : styles.cardTitle}
           />
           <View style={styles.detailsContainer}>
-            <Text style={isDarkMode ? styles.darkText : styles.text}>Total Return: 15%</Text>
-            <Text style={isDarkMode ? styles.darkText : styles.text}>Volatility: 8%</Text>
-            {/* Add more details as necessary */}
+            <View style={styles.analyticsRow}>
+              <MaterialCommunityIcons
+                name="arrow-up-bold-circle"
+                size={28}
+                color={isDarkMode ? '#76FF03' : '#00796B'}
+              />
+              <Text style={isDarkMode ? styles.darkText : styles.text}>Total Return: 15%</Text>
+            </View>
+            <View style={styles.analyticsRow}>
+              <MaterialCommunityIcons
+                name="arrow-down-bold-circle"
+                size={28}
+                color={isDarkMode ? '#FF3D00' : '#D32F2F'}
+              />
+              <Text style={isDarkMode ? styles.darkText : styles.text}>Volatility: 8%</Text>
+            </View>
+            {/* Add more analytics rows as needed */}
           </View>
         </Card>
       </ScrollView>
@@ -112,10 +127,15 @@ const styles = StyleSheet.create({
   detailsContainer: {
     marginTop: 20,
   },
+  analyticsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 15,
+  },
   text: {
-    fontSize: 16,
+    fontSize: 18,
     color: '#555',
-    marginBottom: 10,
+    marginLeft: 10,
   },
   // Dark mode styles
   darkSafeArea: {
@@ -149,9 +169,14 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#FFFFFF',
   },
+  analyticsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 15,
+  },
   darkText: {
-    fontSize: 16,
+    fontSize: 18,
     color: '#AAAAAA',
-    marginBottom: 10,
+    marginLeft: 10,
   },
 });
