@@ -2,14 +2,20 @@ import * as React from 'react';
 import { Platform, useColorScheme } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { createStackNavigator } from '@react-navigation/stack';
 import { Provider as PaperProvider, IconButton } from 'react-native-paper';
 import HomeScreen from './screens/HomeScreen';
 import RealEstateScreen from './screens/RealEstateScreen';
 import InvestmentScreen from './screens/InvestmentScreen';
 import RetirementScreen from './screens/RetirementScreen';
 import UserAccountsScreen from './screens/UserAccountsScreen';
+import AssetAllocation from './screens/InvestmentScreens/AssetAllocation';
+import MarketPredictions from './screens/InvestmentScreens/MarketPredictions';
+import Rebalancing from './screens/InvestmentScreens/Rebalancing';
+import InvestmentAnalytics from './screens/InvestmentScreens/InvestmentAnalytics';
 
 const Tab = createBottomTabNavigator();
+const Stack = createStackNavigator();
 
 const CombinedDefaultTheme = {
   dark: false,
@@ -28,7 +34,7 @@ const CombinedDefaultTheme = {
     placeholderValue: '#00796B',
     tabBarBackground: '#f7f9fc',
     tabBarText: 'gray',
-    tabBarActiveText: '#4CAF50', // Brighter green for active tab text
+    tabBarActiveText: '#4CAF50',
   },
 };
 
@@ -49,9 +55,28 @@ const CombinedDarkTheme = {
     placeholderValue: '#4CAF50',
     tabBarBackground: '#1E1E1E',
     tabBarText: '#FFFFFF',
-    tabBarActiveText: '#4CAF50', // Brighter green for active tab text in dark mode
+    tabBarActiveText: '#4CAF50',
   },
 };
+
+function InvestmentStack() {
+  return (
+    <Stack.Navigator
+      screenOptions={{
+        headerTitle: '', // This removes the title text
+        headerBackTitleVisible: false, // This hides the back title text
+        headerTintColor: '#00796B', // This sets the arrow color
+      }}
+    >
+      <Stack.Screen name="Investment" component={InvestmentScreen} />
+      <Stack.Screen name="AssetAllocation" component={AssetAllocation} />
+      <Stack.Screen name="MarketPredictions" component={MarketPredictions} />
+      <Stack.Screen name="Rebalancing" component={Rebalancing} />
+      <Stack.Screen name="InvestmentAnalytics" component={InvestmentAnalytics} />
+    </Stack.Navigator>
+  );
+}
+
 
 function BottomTabs() {
   const scheme = useColorScheme();
@@ -83,7 +108,7 @@ function BottomTabs() {
 
           return <IconButton icon={iconName} color={color} size={size + 8} />;
         },
-        tabBarActiveTintColor: theme.colors.tabBarActiveText, // Set the active text color
+        tabBarActiveTintColor: theme.colors.tabBarActiveText,
         tabBarInactiveTintColor: theme.colors.tabBarText,
         tabBarLabelStyle: {
           fontSize: 14,
@@ -100,7 +125,7 @@ function BottomTabs() {
       })}
     >
       <Tab.Screen name="HomeTab" component={HomeScreen} options={{ title: 'Home' }} />
-      <Tab.Screen name="InvestmentTab" component={InvestmentScreen} options={{ title: 'Investment' }} />
+      <Tab.Screen name="InvestmentTab" component={InvestmentStack} options={{ title: 'Investment' }} /> 
       <Tab.Screen name="RealEstateTab" component={RealEstateScreen} options={{ title: 'Real Estate' }} />
       <Tab.Screen name="RetirementTab" component={RetirementScreen} options={{ title: 'Retirement' }} />
       <Tab.Screen name="AccountTab" component={UserAccountsScreen} options={{ title: 'Account' }} />
