@@ -43,10 +43,10 @@ export default function MarketPredictionsScreen() {
           />
           <LineChart
             data={data}
-            width={320} // Adjusted width for better fit
-            height={240} // Slightly increased height
+            width={320}
+            height={240}
             chartConfig={chartConfig}
-            style={{ marginVertical: 30 }} // Increased margin for spacing
+            style={{ marginVertical: 30 }}
             bezier
           />
         </Card>
@@ -134,25 +134,25 @@ const styles = StyleSheet.create({
   },
   container: {
     flexGrow: 1,
-    padding: 25, // Increased padding for better spacing
+    padding: 25,
     backgroundColor: '#f7f9fc',
   },
   title: {
-    fontSize: 26, // Slightly larger title
+    fontSize: 26,
     fontWeight: 'bold',
     color: '#333',
-    marginBottom: 25, // Increased bottom margin for spacing
+    marginBottom: 25,
   },
   card: {
-    marginBottom: 30, // Increased margin between cards
+    marginBottom: 30,
     backgroundColor: '#ffffff',
-    borderRadius: 20, // Increased border radius for smoother edges
+    borderRadius: 20,
     shadowColor: '#000',
     shadowOpacity: 0.3,
     shadowOffset: { width: 0, height: 8 },
     shadowRadius: 15,
     elevation: 10,
-    padding: 25, // Increased padding inside cards
+    padding: 25,
   },
   icon: {
     backgroundColor: '#E8F5E9',
@@ -163,20 +163,20 @@ const styles = StyleSheet.create({
     color: '#333',
   },
   detailsContainer: {
-    marginTop: 20, // Increased top margin for better spacing
+    marginTop: 20,
   },
   progressBarContainer: {
-    marginBottom: 20, // Increased spacing between progress bars
+    marginBottom: 20,
   },
   text: {
     fontSize: 18,
     color: '#555',
-    marginBottom: 15, // Increased margin below text for better spacing
+    marginBottom: 15,
   },
   progressBar: {
-    height: 12, // Slightly taller progress bar
+    height: 12,
     borderRadius: 5,
-    marginTop: 10, // Increased margin above progress bar for better spacing
+    marginTop: 10,
   },
   // Dark mode styles
   darkSafeArea: {
