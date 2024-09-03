@@ -61,7 +61,13 @@ const CombinedDarkTheme = {
 
 function InvestmentStack() {
   return (
-    <Stack.Navigator>
+    <Stack.Navigator
+      screenOptions={{
+        headerTitle: '', // This removes the title text
+        headerBackTitleVisible: false, // This hides the back title text
+        headerTintColor: '#00796B', // This sets the arrow color
+      }}
+    >
       <Stack.Screen name="Investment" component={InvestmentScreen} />
       <Stack.Screen name="AssetAllocation" component={AssetAllocation} />
       <Stack.Screen name="MarketPredictions" component={MarketPredictions} />
@@ -70,6 +76,7 @@ function InvestmentStack() {
     </Stack.Navigator>
   );
 }
+
 
 function BottomTabs() {
   const scheme = useColorScheme();

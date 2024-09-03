@@ -9,7 +9,7 @@ export default function HomeScreen() {
 
   return (
     <SafeAreaView style={isDarkMode ? styles.darkSafeArea : styles.safeArea}>
-      <StatusBar barStyle="light-content" backgroundColor={isDarkMode ? "#00251A" : "#004D40"} />
+      <StatusBar barStyle={isDarkMode ? "light-content" : "dark-content"} backgroundColor={isDarkMode ? "#00251A" : "#004D40"} />
 
       {/* Header Section */}
       <View style={isDarkMode ? styles.darkHeaderBackground : styles.headerBackground}>
@@ -194,4 +194,3 @@ const styles = StyleSheet.create({
     color: '#4CAF50',
   },
 });
-
