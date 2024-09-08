@@ -63,9 +63,9 @@ function InvestmentStack() {
   return (
     <Stack.Navigator
       screenOptions={{
-        headerTitle: '', // This removes the title text
-        headerBackTitleVisible: false, // This hides the back title text
-        headerTintColor: '#00796B', // This sets the arrow color
+        headerTitle: '',
+        headerBackTitleVisible: false,
+        headerTintColor: '#00796B',
       }}
     >
       <Stack.Screen name="Investment" component={InvestmentScreen} />
@@ -76,7 +76,6 @@ function InvestmentStack() {
     </Stack.Navigator>
   );
 }
-
 
 function BottomTabs() {
   const scheme = useColorScheme();
@@ -125,7 +124,7 @@ function BottomTabs() {
       })}
     >
       <Tab.Screen name="HomeTab" component={HomeScreen} options={{ title: 'Home' }} />
-      <Tab.Screen name="InvestmentTab" component={InvestmentStack} options={{ title: 'Investment' }} /> 
+      <Tab.Screen name="InvestmentTab" component={InvestmentStack} options={{ title: 'Investment' }} />
       <Tab.Screen name="RealEstateTab" component={RealEstateScreen} options={{ title: 'Real Estate' }} />
       <Tab.Screen name="RetirementTab" component={RetirementScreen} options={{ title: 'Retirement' }} />
       <Tab.Screen name="AccountTab" component={UserAccountsScreen} options={{ title: 'Account' }} />
