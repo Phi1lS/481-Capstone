@@ -31,7 +31,11 @@ export default function HomeScreen() {
 
   return (
     <SafeAreaView style={isDarkMode ? styles.darkSafeArea : styles.safeArea}>
-      <StatusBar barStyle={isDarkMode ? "light-content" : "dark-content"} backgroundColor={isDarkMode ? "#00251A" : "#004D40"} />
+      {/* StatusBar with correct color */}
+      <StatusBar 
+        barStyle={isDarkMode ? "light-content" : "dark-content"} 
+        backgroundColor={isDarkMode ? "#121212" : "#F5F5F5"} // Gray background for light mode
+      />
 
       {/* Header Section */}
       <View style={isDarkMode ? styles.darkHeaderBackground : styles.headerBackground}>
