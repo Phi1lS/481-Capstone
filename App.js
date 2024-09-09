@@ -14,6 +14,11 @@ import UserAccountsScreen from './screens/UserAccountsScreen';
 import AssetAllocation from './screens/InvestmentScreens/AssetAllocation';
 import MarketPredictions from './screens/InvestmentScreens/MarketPredictions';
 import Rebalancing from './screens/InvestmentScreens/Rebalancing';
+import IncomeTracking from './screens/RealEstateScreens/IncomeTracking';
+import ExpenseTracking from './screens/RealEstateScreens/ExpenseTracking';
+import LeaseManagement from './screens/RealEstateScreens/LeaseManagement';
+import TaxIntegration from './screens/RealEstateScreens/TaxIntegration';
+
 import InvestmentAnalytics from './screens/InvestmentScreens/InvestmentAnalytics';
 import LoginScreen from './screens/LoginScreen';
 import CreateAccountScreen from './screens/CreateAccountScreen';
@@ -84,6 +89,26 @@ function InvestmentStack() {
   );
 }
 
+
+// Investment stack for investment-related screens
+function RealEstateStack() {
+  return (
+    <Stack.Navigator
+      screenOptions={{
+        headerTitle: '',
+        headerBackTitleVisible: false,
+        headerTintColor: '#00796B',
+      }}
+    >
+      <Stack.Screen name="RealEstate" component={RealEstateScreen} />
+      <Stack.Screen name="IncomeTracking" component={IncomeTracking} />
+      <Stack.Screen name="ExpenseTracking" component={ExpenseTracking} />
+      <Stack.Screen name="LeaseManagement" component={LeaseManagement} />
+      <Stack.Screen name="TaxIntegration" component={TaxIntegration} />
+    </Stack.Navigator>
+  );
+}
+
 // Auth stack for login and account creation
 function AuthStackNavigator() {
   return (
@@ -141,7 +166,7 @@ function BottomTabs() {
     >
       <Tab.Screen name="HomeTab" component={HomeScreen} options={{ title: 'Home' }} />
       <Tab.Screen name="InvestmentTab" component={InvestmentStack} options={{ title: 'Investment' }} />
-      <Tab.Screen name="RealEstateTab" component={RealEstateScreen} options={{ title: 'Real Estate' }} />
+      <Tab.Screen name="RealEstateTab" component={RealEstateStack} options={{ title: 'Real Estate' }} />
       <Tab.Screen name="RetirementTab" component={RetirementScreen} options={{ title: 'Retirement' }} />
       <Tab.Screen name="AccountTab" component={UserAccountsScreen} options={{ title: 'Account' }} />
     </Tab.Navigator>
