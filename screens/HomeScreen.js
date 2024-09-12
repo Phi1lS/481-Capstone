@@ -1,15 +1,41 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, StyleSheet, ScrollView, StatusBar, Image, Text, useColorScheme } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Avatar } from 'react-native-paper';
+import { doc, getDoc } from 'firebase/firestore';
+import { auth, db } from '../firebaseConfig';
 
 export default function HomeScreen() {
+  const [userName, setUserName] = useState('User');
   const scheme = useColorScheme();
   const isDarkMode = scheme === 'dark';
 
+  useEffect(() => {
+    // Fetch the user's first and last name from Firestore
+    const fetchUserName = async () => {
+      const user = auth.currentUser;
+      if (user) {
+        const docRef = doc(db, 'users', user.uid);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+          const { firstName, lastName } = docSnap.data();
+          // Capitalize first and last name and set it to state
+          setUserName(`${capitalize(firstName)} ${capitalize(lastName)}`);
+        }
+      }
+    };
+    fetchUserName();
+  }, []);
+
+  const capitalize = (string) => string.charAt(0).toUpperCase() + string.slice(1).toLowerCase();
+
   return (
     <SafeAreaView style={isDarkMode ? styles.darkSafeArea : styles.safeArea}>
-      <StatusBar barStyle={isDarkMode ? "light-content" : "dark-content"} backgroundColor={isDarkMode ? "#00251A" : "#004D40"} />
+      {/* StatusBar with correct color */}
+      <StatusBar 
+        barStyle={isDarkMode ? "light-content" : "dark-content"} 
+        backgroundColor={isDarkMode ? "#121212" : "#F5F5F5"} // Gray background for light mode
+      />
 
       {/* Header Section */}
       <View style={isDarkMode ? styles.darkHeaderBackground : styles.headerBackground}>
@@ -21,7 +47,7 @@ export default function HomeScreen() {
         <View style={styles.header}>
           <Avatar.Image size={50} source={require('../assets/avatar.png')} style={styles.avatar} />
           <View style={styles.headerText}>
-            <Text style={styles.greeting}>Hello, User</Text>
+            <Text style={styles.greeting}>Hello, {userName}</Text>
             <Text style={styles.subGreeting}>Welcome back to InvestAlign</Text>
           </View>
         </View>
