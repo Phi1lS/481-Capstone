@@ -13,7 +13,10 @@ import AssetAllocation from './screens/InvestmentScreens/AssetAllocation';
 import MarketPredictions from './screens/InvestmentScreens/MarketPredictions';
 import Rebalancing from './screens/InvestmentScreens/Rebalancing';
 import InvestmentAnalytics from './screens/InvestmentScreens/InvestmentAnalytics';
-
+import PortfolioRebalancing from './screens/RetirementScreens/PortfolioRebalancing';
+import RetirementSavings from './screens/RetirementScreens/RetirementSavings';
+import RetirementPlanning from './screens/RetirementScreens/RetirementPlanning';
+import PensionManagement from './screens/RetirementScreens/PensionManagement';
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
 
@@ -76,7 +79,23 @@ function InvestmentStack() {
     </Stack.Navigator>
   );
 }
-
+function RetirementStack() {
+  return (
+    <Stack.Navigator
+      screenOptions={{
+        headerTitle: '', // This removes the title text
+        headerBackTitleVisible: false, // This hides the back title text
+        headerTintColor: '#00796B', // This sets the arrow color
+      }}
+    >
+      <Stack.Screen name="Retirement" component={RetirementScreen} />
+      <Stack.Screen name="PortfolioRebalancing" component={PortfolioRebalancing} />
+      <Stack.Screen name="RetirementSavings" component={RetirementSavings} />
+      <Stack.Screen name="RetirementPlanning" component={RetirementPlanning} /> 
+      <Stack.Screen name="PensionManagement" component={PensionManagement} />
+    </Stack.Navigator>
+  );
+}
 
 function BottomTabs() {
   const scheme = useColorScheme();
@@ -127,7 +146,7 @@ function BottomTabs() {
       <Tab.Screen name="HomeTab" component={HomeScreen} options={{ title: 'Home' }} />
       <Tab.Screen name="InvestmentTab" component={InvestmentStack} options={{ title: 'Investment' }} /> 
       <Tab.Screen name="RealEstateTab" component={RealEstateScreen} options={{ title: 'Real Estate' }} />
-      <Tab.Screen name="RetirementTab" component={RetirementScreen} options={{ title: 'Retirement' }} />
+      <Tab.Screen name="RetirementTab" component={RetirementStack} options={{ title: 'Retirement' }} />
       <Tab.Screen name="AccountTab" component={UserAccountsScreen} options={{ title: 'Account' }} />
     </Tab.Navigator>
   );
