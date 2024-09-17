@@ -2,8 +2,6 @@ import React from 'react';
 import { View, StyleSheet, ScrollView, Text, useColorScheme } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Title, Card, Avatar } from 'react-native-paper';
-import { PieChart } from 'react-native-chart-kit';
-import Slider from '@react-native-community/slider';
 
 export default function IncomeTrackingScreen() {
   const scheme = useColorScheme();
@@ -20,113 +18,48 @@ export default function IncomeTrackingScreen() {
     <SafeAreaView style={isDarkMode ? styles.darkSafeArea : styles.safeArea}>
       <ScrollView contentContainerStyle={isDarkMode ? styles.darkContainer : styles.container}>
         <Title style={isDarkMode ? styles.darkTitle : styles.title}>Income Tracking</Title>
-        {/*<Card style={isDarkMode ? styles.darkCard : styles.card}>
-          <Card.Title
-            title="Current Allocation"
-            left={(props) => <Avatar.Icon {...props} icon="chart-pie" style={styles.icon} />}
-            titleStyle={isDarkMode ? styles.darkCardTitle : styles.cardTitle}
-          />
-          <PieChart
-            data={data}
-            width={300}
-            height={220}
-            chartConfig={{
-              backgroundColor: isDarkMode ? '#1E1E1E' : '#FFFFFF',
-              backgroundGradientFrom: isDarkMode ? '#1E1E1E' : '#FFFFFF',
-              backgroundGradientTo: isDarkMode ? '#1E1E1E' : '#FFFFFF',
-              color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
-              labelColor: isDarkMode ? '#FFFFFF' : '#333',
-            }}
-            accessor="population"
-            backgroundColor="transparent"
-            paddingLeft="15"
-            absolute
-          />
-        </Card>*/}
-        
+
+
         <Card style={isDarkMode ? styles.darkCard : styles.card}>
           <Card.Title
-            title="Income"
+            title="Income for Month"
             left={(props) => <Avatar.Icon {...props} icon="tune" style={styles.icon} />}
             titleStyle={isDarkMode ? styles.darkCardTitle : styles.cardTitle}
           />
           <View style={styles.sliderContainer}>
-         <Text style={isDarkMode ? styles.darkText : styles.text}>$XXX,XXX</Text>
-            </View> 
-
-            </Card>
-            <Card style={isDarkMode ? styles.darkCard : styles.card}>
-          <Card.Title
-            title="Notifications"
-            left={(props) => <Avatar.Icon {...props} icon="tune" style={styles.icon} />}
-            titleStyle={isDarkMode ? styles.darkCardTitle : styles.cardTitle}
-          />
-          <View style={styles.sliderContainer}>
-         <Text style={isDarkMode ? styles.darkText : styles.text}>XXXXXX</Text>
-            </View> 
-            </Card>
-
-    
-          
-            <Card style={isDarkMode ? styles.darkCard : styles.card}>
-          <Card.Title
-            title="Expence"
-            left={(props) => <Avatar.Icon {...props} icon="tune" style={styles.icon} />}
-            titleStyle={isDarkMode ? styles.darkCardTitle : styles.cardTitle}
-          />
-          <View style={styles.sliderContainer}>
-         <Text style={isDarkMode ? styles.darkText : styles.text}>$XXX,XXX</Text>
-            </View> 
-            </Card>
-
-
-         
-            <Card style={isDarkMode ? styles.darkCard : styles.card}>
-          <Card.Title
-            title="Lease Tracking"
-            left={(props) => <Avatar.Icon {...props} icon="tune" style={styles.icon} />}
-            titleStyle={isDarkMode ? styles.darkCardTitle : styles.cardTitle}
-          />
-          <View style={styles.sliderContainer}>
-         <Text style={isDarkMode ? styles.darkText : styles.text}>XXXXXX</Text>
-            </View> 
-            </Card>
-
-          
-            <Card style={isDarkMode ? styles.darkCard : styles.card}>
-          <Card.Title
-            title="Connect to tax software"
-            left={(props) => <Avatar.Icon {...props} icon="tune" style={styles.icon} />}
-            titleStyle={isDarkMode ? styles.darkCardTitle : styles.cardTitle}
-          />
-          <View style={styles.sliderContainer}>
-         <Text style={isDarkMode ? styles.darkText : styles.text}>XXXXXX</Text>
-            </View> 
-            </Card>
-          {/*<View style={styles.sliderContainer}>
-            <Text style={isDarkMode ? styles.darkText : styles.text}>Stocks: 60%</Text>
-            <Slider
-              style={styles.slider}
-              minimumValue={0}
-              maximumValue={100}
-              value={60}
-              minimumTrackTintColor="#00796B"
-              maximumTrackTintColor="#000000"
-            />
+            <Text style={isDarkMode ? styles.darkText : styles.text}>$XXX,XXX</Text>
           </View>
+
+        </Card>
+        <Card style={isDarkMode ? styles.darkCard : styles.card}>
+          <Card.Title
+            title="Change From Last Month"
+            left={(props) => <Avatar.Icon {...props} icon="tune" style={styles.icon} />}
+            titleStyle={isDarkMode ? styles.darkCardTitle : styles.cardTitle}
+          />
           <View style={styles.sliderContainer}>
-            <Text style={isDarkMode ? styles.darkText : styles.text}>Bonds: 20%</Text>
-            <Slider
-              style={styles.slider}
-              minimumValue={0}
-              maximumValue={100}
-              value={20}
-              minimumTrackTintColor="#004D40"
-              maximumTrackTintColor="#000000"
-            />
-          </View> */}
-          {/* Add more sliders for other asset classes */}
-        
+            <Text style={isDarkMode ? styles.darkText : styles.text}>XXXXXX</Text>
+          </View>
+        </Card>
+
+
+
+        <Card style={isDarkMode ? styles.darkCard : styles.card}>
+
+          {/* where the income is coming form */}
+          <Card.Title
+            title="Income Sources for Month"
+            left={(props) => <Avatar.Icon {...props} icon="tune" style={styles.icon} />}
+            titleStyle={isDarkMode ? styles.darkCardTitle : styles.cardTitle}
+          />
+
+          <View style={styles.sliderContainer}>
+            <Text style={isDarkMode ? styles.darkText : styles.text}>$XXX,XXX</Text>
+          </View>
+        </Card>
+
+        {/* Add more sliders for other asset classes */}
+
       </ScrollView>
     </SafeAreaView>
   );
