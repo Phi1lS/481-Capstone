@@ -96,6 +96,7 @@ function InvestmentStack() {
   );
 }
 
+// Auth stack for user account preferences
 function UserAccountStack() {
   return (
     <Stack.Navigator
