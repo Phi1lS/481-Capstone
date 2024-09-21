@@ -7,16 +7,28 @@ import { Provider as PaperProvider, IconButton } from 'react-native-paper';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth } from './firebaseConfig';
 import HomeScreen from './screens/HomeScreen';
+
+{/* RealEstateScreen */}
 import RealEstateScreen from './screens/RealEstateScreen';
-import InvestmentScreen from './screens/InvestmentScreen';
+
+{/* RetirementScreen */}
 import RetirementScreen from './screens/RetirementScreen';
-import UserAccountsScreen from './screens/UserAccountsScreen';
+
+{/* InvestmentScreen */}
+import InvestmentScreen from './screens/InvestmentScreen';
 import AssetAllocation from './screens/InvestmentScreens/AssetAllocation';
 import MarketPredictions from './screens/InvestmentScreens/MarketPredictions';
 import Rebalancing from './screens/InvestmentScreens/Rebalancing';
 import InvestmentAnalytics from './screens/InvestmentScreens/InvestmentAnalytics';
 import LoginScreen from './screens/LoginScreen';
 import CreateAccountScreen from './screens/CreateAccountScreen';
+
+{/* UserAccountScreen */}
+import UserAccountsScreen from './screens/UserAccountsScreen';
+import Notifications from './screens/UserAccountsScreen/Notifications';
+import Preferences from './screens/UserAccountsScreen/Preferences';
+import Profile from './screens/UserAccountsScreen/Profile';
+import Security from './screens/UserAccountsScreen/Security';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -44,7 +56,7 @@ const CombinedDefaultTheme = {
   },
 };
 
-const CombinedDarkTheme = {
+export const CombinedDarkTheme = {
   dark: true,
   colors: {
     primary: '#004D40',
@@ -84,6 +96,23 @@ function InvestmentStack() {
   );
 }
 
+function UserAccountStack() {
+  return (
+    <Stack.Navigator
+      screenOptions={{
+        headerTitle: '',
+        headerBackTitleVisible: false,
+        headerTintColor: '#00796B',
+      }}
+    >
+      <Stack.Screen name="Account" component={UserAccountsScreen} />
+      <Stack.Screen name="Profile" component={Profile} />
+      <Stack.Screen name="Security" component={Security} />
+      <Stack.Screen name="Notifications" component={Notifications} />
+      <Stack.Screen name="Preferences" component={Preferences} />
+    </Stack.Navigator>
+  );
+}
 // Auth stack for login and account creation
 function AuthStackNavigator() {
   return (
@@ -143,7 +172,7 @@ function BottomTabs() {
       <Tab.Screen name="InvestmentTab" component={InvestmentStack} options={{ title: 'Investment' }} />
       <Tab.Screen name="RealEstateTab" component={RealEstateScreen} options={{ title: 'Real Estate' }} />
       <Tab.Screen name="RetirementTab" component={RetirementScreen} options={{ title: 'Retirement' }} />
-      <Tab.Screen name="AccountTab" component={UserAccountsScreen} options={{ title: 'Account' }} />
+      <Tab.Screen name="AccountTab" component={UserAccountStack} options={{ title: 'Account' }} />
     </Tab.Navigator>
   );
 }
