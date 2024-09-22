@@ -200,8 +200,6 @@ function BottomTabs() {
       <Tab.Screen name="RealEstateTab" component={RealEstateScreen} options={{ title: 'Real Estate' }} />
       <Tab.Screen name="RetirementTab" component={RetirementStack} options={{ title: 'Retirement' }} />
       <Tab.Screen name="AccountTab" component={UserAccountsScreen} options={{ title: 'Account' }} />
-      <Tab.Screen name="RetirementTab" component={RetirementScreen} options={{ title: 'Retirement' }} />
-      <Tab.Screen name="AccountTab" component={UserAccountStack} options={{ title: 'Account' }} />
     </Tab.Navigator>
   );
 }
