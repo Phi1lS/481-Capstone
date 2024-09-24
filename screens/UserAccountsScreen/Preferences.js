@@ -1,8 +1,9 @@
 import { React, useState } from 'react';
-import { View, StyleSheet, ScrollView, Text, useColorScheme, Switch } from 'react-native';
+import { View, StyleSheet, ScrollView, Text, useColorScheme, Switch, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Card, Avatar } from 'react-native-paper';
 import Slider from '@react-native-community/slider';
+import { auth } from '../../firebaseConfig'
 
 export default function ProfileScreen() {
   const scheme = useColorScheme();
@@ -42,6 +43,18 @@ export default function ProfileScreen() {
       return newStates;
     });
   };
+
+  // Logout function using Firebase Auth
+  const handleLogout = () => {
+    auth.signOut()
+      .then(() => {
+        console.log('User signed out successfully');
+        // Optionally navigate to a login screen after logout
+      })
+      .catch((error) => {
+        console.error('Error during sign out:', error);
+      });
+    }
 
   return (
     <SafeAreaView style={isDarkMode ? styles.darkSafeArea : styles.safeArea}>
@@ -150,11 +163,14 @@ export default function ProfileScreen() {
             </View>
           </Card>
 
+          {/* Log Out Section */}
           <Card style={isDarkMode ? styles.darkCard : styles.card}>
-            <View style={styles.exitContainer}>
-              <Text style={styles.exitText}>Log Out</Text>
-            </View>
-        </Card>
+            <TouchableOpacity onPress={handleLogout}>
+              <View style={styles.exitContainer}>
+                <Text style={styles.exitText}>Log Out</Text>
+              </View>
+            </TouchableOpacity>
+          </Card>
       </ScrollView>
     </SafeAreaView>
   );

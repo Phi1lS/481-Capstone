@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { Platform, useColorScheme, View, ActivityIndicator } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
+import { UserProvider } from './UserContext';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
 import { Provider as PaperProvider, IconButton } from 'react-native-paper';
@@ -120,6 +121,7 @@ function AuthStackNavigator() {
     <AuthStack.Navigator screenOptions={{ headerShown: false }}>
       <AuthStack.Screen name="LoginScreen" component={LoginScreen} />
       <AuthStack.Screen name="CreateAccountScreen" component={CreateAccountScreen} />
+      <AuthStack.Screen name="HomeTab" component={HomeScreen} />
     </AuthStack.Navigator>
   );
 }
@@ -194,9 +196,11 @@ export default function App() {
 
   return (
     <PaperProvider theme={theme}>
-      <NavigationContainer theme={theme}>
-        {user ? <BottomTabs /> : <AuthStackNavigator />}
-      </NavigationContainer>
+      <UserProvider>
+        <NavigationContainer theme={theme}>
+          {user ? <BottomTabs /> : <AuthStackNavigator />}
+        </NavigationContainer>
+      </UserProvider>
     </PaperProvider>
   );
 }
