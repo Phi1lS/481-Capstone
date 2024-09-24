@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, TextInput, Text, StyleSheet, Alert, TouchableOpacity } from 'react-native';
+import { View, TextInput, Text, StyleSheet, Alert, TouchableOpacity, useColorScheme } from 'react-native';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { auth, db } from '../firebaseConfig'; // Import auth and db (Firestore)
 import { doc, setDoc } from 'firebase/firestore'; // Firestore functions
@@ -8,8 +8,11 @@ export default function CreateAccountScreen({ navigation }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [firstName, setFirstName] = useState('');  // Add first name input
-  const [lastName, setLastName] = useState('');    // Add last name input
+  const [firstName, setFirstName] = useState('');  
+  const [lastName, setLastName] = useState('');    
+
+  const scheme = useColorScheme();  // Detect dark mode
+  const isDarkMode = scheme === 'dark';  // Determine if dark mode is active
 
   // Function to handle account creation
   const handleCreateAccount = async () => {
@@ -37,72 +40,73 @@ export default function CreateAccountScreen({ navigation }) {
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Create Your Account</Text>
+    <View style={isDarkMode ? styles.darkContainer : styles.container}>
+      <Text style={isDarkMode ? styles.darkTitle : styles.title}>Create Your Account</Text>
 
       {/* First Name Input */}
       <TextInput
-        style={styles.input}
+        style={isDarkMode ? styles.darkInput : styles.input}
         placeholder="First Name"
         value={firstName}
         onChangeText={setFirstName}
-        placeholderTextColor="#888"
+        placeholderTextColor={isDarkMode ? '#AAAAAA' : '#888'}
       />
 
       {/* Last Name Input */}
       <TextInput
-        style={styles.input}
+        style={isDarkMode ? styles.darkInput : styles.input}
         placeholder="Last Name"
         value={lastName}
         onChangeText={setLastName}
-        placeholderTextColor="#888"
+        placeholderTextColor={isDarkMode ? '#AAAAAA' : '#888'}
       />
 
       {/* Email Input */}
       <TextInput
-        style={styles.input}
+        style={isDarkMode ? styles.darkInput : styles.input}
         placeholder="Email"
         value={email}
         onChangeText={setEmail}
         keyboardType="email-address"
         autoCapitalize="none"
-        placeholderTextColor="#888"
+        placeholderTextColor={isDarkMode ? '#AAAAAA' : '#888'}
       />
 
       {/* Password Input */}
       <TextInput
-        style={styles.input}
+        style={isDarkMode ? styles.darkInput : styles.input}
         placeholder="Password"
         value={password}
         onChangeText={setPassword}
         secureTextEntry
-        placeholderTextColor="#888"
+        placeholderTextColor={isDarkMode ? '#AAAAAA' : '#888'}
       />
 
       {/* Confirm Password Input */}
       <TextInput
-        style={styles.input}
+        style={isDarkMode ? styles.darkInput : styles.input}
         placeholder="Confirm Password"
         value={confirmPassword}
         onChangeText={setConfirmPassword}
         secureTextEntry
-        placeholderTextColor="#888"
+        placeholderTextColor={isDarkMode ? '#AAAAAA' : '#888'}
       />
 
       {/* Create Account Button */}
-      <TouchableOpacity style={styles.button} onPress={handleCreateAccount}>
+      <TouchableOpacity style={isDarkMode ? styles.darkButton : styles.button} onPress={handleCreateAccount}>
         <Text style={styles.buttonText}>Create Account</Text>
       </TouchableOpacity>
 
       {/* Back to Login Button */}
       <TouchableOpacity onPress={() => navigation.navigate('LoginScreen')}>
-        <Text style={styles.backButtonText}>Back to Login</Text>
+        <Text style={isDarkMode ? styles.darkBackButtonText : styles.backButtonText}>Back to Login</Text>
       </TouchableOpacity>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
+  // Light mode styles
   container: {
     flex: 1,
     justifyContent: 'center',
@@ -141,6 +145,45 @@ const styles = StyleSheet.create({
   backButtonText: {
     textAlign: 'center',
     color: '#00796B',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+
+  // Dark mode styles
+  darkContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    paddingHorizontal: 30,
+    backgroundColor: '#121212',
+  },
+  darkTitle: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginBottom: 40,
+    color: '#4CAF50',
+  },
+  darkInput: {
+    height: 50,
+    backgroundColor: '#1E1E1E',
+    borderRadius: 8,
+    paddingHorizontal: 15,
+    fontSize: 16,
+    marginBottom: 20,
+    borderColor: '#4CAF50',
+    borderWidth: 1,
+    color: '#FFFFFF',
+  },
+  darkButton: {
+    backgroundColor: '#4CAF50',
+    paddingVertical: 15,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  darkBackButtonText: {
+    textAlign: 'center',
+    color: '#4CAF50',
     fontSize: 16,
     fontWeight: 'bold',
   },
