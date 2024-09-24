@@ -2,58 +2,53 @@ import React from 'react';
 import { View, StyleSheet, ScrollView, Text, useColorScheme } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Title, Card, Avatar, Button } from 'react-native-paper';
-import { PieChart } from 'react-native-chart-kit';
 import Slider from '@react-native-community/slider';
 
-export default function LeaseManagmentScreen() {
+export default function LeaseManagementScreen() {
   const scheme = useColorScheme();
   const isDarkMode = scheme === 'dark';
-
-  const data = [
-    { name: 'Stocks', population: 60, color: '#00796B', legendFontColor: '#00796B', legendFontSize: 15 },
-    { name: 'Bonds', population: 20, color: '#004D40', legendFontColor: '#004D40', legendFontSize: 15 },
-    { name: 'Real Estate', population: 10, color: '#B2DFDB', legendFontColor: '#B2DFDB', legendFontSize: 15 },
-    { name: 'Cash', population: 10, color: '#4CAF50', legendFontColor: '#4CAF50', legendFontSize: 15 },
-  ];
 
   return (
     <SafeAreaView style={isDarkMode ? styles.darkSafeArea : styles.safeArea}>
       <ScrollView contentContainerStyle={isDarkMode ? styles.darkContainer : styles.container}>
         <Title style={isDarkMode ? styles.darkTitle : styles.title}>Lease Management</Title>
 
+        {/* Lease Information Card */}
         <Card style={isDarkMode ? styles.darkCard : styles.card}>
           <Card.Title
-            title="Name"
+            title="Lease Information"
             left={(props) => <Avatar.Icon {...props} icon="tune" style={styles.icon} />}
             titleStyle={isDarkMode ? styles.darkCardTitle : styles.cardTitle}
           />
           <View style={styles.sliderContainer}>
-          <Text style={isDarkMode ? styles.darkText : styles.text}><strong>Lease start date:</strong> MM/DD/YYYY</Text>
-          <Text style={isDarkMode ? styles.darkText : styles.text}><strong>Lease end date:</strong> MM/DD/YYYY</Text>
+            <Text style={isDarkMode ? styles.darkText : styles.text}>Lease start date: MM/DD/YYYY</Text>
+            <Text style={isDarkMode ? styles.darkText : styles.text}>Lease end date: MM/DD/YYYY</Text>
           </View>
           <Card.Actions>
             <Button textColor={isDarkMode ? styles.darkText.color : styles.text.color}>Renew</Button>
-            <Button mode='outlined' textColor={isDarkMode ? styles.darkText.color : styles.text.color} buttonColor={"#FFFFFF00"}>Terminate Lease</Button>
+            <Button mode="outlined" textColor={isDarkMode ? styles.darkText.color : styles.text.color}>
+              Terminate Lease
+            </Button>
           </Card.Actions>
         </Card>
 
-        {/* <Card style={isDarkMode ? styles.darkCard : styles.card}>
+        {/* Notifications Card */}
+        <Card style={isDarkMode ? styles.darkCard : styles.card}>
           <Card.Title
             title="Notifications"
-            left={(props) => <Avatar.Icon {...props} icon="tune" style={styles.icon} />}
+            left={(props) => <Avatar.Icon {...props} icon="bell" style={styles.icon} />}
             titleStyle={isDarkMode ? styles.darkCardTitle : styles.cardTitle}
           />
           <View style={styles.sliderContainer}>
-            <Text style={isDarkMode ? styles.darkText : styles.text}>XXXXXX</Text>
+            <Text style={isDarkMode ? styles.darkText : styles.text}>You have no new notifications</Text>
           </View>
         </Card>
 
-
-
+        {/* Expense Card */}
         <Card style={isDarkMode ? styles.darkCard : styles.card}>
           <Card.Title
-            title="Expence"
-            left={(props) => <Avatar.Icon {...props} icon="tune" style={styles.icon} />}
+            title="Expenses"
+            left={(props) => <Avatar.Icon {...props} icon="currency-usd" style={styles.icon} />}
             titleStyle={isDarkMode ? styles.darkCardTitle : styles.cardTitle}
           />
           <View style={styles.sliderContainer}>
@@ -61,56 +56,56 @@ export default function LeaseManagmentScreen() {
           </View>
         </Card>
 
-
-
+        {/* Lease Tracking Card */}
         <Card style={isDarkMode ? styles.darkCard : styles.card}>
           <Card.Title
             title="Lease Tracking"
-            left={(props) => <Avatar.Icon {...props} icon="tune" style={styles.icon} />}
+            left={(props) => <Avatar.Icon {...props} icon="map-marker" style={styles.icon} />}
             titleStyle={isDarkMode ? styles.darkCardTitle : styles.cardTitle}
           />
           <View style={styles.sliderContainer}>
-            <Text style={isDarkMode ? styles.darkText : styles.text}>XXXXXX</Text>
+            <Text style={isDarkMode ? styles.darkText : styles.text}>Lease tracking details</Text>
           </View>
         </Card>
 
-
+        {/* Tax Software Connection Card */}
         <Card style={isDarkMode ? styles.darkCard : styles.card}>
           <Card.Title
-            title="Connect to tax software"
-            left={(props) => <Avatar.Icon {...props} icon="tune" style={styles.icon} />}
+            title="Connect to Tax Software"
+            left={(props) => <Avatar.Icon {...props} icon="account-cash" style={styles.icon} />}
             titleStyle={isDarkMode ? styles.darkCardTitle : styles.cardTitle}
           />
           <View style={styles.sliderContainer}>
-            <Text style={isDarkMode ? styles.darkText : styles.text}>XXXXXX</Text>
+            <Text style={isDarkMode ? styles.darkText : styles.text}>Connect your account</Text>
           </View>
         </Card>
-*/}
 
-        {/*<View style={styles.sliderContainer}>
-            <Text style={isDarkMode ? styles.darkText : styles.text}>Stocks: 60%</Text>
-            <Slider
-              style={styles.slider}
-              minimumValue={0}
-              maximumValue={100}
-              value={60}
-              minimumTrackTintColor="#00796B"
-              maximumTrackTintColor="#000000"
-            />
-          </View>
-          <View style={styles.sliderContainer}>
-            <Text style={isDarkMode ? styles.darkText : styles.text}>Bonds: 20%</Text>
-            <Slider
-              style={styles.slider}
-              minimumValue={0}
-              maximumValue={100}
-              value={20}
-              minimumTrackTintColor="#004D40"
-              maximumTrackTintColor="#000000"
-            />
-          </View> */}
-        {/* Add more sliders for other asset classes */}
+        {/* Asset Allocation Sliders */}
+        <View style={styles.sliderContainer}>
+          <Text style={isDarkMode ? styles.darkText : styles.text}>Stocks: 60%</Text>
+          <Slider
+            style={styles.slider}
+            minimumValue={0}
+            maximumValue={100}
+            value={60}
+            minimumTrackTintColor="#00796B"
+            maximumTrackTintColor="#000000"
+          />
+        </View>
 
+        <View style={styles.sliderContainer}>
+          <Text style={isDarkMode ? styles.darkText : styles.text}>Bonds: 20%</Text>
+          <Slider
+            style={styles.slider}
+            minimumValue={0}
+            maximumValue={100}
+            value={20}
+            minimumTrackTintColor="#004D40"
+            maximumTrackTintColor="#000000"
+          />
+        </View>
+
+        {/* Add more sliders for other asset classes as needed */}
       </ScrollView>
     </SafeAreaView>
   );
