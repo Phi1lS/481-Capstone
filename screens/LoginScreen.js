@@ -14,7 +14,7 @@ export default function LoginScreen({ navigation }) {
     signInWithEmailAndPassword(auth, email, password)
       .then(() => {
         // Successfully logged in
-        Alert.alert('Success', 'Logged in successfully');
+        //Alert.alert('Success', 'Logged in successfully');
   
         // Reset the navigation stack to the home screen
         navigation.reset({
