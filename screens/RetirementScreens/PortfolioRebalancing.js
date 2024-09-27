@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, StyleSheet, ScrollView, Text, useColorScheme, Dimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Title, Card, Avatar } from 'react-native-paper';
+import { Title, Card, Avatar, Button, Pressable } from 'react-native-paper';
 import { PieChart } from 'react-native-chart-kit';
 import Slider from '@react-native-community/slider';
 import { LineChart } from 'react-native-chart-kit';
@@ -15,7 +15,22 @@ export default function InvestmentAnalyticsScreen() {
   // Get screen width to make the chart fit the screen properly
   const screenWidth = Dimensions.get('window').width;
 
+  const [isPressed, setIsPressed] = useState(false);
+  const handlePressIn = () => {
+    setIsPressed(true);
+  };
 
+  const handlePressOut = () => {
+    setIsPressed(false);
+  };
+  const buttonPressed = () => {
+    setStockValue(stockValueChange);
+    setBondValue(bondValueChange);
+    setCashValue(cashValueChange);
+    setRealEstateValue(realEstateValueChange);
+
+    console.log('Rebalance Action')
+  }
 
   const chartConfig = {
     backgroundColor: isDarkMode ? '#1E1E1E' : '#FFFFFF',
@@ -34,7 +49,12 @@ export default function InvestmentAnalyticsScreen() {
   const [realEstateValue, setRealEstateValue] = useState(25);
   const [cashValue, setCashValue] = useState(25);
 
-  const sliderTotal = stockValue + bondValue + realEstateValue + cashValue;
+  const [stockValueChange, setStockValueChange] = useState(25);
+  const [bondValueChange, setBondValueChange] = useState(25);
+  const [realEstateValueChange, setRealEstateValueChange] = useState(25);
+  const [cashValueChange, setCashValueChange] = useState(25);
+
+  const sliderTotal = stockValueChange + bondValueChange + realEstateValueChange + cashValueChange;
 
   //used to calcuate remaining percentage left to allocate
   const remainingPerent = (sliderValue) => {
@@ -87,12 +107,12 @@ export default function InvestmentAnalyticsScreen() {
             titleStyle={isDarkMode ? styles.darkCardTitle : styles.cardTitle}
           />
           <View style={styles.sliderContainer}>
-            <Text style={isDarkMode ? styles.darkText : styles.text}>Stocks: {Math.floor(stockValue)}%</Text>
+            <Text style={isDarkMode ? styles.darkText : styles.text}>Stocks: {Math.floor(stockValueChange)}%</Text>
             <Slider
               style={styles.slider}
              
-              value={stockValue} 
-              onValueChange={(value) => setStockValue(value)} 
+              value={stockValueChange} 
+              onValueChange={(value) => setStockValueChange(value)} 
               minimumValue={0}
               maximumValue={remainingPerent(stockValue)}
               step={1}
@@ -101,14 +121,14 @@ export default function InvestmentAnalyticsScreen() {
             />
           </View>
           <View style={styles.sliderContainer}>
-            <Text style={isDarkMode ? styles.darkText : styles.text}>Bonds: {Math.floor(bondValue)}%</Text>
+            <Text style={isDarkMode ? styles.darkText : styles.text}>Bonds: {Math.floor(bondValueChange)}%</Text>
             <Slider
               style={styles.slider}
               
-              value={bondValue} 
-              onValueChange={(value) => setBondValue(value)} 
+              value={bondValueChange} 
+              onValueChange={(value) => setBondValueChange(value)} 
               minimumValue={0}
-              maximumValue={remainingPerent(bondValue)}
+              maximumValue={remainingPerent(bondValueChange)}
               step={1}
               
               minimumTrackTintColor="#004D40"
@@ -116,14 +136,14 @@ export default function InvestmentAnalyticsScreen() {
             />
           </View>
           <View style={styles.sliderContainer}>
-            <Text style={isDarkMode ? styles.darkText : styles.text}>Real Estate: {Math.floor(realEstateValue)}%</Text>
+            <Text style={isDarkMode ? styles.darkText : styles.text}>Real Estate: {Math.floor(realEstateValueChange)}%</Text>
             <Slider
               style={styles.slider}
 
-              value={realEstateValue} 
-              onValueChange={(value) => setRealEstateValue(value)} 
+              value={realEstateValueChange} 
+              onValueChange={(value) => setRealEstateValueChange(value)} 
               minimumValue={0}
-              maximumValue={remainingPerent(realEstateValue)}
+              maximumValue={remainingPerent(realEstateValueChange)}
               step={1}
               
               minimumTrackTintColor="#004D40"
@@ -131,20 +151,35 @@ export default function InvestmentAnalyticsScreen() {
             />
           </View>
           <View style={styles.sliderContainer}>
-            <Text style={isDarkMode ? styles.darkText : styles.text}>Cash: {Math.floor(cashValue)}%</Text>
+            <Text style={isDarkMode ? styles.darkText : styles.text}>Cash: {Math.floor(cashValueChange)}%</Text>
             <Slider
               style={styles.slider}
              
-              value={cashValue} 
-              onValueChange={(value) => setCashValue(value)} 
+              value={cashValueChange} 
+              onValueChange={(value) => setCashValueChange(value)} 
               minimumValue={0}
-              maximumValue={remainingPerent(cashValue)}
+              maximumValue={remainingPerent(cashValueChange)}
               step={1}
              
               minimumTrackTintColor="#004D40"
               maximumTrackTintColor="#000000"
             />
           </View>
+
+          {/* Button for rebalancing */}
+          <Button
+              mode="contained"
+              onPressIn={handlePressIn}
+              onPressOut={handlePressOut}
+              onPress={() => buttonPressed()}
+              style={[
+                styles.rebalanceButton,
+                isPressed && styles.rebalanceButtonPressed,
+              ]}
+              labelStyle={styles.buttonLabel}
+            >
+              Rebalance Now
+            </Button>
           {/* Add more sliders for other asset classes */}
         </Card>
       </ScrollView>
@@ -199,6 +234,17 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#555',
     marginBottom: 10,
+  },
+  rebalanceButton: {
+    backgroundColor: '#00796B',
+    padding: 14,
+    borderRadius: 8,
+    marginTop: 25,
+  },
+  buttonLabel: {
+    color: '#FFFFFF',
+    fontWeight: 'bold',
+    fontSize: 16,
   },
   // Dark mode styles
   darkSafeArea: {
