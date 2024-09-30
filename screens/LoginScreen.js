@@ -1,17 +1,26 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Alert, StyleSheet, Image } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, Alert, StyleSheet, Image, useColorScheme } from 'react-native';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../firebaseConfig'; // Ensure correct path to firebaseConfig
 
 export default function LoginScreen({ navigation }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  
+  const scheme = useColorScheme(); // Detect dark mode
+  const isDarkMode = scheme === 'dark'; // Check if it's dark mode
 
   const handleLogin = () => {
     signInWithEmailAndPassword(auth, email, password)
       .then(() => {
         // Successfully logged in
-        Alert.alert('Success', 'Logged in successfully');
+        //Alert.alert('Success', 'Logged in successfully');
+  
+        // Reset the navigation stack to the home screen
+        navigation.reset({
+          index: 0,
+          routes: [{ name: 'HomeTab' }], // Use 'HomeTab' here to match the route name in BottomTabs
+        });
       })
       .catch((error) => {
         // Error logging in
@@ -20,7 +29,7 @@ export default function LoginScreen({ navigation }) {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={isDarkMode ? styles.darkContainer : styles.container}>
       {/* Logo */}
       <Image source={require('../assets/logoText.png')} style={styles.logo} />
 
@@ -30,8 +39,8 @@ export default function LoginScreen({ navigation }) {
         autoCapitalize="none"
         keyboardType="email-address"
         placeholder="Email"
-        placeholderTextColor="#888"
-        style={styles.input}
+        placeholderTextColor={isDarkMode ? '#AAAAAA' : '#888'}
+        style={isDarkMode ? styles.darkInput : styles.input}
       />
 
       <TextInput
@@ -39,24 +48,25 @@ export default function LoginScreen({ navigation }) {
         onChangeText={setPassword}
         secureTextEntry
         placeholder="Password"
-        placeholderTextColor="#888"
-        style={styles.input}
+        placeholderTextColor={isDarkMode ? '#AAAAAA' : '#888'}
+        style={isDarkMode ? styles.darkInput : styles.input}
       />
 
-      <TouchableOpacity style={styles.button} onPress={handleLogin}>
+      <TouchableOpacity style={isDarkMode ? styles.darkButton : styles.button} onPress={handleLogin}>
         <Text style={styles.buttonText}>Login</Text>
       </TouchableOpacity>
 
-      <Text style={styles.text}>Don't have an account?</Text>
+      <Text style={isDarkMode ? styles.darkText : styles.text}>Don't have an account?</Text>
 
       <TouchableOpacity onPress={() => navigation.navigate('CreateAccountScreen')}>
-        <Text style={styles.linkText}>Create Account</Text>
+        <Text style={isDarkMode ? styles.darkLinkText : styles.linkText}>Create Account</Text>
       </TouchableOpacity>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
+  // Light mode styles
   container: {
     flex: 1,
     justifyContent: 'center',
@@ -64,12 +74,12 @@ const styles = StyleSheet.create({
     backgroundColor: '#F5F5F5',
   },
   logo: {
-    width: 350, // Increased width for larger logo
-    height: 150, // Increased height to maintain aspect ratio
-    resizeMode: 'contain', // Ensures the image fits within the view without being distorted
+    width: 350,
+    height: 150,
+    resizeMode: 'contain',
     alignSelf: 'center',
-    marginTop: -50, // Moves the logo higher on the screen
-    marginBottom: 50, // Space between the logo and the input fields
+    marginTop: -50,
+    marginBottom: 50,
   },
   input: {
     height: 50,
@@ -102,6 +112,44 @@ const styles = StyleSheet.create({
   linkText: {
     textAlign: 'center',
     color: '#00796B',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+
+  // Dark mode styles
+  darkContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    paddingHorizontal: 30,
+    backgroundColor: '#121212',
+  },
+  darkInput: {
+    height: 50,
+    backgroundColor: '#1E1E1E',
+    borderRadius: 8,
+    paddingHorizontal: 15,
+    fontSize: 16,
+    marginBottom: 20,
+    borderColor: '#4CAF50',
+    borderWidth: 1,
+    color: '#FFFFFF',
+  },
+  darkButton: {
+    backgroundColor: '#4CAF50',
+    paddingVertical: 15,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  darkText: {
+    textAlign: 'center',
+    fontSize: 16,
+    color: '#AAAAAA',
+    marginBottom: 10,
+  },
+  darkLinkText: {
+    textAlign: 'center',
+    color: '#4CAF50',
     fontSize: 16,
     fontWeight: 'bold',
   },

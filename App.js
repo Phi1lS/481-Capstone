@@ -1,16 +1,22 @@
 import * as React from 'react';
 import { Platform, useColorScheme, View, ActivityIndicator } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
+import { UserProvider } from './UserContext';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
 import { Provider as PaperProvider, IconButton } from 'react-native-paper';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth } from './firebaseConfig';
 import HomeScreen from './screens/HomeScreen';
+
+// RealEstateScreen
 import RealEstateScreen from './screens/RealEstateScreen';
-import InvestmentScreen from './screens/InvestmentScreen';
+
+// RetirementScreen
 import RetirementScreen from './screens/RetirementScreen';
-import UserAccountsScreen from './screens/UserAccountsScreen';
+
+// InvestmentScreen
+import InvestmentScreen from './screens/InvestmentScreen';
 import AssetAllocation from './screens/InvestmentScreens/AssetAllocation';
 import MarketPredictions from './screens/InvestmentScreens/MarketPredictions';
 import Rebalancing from './screens/InvestmentScreens/Rebalancing';
@@ -22,6 +28,13 @@ import TaxIntegration from './screens/RealEstateScreens/TaxIntegration';
 import InvestmentAnalytics from './screens/InvestmentScreens/InvestmentAnalytics';
 import LoginScreen from './screens/LoginScreen';
 import CreateAccountScreen from './screens/CreateAccountScreen';
+
+// UserAccountScreen
+import UserAccountsScreen from './screens/UserAccountsScreen';
+import Notifications from './screens/UserAccountsScreen/Notifications';
+import Preferences from './screens/UserAccountsScreen/Preferences';
+import Profile from './screens/UserAccountsScreen/Profile';
+import Security from './screens/UserAccountsScreen/Security';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -49,7 +62,7 @@ const CombinedDefaultTheme = {
   },
 };
 
-const CombinedDarkTheme = {
+export const CombinedDarkTheme = {
   dark: true,
   colors: {
     primary: '#004D40',
@@ -89,8 +102,7 @@ function InvestmentStack() {
   );
 }
 
-
-// Investment stack for investment-related screens
+// Real estate stack for real estate-related screens
 function RealEstateStack() {
   return (
     <Stack.Navigator
@@ -109,12 +121,32 @@ function RealEstateStack() {
   );
 }
 
+// User account stack for user account-related screens
+function UserAccountStack() {
+  return (
+    <Stack.Navigator
+      screenOptions={{
+        headerTitle: '',
+        headerBackTitleVisible: false,
+        headerTintColor: '#00796B',
+      }}
+    >
+      <Stack.Screen name="Account" component={UserAccountsScreen} />
+      <Stack.Screen name="Profile" component={Profile} />
+      <Stack.Screen name="Security" component={Security} />
+      <Stack.Screen name="Notifications" component={Notifications} />
+      <Stack.Screen name="Preferences" component={Preferences} />
+    </Stack.Navigator>
+  );
+}
+
 // Auth stack for login and account creation
 function AuthStackNavigator() {
   return (
     <AuthStack.Navigator screenOptions={{ headerShown: false }}>
       <AuthStack.Screen name="LoginScreen" component={LoginScreen} />
       <AuthStack.Screen name="CreateAccountScreen" component={CreateAccountScreen} />
+      <AuthStack.Screen name="HomeTab" component={HomeScreen} />
     </AuthStack.Navigator>
   );
 }
@@ -168,7 +200,7 @@ function BottomTabs() {
       <Tab.Screen name="InvestmentTab" component={InvestmentStack} options={{ title: 'Investment' }} />
       <Tab.Screen name="RealEstateTab" component={RealEstateStack} options={{ title: 'Real Estate' }} />
       <Tab.Screen name="RetirementTab" component={RetirementScreen} options={{ title: 'Retirement' }} />
-      <Tab.Screen name="AccountTab" component={UserAccountsScreen} options={{ title: 'Account' }} />
+      <Tab.Screen name="AccountTab" component={UserAccountStack} options={{ title: 'Account' }} />
     </Tab.Navigator>
   );
 }
@@ -189,9 +221,11 @@ export default function App() {
 
   return (
     <PaperProvider theme={theme}>
-      <NavigationContainer theme={theme}>
-        {user ? <BottomTabs /> : <AuthStackNavigator />}
-      </NavigationContainer>
+      <UserProvider>
+        <NavigationContainer theme={theme}>
+          {user ? <BottomTabs /> : <AuthStackNavigator />}
+        </NavigationContainer>
+      </UserProvider>
     </PaperProvider>
   );
 }
