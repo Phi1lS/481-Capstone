@@ -9,23 +9,28 @@ import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth } from './firebaseConfig';
 import HomeScreen from './screens/HomeScreen';
 
-{/* RealEstateScreen */}
+// RealEstateScreen
 import RealEstateScreen from './screens/RealEstateScreen';
 
-{/* RetirementScreen */}
+// RetirementScreen
 import RetirementScreen from './screens/RetirementScreen';
 
-{/* InvestmentScreen */}
+// InvestmentScreen
 import InvestmentScreen from './screens/InvestmentScreen';
 import AssetAllocation from './screens/InvestmentScreens/AssetAllocation';
 import MarketPredictions from './screens/InvestmentScreens/MarketPredictions';
 import Rebalancing from './screens/InvestmentScreens/Rebalancing';
+import IncomeTracking from './screens/RealEstateScreens/IncomeTracking';
+import ExpenseTracking from './screens/RealEstateScreens/ExpenseTracking';
+import LeaseManagement from './screens/RealEstateScreens/LeaseManagement';
+import TaxIntegration from './screens/RealEstateScreens/TaxIntegration';
+
 import InvestmentAnalytics from './screens/InvestmentScreens/InvestmentAnalytics';
 
 import LoginScreen from './screens/LoginScreen';
 import CreateAccountScreen from './screens/CreateAccountScreen';
 
-{/* UserAccountScreen */}
+// UserAccountScreen
 import UserAccountsScreen from './screens/UserAccountsScreen';
 import Notifications from './screens/UserAccountsScreen/Notifications';
 import Preferences from './screens/UserAccountsScreen/Preferences';
@@ -35,7 +40,6 @@ import PortfolioRebalancing from './screens/RetirementScreens/PortfolioRebalanci
 import RetirementSavings from './screens/RetirementScreens/RetirementSavings';
 import RetirementPlanning from './screens/RetirementScreens/RetirementPlanning';
 import PensionManagement from './screens/RetirementScreens/PensionManagement';
-
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -103,6 +107,7 @@ function InvestmentStack() {
   );
 }
 
+// Retirement stack for retirement-related screens
 function RetirementStack() {
   return (
     <Stack.Navigator
@@ -118,9 +123,29 @@ function RetirementStack() {
       <Stack.Screen name="RetirementPlanning" component={RetirementPlanning} /> 
       <Stack.Screen name="PensionManagement" component={PensionManagement} />
     </Stack.Navigator>
-  )
+  );
 }
-// Auth stack for user account preferences
+
+// Real estate stack for real estate-related screens
+function RealEstateStack() {
+  return (
+    <Stack.Navigator
+      screenOptions={{
+        headerTitle: '',
+        headerBackTitleVisible: false,
+        headerTintColor: '#00796B',
+      }}
+    >
+      <Stack.Screen name="RealEstate" component={RealEstateScreen} />
+      <Stack.Screen name="IncomeTracking" component={IncomeTracking} />
+      <Stack.Screen name="ExpenseTracking" component={ExpenseTracking} />
+      <Stack.Screen name="LeaseManagement" component={LeaseManagement} />
+      <Stack.Screen name="TaxIntegration" component={TaxIntegration} />
+    </Stack.Navigator>
+  );
+}
+
+// User account stack for user account-related screens
 function UserAccountStack() {
   return (
     <Stack.Navigator
@@ -138,6 +163,7 @@ function UserAccountStack() {
     </Stack.Navigator>
   );
 }
+
 // Auth stack for login and account creation
 function AuthStackNavigator() {
   return (
@@ -146,7 +172,6 @@ function AuthStackNavigator() {
       <AuthStack.Screen name="CreateAccountScreen" component={CreateAccountScreen} />
       <AuthStack.Screen name="HomeTab" component={HomeScreen} />
     </AuthStack.Navigator>
-
   );
 }
 
@@ -199,7 +224,7 @@ function BottomTabs() {
     >
       <Tab.Screen name="HomeTab" component={HomeScreen} options={{ title: 'Home' }} />
       <Tab.Screen name="InvestmentTab" component={InvestmentStack} options={{ title: 'Investment' }} />
-      <Tab.Screen name="RealEstateTab" component={RealEstateScreen} options={{ title: 'Real Estate' }} />
+      <Tab.Screen name="RealEstateTab" component={RealEstateStack} options={{ title: 'Real Estate' }} />
       <Tab.Screen name="RetirementTab" component={RetirementStack} options={{ title: 'Retirement' }} />
       <Tab.Screen name="AccountTab" component={UserAccountStack} options={{ title: 'Account' }} />
     </Tab.Navigator>
