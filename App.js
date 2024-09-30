@@ -26,6 +26,7 @@ import LeaseManagement from './screens/RealEstateScreens/LeaseManagement';
 import TaxIntegration from './screens/RealEstateScreens/TaxIntegration';
 
 import InvestmentAnalytics from './screens/InvestmentScreens/InvestmentAnalytics';
+
 import LoginScreen from './screens/LoginScreen';
 import CreateAccountScreen from './screens/CreateAccountScreen';
 
@@ -35,6 +36,10 @@ import Notifications from './screens/UserAccountsScreen/Notifications';
 import Preferences from './screens/UserAccountsScreen/Preferences';
 import Profile from './screens/UserAccountsScreen/Profile';
 import Security from './screens/UserAccountsScreen/Security';
+import PortfolioRebalancing from './screens/RetirementScreens/PortfolioRebalancing';
+import RetirementSavings from './screens/RetirementScreens/RetirementSavings';
+import RetirementPlanning from './screens/RetirementScreens/RetirementPlanning';
+import PensionManagement from './screens/RetirementScreens/PensionManagement';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -88,9 +93,9 @@ function InvestmentStack() {
   return (
     <Stack.Navigator
       screenOptions={{
-        headerTitle: '',
-        headerBackTitleVisible: false,
-        headerTintColor: '#00796B',
+        headerTitle: '', // This removes the title text
+        headerBackTitleVisible: false, // This hides the back title text
+        headerTintColor: '#00796B', // This sets the arrow color
       }}
     >
       <Stack.Screen name="Investment" component={InvestmentScreen} />
@@ -98,6 +103,25 @@ function InvestmentStack() {
       <Stack.Screen name="MarketPredictions" component={MarketPredictions} />
       <Stack.Screen name="Rebalancing" component={Rebalancing} />
       <Stack.Screen name="InvestmentAnalytics" component={InvestmentAnalytics} />
+    </Stack.Navigator>
+  );
+}
+
+// Retirement stack for retirement-related screens
+function RetirementStack() {
+  return (
+    <Stack.Navigator
+      screenOptions={{
+        headerTitle: '', // This removes the title text
+        headerBackTitleVisible: false, // This hides the back title text
+        headerTintColor: '#00796B', // This sets the arrow color
+      }}
+    >
+      <Stack.Screen name="Retirement" component={RetirementScreen} />
+      <Stack.Screen name="PortfolioRebalancing" component={PortfolioRebalancing} />
+      <Stack.Screen name="RetirementSavings" component={RetirementSavings} />
+      <Stack.Screen name="RetirementPlanning" component={RetirementPlanning} /> 
+      <Stack.Screen name="PensionManagement" component={PensionManagement} />
     </Stack.Navigator>
   );
 }
@@ -161,6 +185,7 @@ function BottomTabs() {
       screenOptions={({ route }) => ({
         tabBarIcon: ({ color, size }) => {
           let iconName;
+
           switch (route.name) {
             case 'HomeTab':
               iconName = 'home-outline';
@@ -178,6 +203,7 @@ function BottomTabs() {
               iconName = 'account-settings-outline';
               break;
           }
+
           return <IconButton icon={iconName} color={color} size={size + 8} />;
         },
         tabBarActiveTintColor: theme.colors.tabBarActiveText,
@@ -199,7 +225,7 @@ function BottomTabs() {
       <Tab.Screen name="HomeTab" component={HomeScreen} options={{ title: 'Home' }} />
       <Tab.Screen name="InvestmentTab" component={InvestmentStack} options={{ title: 'Investment' }} />
       <Tab.Screen name="RealEstateTab" component={RealEstateStack} options={{ title: 'Real Estate' }} />
-      <Tab.Screen name="RetirementTab" component={RetirementScreen} options={{ title: 'Retirement' }} />
+      <Tab.Screen name="RetirementTab" component={RetirementStack} options={{ title: 'Retirement' }} />
       <Tab.Screen name="AccountTab" component={UserAccountStack} options={{ title: 'Account' }} />
     </Tab.Navigator>
   );
