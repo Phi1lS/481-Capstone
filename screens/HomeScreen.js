@@ -1,6 +1,5 @@
 import React, { useContext } from 'react';
-import { View, StyleSheet, ScrollView, StatusBar, Image, Text, useColorScheme } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { View, StyleSheet, ScrollView, StatusBar, Image, Text, useColorScheme, Platform } from 'react-native';
 import { Avatar } from 'react-native-paper';
 import { UserContext } from '../UserContext';
 
@@ -10,7 +9,7 @@ export default function HomeScreen() {
   const isDarkMode = scheme === 'dark';
 
   return (
-    <SafeAreaView style={isDarkMode ? styles.darkSafeArea : styles.safeArea}>
+    <View style={isDarkMode ? styles.darkContainer : styles.container}>
       {/* StatusBar with correct color */}
       <StatusBar 
         barStyle={isDarkMode ? "light-content" : "dark-content"} 
@@ -34,7 +33,7 @@ export default function HomeScreen() {
       </View>
 
       {/* Dashboard Section */}
-      <ScrollView contentContainerStyle={styles.container}>
+      <ScrollView contentContainerStyle={styles.scrollContainer}>
         <Text style={isDarkMode ? styles.darkSectionTitle : styles.sectionTitle}>Your Dashboard</Text>
 
         <View style={styles.dashboard}>
@@ -62,15 +61,16 @@ export default function HomeScreen() {
           </View>
         </View>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   // Light mode styles
-  safeArea: {
+  container: {
     flex: 1,
     backgroundColor: '#F5F5F5',
+    paddingTop: Platform.OS === 'ios' ? 60 : 0,
   },
   headerBackground: {
     backgroundColor: '#004D40',
@@ -105,7 +105,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#B2DFDB',
   },
-  container: {
+  scrollContainer: {
     paddingHorizontal: 20,
   },
   sectionTitle: {
@@ -150,9 +150,10 @@ const styles = StyleSheet.create({
     color: '#004D40',
   },
   // Dark mode styles
-  darkSafeArea: {
+  darkContainer: {
     flex: 1,
     backgroundColor: '#121212',
+    paddingTop: Platform.OS === 'ios' ? 60 : 0,
   },
   darkHeaderBackground: {
     backgroundColor: '#00251A',

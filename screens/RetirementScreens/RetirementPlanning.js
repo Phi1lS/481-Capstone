@@ -8,7 +8,6 @@ import {
   Dimensions,
   TextInput,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { Title, Card, Avatar, Button } from "react-native-paper";
 import { LineChart } from "react-native-chart-kit";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
@@ -84,7 +83,7 @@ export default function InvestmentAnalyticsScreen() {
   }
 
   return (
-    <SafeAreaView style={isDarkMode ? styles.darkSafeArea : styles.safeArea}>
+    <View>
       <ScrollView
         contentContainerStyle={
           isDarkMode ? styles.darkContainer : styles.container
@@ -280,16 +279,12 @@ export default function InvestmentAnalyticsScreen() {
           />
         </Card>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   // Light mode styles
-  safeArea: {
-    flex: 1,
-    backgroundColor: "#F5F5F5",
-  },
   container: {
     flexGrow: 1,
     padding: 20,
@@ -363,10 +358,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   // Dark mode styles
-  darkSafeArea: {
-    flex: 1,
-    backgroundColor: "#121212",
-  },
   darkContainer: {
     flexGrow: 1,
     padding: 20,

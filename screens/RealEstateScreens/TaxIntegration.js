@@ -17,7 +17,7 @@ export default function TaxIntegrationScreen() {
   ];
 
   return (
-    <SafeAreaView style={isDarkMode ? styles.darkSafeArea : styles.safeArea}>
+    <View>
       <ScrollView contentContainerStyle={isDarkMode ? styles.darkContainer : styles.container}>
         <Title style={isDarkMode ? styles.darkTitle : styles.title}>Tax Integration</Title>
         {/*<Card style={isDarkMode ? styles.darkCard : styles.card}>
@@ -128,16 +128,12 @@ export default function TaxIntegrationScreen() {
           {/* Add more sliders for other asset classes */}
         
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   // Light mode styles
-  safeArea: {
-    flex: 1,
-    backgroundColor: '#F5F5F5',
-  },
   container: {
     flexGrow: 1,
     padding: 20,
@@ -181,10 +177,6 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   // Dark mode styles
-  darkSafeArea: {
-    flex: 1,
-    backgroundColor: '#121212',
-  },
   darkContainer: {
     flexGrow: 1,
     padding: 20,

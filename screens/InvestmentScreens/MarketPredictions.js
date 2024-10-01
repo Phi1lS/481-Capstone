@@ -1,6 +1,5 @@
 import React from 'react';
 import { View, StyleSheet, ScrollView, Text, useColorScheme } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { Title, Card, Avatar, ProgressBar } from 'react-native-paper';
 import { LineChart } from 'react-native-chart-kit';
 
@@ -31,7 +30,7 @@ export default function MarketPredictionsScreen() {
   };
 
   return (
-    <SafeAreaView style={isDarkMode ? styles.darkSafeArea : styles.safeArea}>
+    <View>
       <ScrollView contentContainerStyle={isDarkMode ? styles.darkContainer : styles.container}>
         <Title style={isDarkMode ? styles.darkTitle : styles.title}>Market Predictions</Title>
 
@@ -122,16 +121,12 @@ export default function MarketPredictionsScreen() {
           </View>
         </Card>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   // Light mode styles
-  safeArea: {
-    flex: 1,
-    backgroundColor: '#F5F5F5',
-  },
   container: {
     flexGrow: 1,
     padding: 25,
@@ -179,10 +174,6 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   // Dark mode styles
-  darkSafeArea: {
-    flex: 1,
-    backgroundColor: '#121212',
-  },
   darkContainer: {
     flexGrow: 1,
     padding: 25,

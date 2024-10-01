@@ -1,6 +1,5 @@
 import React from 'react';
 import { View, StyleSheet, ScrollView, Text, useColorScheme } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { Title, Card, Avatar } from 'react-native-paper';
 
 export default function IncomeTrackingScreen() {
@@ -15,10 +14,9 @@ export default function IncomeTrackingScreen() {
   ];
 
   return (
-    <SafeAreaView style={isDarkMode ? styles.darkSafeArea : styles.safeArea}>
+    <View style={isDarkMode ? styles.darkSafeArea : styles.safeArea}>
       <ScrollView contentContainerStyle={isDarkMode ? styles.darkContainer : styles.container}>
         <Title style={isDarkMode ? styles.darkTitle : styles.title}>Income Tracking</Title>
-
 
         <Card style={isDarkMode ? styles.darkCard : styles.card}>
           <Card.Title
@@ -29,8 +27,8 @@ export default function IncomeTrackingScreen() {
           <View style={styles.sliderContainer}>
             <Text style={isDarkMode ? styles.darkText : styles.text}>$XXX,XXX</Text>
           </View>
-
         </Card>
+
         <Card style={isDarkMode ? styles.darkCard : styles.card}>
           <Card.Title
             title="Change From Last Month"
@@ -42,26 +40,18 @@ export default function IncomeTrackingScreen() {
           </View>
         </Card>
 
-
-
         <Card style={isDarkMode ? styles.darkCard : styles.card}>
-
-          {/* where the income is coming form */}
           <Card.Title
             title="Income Sources for Month"
             left={(props) => <Avatar.Icon {...props} icon="tune" style={styles.icon} />}
             titleStyle={isDarkMode ? styles.darkCardTitle : styles.cardTitle}
           />
-
           <View style={styles.sliderContainer}>
             <Text style={isDarkMode ? styles.darkText : styles.text}>$XXX,XXX</Text>
           </View>
         </Card>
-
-        {/* Add more sliders for other asset classes */}
-
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -103,10 +93,6 @@ const styles = StyleSheet.create({
   },
   sliderContainer: {
     marginTop: 20,
-  },
-  slider: {
-    width: '100%',
-    height: 40,
   },
   text: {
     fontSize: 16,

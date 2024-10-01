@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { View, StyleSheet, ScrollView, Text, useColorScheme, Dimensions } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { Title, Card, Avatar, Button, Pressable } from 'react-native-paper';
 import { PieChart } from 'react-native-chart-kit';
 import Slider from '@react-native-community/slider';
@@ -70,7 +69,7 @@ export default function InvestmentAnalyticsScreen() {
     { name: '% Cash', population: cashValue, color: '#4CAF50', legendFontColor: '#4CAF50', legendFontSize: 15 },
   ];
   return (
-    <SafeAreaView style={isDarkMode ? styles.darkSafeArea : styles.safeArea}>
+    <View>
       <ScrollView contentContainerStyle={isDarkMode ? styles.darkContainer : styles.container}>
         <Title style={isDarkMode ? styles.darkTitle : styles.title}>Portfolio Rebalancing</Title>
 
@@ -183,16 +182,12 @@ export default function InvestmentAnalyticsScreen() {
           {/* Add more sliders for other asset classes */}
         </Card>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   // Light mode styles
-  safeArea: {
-    flex: 1,
-    backgroundColor: '#F5F5F5',
-  },
   container: {
     flexGrow: 1,
     padding: 20,
@@ -247,10 +242,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   // Dark mode styles
-  darkSafeArea: {
-    flex: 1,
-    backgroundColor: '#121212',
-  },
   darkContainer: {
     flexGrow: 1,
     padding: 20,

@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { View, StyleSheet, ScrollView, Text, TextInput, TouchableOpacity, Alert, useColorScheme, Switch } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { Card } from 'react-native-paper';
 import { auth } from '../../firebaseConfig';
 import { updatePassword, reauthenticateWithCredential, EmailAuthProvider } from 'firebase/auth';
@@ -62,7 +61,7 @@ export default function SecurityScreen() {
   };
 
   return (
-    <SafeAreaView style={isDarkMode ? styles.darkSafeArea : styles.safeArea}>
+    <View>
       <ScrollView contentContainerStyle={isDarkMode ? styles.darkContainer : styles.container}>
         {/* Password Section */}
         <Card style={isDarkMode ? styles.darkCard : styles.card}>
@@ -173,16 +172,12 @@ export default function SecurityScreen() {
           </View>
         </Card>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   // Light mode styles
-  safeArea: {
-    flex: 1,
-    backgroundColor: '#F5F5F5',
-  },
   container: {
     flexGrow: 1,
     padding: 20,
@@ -269,10 +264,6 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   // Dark mode styles
-  darkSafeArea: {
-    flex: 1,
-    backgroundColor: '#121212',
-  },
   darkContainer: {
     flexGrow: 1,
     padding: 20,
