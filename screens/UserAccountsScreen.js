@@ -1,6 +1,5 @@
 import * as React from 'react';
-import { View, StyleSheet, ScrollView, TouchableOpacity, Animated, StatusBar, Text, useColorScheme } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { View, StyleSheet, ScrollView, TouchableOpacity, Animated, StatusBar, Text, useColorScheme, Platform } from 'react-native';
 import { Title, Card, Avatar } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
 
@@ -57,7 +56,7 @@ export default function UserAccountsScreen() {
   };
 
   return (
-    <SafeAreaView style={isDarkMode ? styles.darkSafeArea : styles.safeArea}>
+    <View style={isDarkMode ? styles.darkContainer : styles.container}>
       <StatusBar barStyle={isDarkMode ? "light-content" : "dark-content"} backgroundColor={isDarkMode ? "#00251A" : "#004D40"} />
 
       {/* Header Section */}
@@ -71,7 +70,7 @@ export default function UserAccountsScreen() {
         </View>
       </View>
 
-      <ScrollView contentContainerStyle={isDarkMode ? styles.darkContainer : styles.container}>
+      <ScrollView contentContainerStyle={isDarkMode ? styles.darkScrollContainer : styles.scrollContainer}>
         <Title style={isDarkMode ? styles.darkSectionTitle : styles.sectionTitle}>Account Management</Title>
 
         {/* Cards for each account management feature */}
@@ -80,15 +79,16 @@ export default function UserAccountsScreen() {
         {renderCard('Notifications', 'Configure your notifications', 'bell-outline', 'Notifications')}
         {renderCard('Preferences', 'Customize your app preferences', 'cog-outline', 'Preferences')}
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   // Light mode styles
-  safeArea: {
+  container: {
     flex: 1,
     backgroundColor: '#F5F5F5',
+    paddingTop: Platform.OS === 'ios' ? 60 : 0, // 60 margin for iOS
   },
   headerBackground: {
     backgroundColor: '#004D40',
@@ -118,7 +118,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#B2DFDB',
   },
-  container: {
+  scrollContainer: {
     flexGrow: 1,
     padding: 20,
     backgroundColor: '#f7f9fc',
@@ -155,9 +155,10 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
   },
   // Dark mode styles
-  darkSafeArea: {
+  darkContainer: {
     flex: 1,
     backgroundColor: '#121212',
+    paddingTop: Platform.OS === 'ios' ? 60 : 0, // 60 margin for iOS
   },
   darkHeaderBackground: {
     backgroundColor: '#00251A',
@@ -167,7 +168,7 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: 20,
     borderBottomRightRadius: 20,
   },
-  darkContainer: {
+  darkScrollContainer: {
     flexGrow: 1,
     padding: 20,
     backgroundColor: '#121212',

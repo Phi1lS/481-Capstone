@@ -1,6 +1,5 @@
 import { React, useState } from 'react';
 import { View, StyleSheet, ScrollView, Text, useColorScheme, Switch, TouchableOpacity } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { Card, Avatar } from 'react-native-paper';
 import Slider from '@react-native-community/slider';
 import { auth } from '../../firebaseConfig'
@@ -57,7 +56,7 @@ export default function ProfileScreen() {
     }
 
   return (
-    <SafeAreaView style={isDarkMode ? styles.darkSafeArea : styles.safeArea}>
+    <View>
       <ScrollView contentContainerStyle={isDarkMode ? styles.darkContainer : styles.container}>
         <Card style={isDarkMode ? styles.darkCard : styles.card}>
           <Card.Title
@@ -172,16 +171,12 @@ export default function ProfileScreen() {
             </TouchableOpacity>
           </Card>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   // Light mode styles
-  safeArea: {
-    flex: 1,
-    backgroundColor: '#F5F5F5',
-  },
   container: {
     flexGrow: 1,
     padding: 20,
@@ -225,10 +220,6 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   // Dark mode styles
-  darkSafeArea: {
-    flex: 1,
-    backgroundColor: '#121212',
-  },
   darkContainer: {
     flexGrow: 1,
     padding: 20,

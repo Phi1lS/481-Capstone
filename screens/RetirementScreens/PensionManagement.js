@@ -9,9 +9,7 @@ import {
   TextInput,
   Pressable,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { Title, Card, Avatar, Button, pressable } from "react-native-paper";
-import { LineChart } from "react-native-chart-kit";
+import { Title, Card, Avatar } from "react-native-paper";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import * as Progress from "react-native-progress";
 
@@ -49,7 +47,7 @@ export default function InvestmentAnalyticsScreen() {
   };
 
   return (
-    <SafeAreaView style={isDarkMode ? styles.darkSafeArea : styles.safeArea}>
+    <View style={isDarkMode ? styles.darkSafeArea : styles.safeArea}>
       <ScrollView
         contentContainerStyle={
           isDarkMode ? styles.darkContainer : styles.container
@@ -173,10 +171,9 @@ export default function InvestmentAnalyticsScreen() {
               Add new Pension
             </Text>
           </Pressable>
-          {/* Add more sliders for other asset classes */}
         </Card>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -216,36 +213,16 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "#333",
   },
-  detailsContainer: {
-    marginTop: 20,
-  },
   text: {
     fontSize: 18,
     color: "#555",
     marginLeft: 10,
-  },
-  placeholderGraph: {
-    height: 100,
-    backgroundColor: "#E0F2F1",
-    justifyContent: "center",
-    alignItems: "center",
-    marginTop: 10,
-    borderRadius: 5,
-  },
-  textInput: {},
-  buttonLabel: {
-    color: "#FFFFFF",
-    fontWeight: "bold",
-    fontSize: 16,
   },
   calculateButton: {
     backgroundColor: "#00796B",
     padding: 5,
     borderRadius: 8,
     marginTop: 0,
-  },
-  calculateButtonPressed: {
-    backgroundColor: "#005D4F",
   },
   // Dark mode styles
   darkSafeArea: {
@@ -284,27 +261,11 @@ const styles = StyleSheet.create({
     color: "#AAAAAA",
     marginLeft: 10,
   },
-  moneyValue: {
-    fontSize: 50,
-    color: "#00796B",
-    textAlign: "center",
-  },
   darkMoneyValue: {
     fontSize: 50,
     color: "#4CAF50",
     marginTop: 0,
     textAlign: "center",
-  },
-  darkPlaceholderGraph: {
-    height: 100,
-    backgroundColor: "#333333",
-    justifyContent: "center",
-    alignItems: "center",
-    marginTop: 10,
-    borderRadius: 5,
-  },
-  darkBar: {
-    color: "#4CAF50",
   },
   darkCalculateButton: {
     backgroundColor: "#4CAF50",
