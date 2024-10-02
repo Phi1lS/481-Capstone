@@ -1,5 +1,5 @@
-import * as React from 'react';
-import { Platform, useColorScheme, View, ActivityIndicator } from 'react-native';
+import React, { useContext } from 'react';
+import { Platform, View, ActivityIndicator } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { UserProvider } from './UserContext';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -7,15 +7,11 @@ import { createStackNavigator } from '@react-navigation/stack';
 import { Provider as PaperProvider, IconButton } from 'react-native-paper';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth } from './firebaseConfig';
+import { ThemeProvider, ThemeContext } from './ThemeContext'; // Import ThemeProvider and ThemeContext
+
 import HomeScreen from './screens/HomeScreen';
-
-// RealEstateScreen
 import RealEstateScreen from './screens/RealEstateScreen';
-
-// RetirementScreen
 import RetirementScreen from './screens/RetirementScreen';
-
-// InvestmentScreen
 import InvestmentScreen from './screens/InvestmentScreen';
 import AssetAllocation from './screens/InvestmentScreens/AssetAllocation';
 import MarketPredictions from './screens/InvestmentScreens/MarketPredictions';
@@ -24,13 +20,9 @@ import IncomeTracking from './screens/RealEstateScreens/IncomeTracking';
 import ExpenseTracking from './screens/RealEstateScreens/ExpenseTracking';
 import LeaseManagement from './screens/RealEstateScreens/LeaseManagement';
 import TaxIntegration from './screens/RealEstateScreens/TaxIntegration';
-
 import InvestmentAnalytics from './screens/InvestmentScreens/InvestmentAnalytics';
-
 import LoginScreen from './screens/LoginScreen';
 import CreateAccountScreen from './screens/CreateAccountScreen';
-
-// UserAccountScreen
 import UserAccountsScreen from './screens/UserAccountsScreen';
 import Notifications from './screens/UserAccountsScreen/Notifications';
 import Preferences from './screens/UserAccountsScreen/Preferences';
@@ -44,49 +36,6 @@ import PensionManagement from './screens/RetirementScreens/PensionManagement';
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
 const AuthStack = createStackNavigator();
-
-// Themes
-const CombinedDefaultTheme = {
-  dark: false,
-  colors: {
-    primary: '#004D40',
-    background: '#F5F5F5',
-    card: '#FFFFFF',
-    text: '#333333',
-    border: '#e0e0e0',
-    notification: '#00796B',
-    accent: '#00796B',
-    surface: '#FFFFFF',
-    onSurface: '#333333',
-    placeholder: '#666666',
-    headerText: '#FFFFFF',
-    placeholderValue: '#00796B',
-    tabBarBackground: '#f7f9fc',
-    tabBarText: 'gray',
-    tabBarActiveText: '#4CAF50',
-  },
-};
-
-export const CombinedDarkTheme = {
-  dark: true,
-  colors: {
-    primary: '#004D40',
-    background: '#121212',
-    card: '#1E1E1E',
-    text: '#FFFFFF',
-    border: '#333333',
-    notification: '#004D40',
-    accent: '#004D40',
-    surface: '#1E1E1E',
-    onSurface: '#FFFFFF',
-    placeholder: '#888888',
-    headerText: '#FFFFFF',
-    placeholderValue: '#4CAF50',
-    tabBarBackground: '#1E1E1E',
-    tabBarText: '#FFFFFF',
-    tabBarActiveText: '#4CAF50',
-  },
-};
 
 // Investment stack for investment-related screens
 function InvestmentStack() {
@@ -177,15 +126,13 @@ function AuthStackNavigator() {
 
 // Bottom Tabs for the main app
 function BottomTabs() {
-  const scheme = useColorScheme();
-  const theme = scheme === 'dark' ? CombinedDarkTheme : CombinedDefaultTheme;
+  const { theme } = useContext(ThemeContext); // Access theme from ThemeContext
 
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
         tabBarIcon: ({ color, size }) => {
           let iconName;
-
           switch (route.name) {
             case 'HomeTab':
               iconName = 'home-outline';
@@ -203,14 +150,10 @@ function BottomTabs() {
               iconName = 'account-settings-outline';
               break;
           }
-
           return <IconButton icon={iconName} color={color} size={size + 8} />;
         },
         tabBarActiveTintColor: theme.colors.tabBarActiveText,
-        tabBarInactiveTintColor: theme.colors.tabBarText,  // Ensure proper dark/light mode handling
-        tabBarLabelStyle: {
-          fontSize: 14,
-        },
+        tabBarInactiveTintColor: theme.colors.tabBarText,
         tabBarStyle: {
           paddingBottom: Platform.OS === 'ios' ? 40 : 10,
           paddingTop: 10,
@@ -233,25 +176,29 @@ function BottomTabs() {
 
 // Main app function
 export default function App() {
-  const scheme = useColorScheme();
-  const theme = scheme === 'dark' ? CombinedDarkTheme : CombinedDefaultTheme;
   const [user, loading] = useAuthState(auth);
 
   if (loading) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <ActivityIndicator size="large" color={theme.colors.primary} />
+        <ActivityIndicator size="large" />
       </View>
     );
   }
 
   return (
-    <PaperProvider theme={theme}>
-      <UserProvider>
-        <NavigationContainer theme={theme}>
-          {user ? <BottomTabs /> : <AuthStackNavigator />}
-        </NavigationContainer>
-      </UserProvider>
-    </PaperProvider>
+    <ThemeProvider> {/* Ensure ThemeProvider wraps the entire app */}
+      <ThemeContext.Consumer>
+        {({ theme }) => (
+          <PaperProvider theme={theme}> {/* Now PaperProvider has access to theme */}
+            <UserProvider>
+              <NavigationContainer theme={theme}> {/* Theme passed to NavigationContainer */}
+                {user ? <BottomTabs /> : <AuthStackNavigator />}
+              </NavigationContainer>
+            </UserProvider>
+          </PaperProvider>
+        )}
+      </ThemeContext.Consumer>
+    </ThemeProvider>
   );
 }
