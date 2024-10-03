@@ -104,7 +104,7 @@ export default function ProfileScreen() {
         console.log('Image selection was cancelled or no URI provided.');
       }
     } catch (error) {
-      console.error('Error picking image:', error);
+      // console.error('Error picking image:', error);
     }
   };
 
@@ -122,7 +122,7 @@ export default function ProfileScreen() {
           console.log(`Upload progress: ${snapshot.bytesTransferred}/${snapshot.totalBytes}`);
         },
         (error) => {
-          console.error('Upload failed:', error);
+          // console.error('Upload failed:', error);
         },
         async () => {
           const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
@@ -131,7 +131,7 @@ export default function ProfileScreen() {
         }
       );
     } catch (error) {
-      console.error('Failed to upload image:', error);
+      // console.error('Failed to upload image:', error);
       alert('Failed to upload image. Please try again.');
     }
   };
@@ -331,10 +331,34 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#FFFFFF',
   },
+  darkTextInput: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+    backgroundColor: '#1E1E1E',
+    padding: 5,
+    borderRadius: 5,
+    borderColor: '#4CAF50',
+    borderWidth: 1,
+    marginBottom: 5,
+  },
   darkText: {
     fontSize: 16,
     color: '#AAAAAA',
     marginBottom: 10,
+  },
+  darkEdit: {
+    color: '#4CAF50',
+    fontSize: 16,
+  },
+  darkSave: {
+    color: '#FF5722',
+    fontSize: 16,
+  },
+  darkCancel: {
+    color: '#4CAF50',
+    fontSize: 16,
+    marginLeft: 10,
   },
   contactRow: {
     flexDirection: 'row',

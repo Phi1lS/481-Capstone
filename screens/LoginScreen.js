@@ -20,7 +20,7 @@ export default function LoginScreen({ navigation }) {
         const url = await getDownloadURL(logoRef); // Fetch the download URL
         setLogoUrl(url); // Set the URL to state
       } catch (error) {
-        console.error('Error fetching logo: ', error);
+        // console.error('Error fetching logo: ', error);
       }
     };
 

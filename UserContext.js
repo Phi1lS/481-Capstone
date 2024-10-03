@@ -39,7 +39,7 @@ export const UserProvider = ({ children }) => {
             const url = await getDownloadURL(avatarRef);
             setAvatarUri(url); // Set the avatar URL
           } catch (error) {
-            console.error('Error fetching avatar:', error);
+            // console.error('Error fetching avatar:', error);
             const fallbackUrl = await getDownloadURL(ref(storage, 'default/avatar.png'));
             setAvatarUri(fallbackUrl); // Fallback to default avatar
           }
