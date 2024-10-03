@@ -1,22 +1,36 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Alert, StyleSheet, Image, useColorScheme } from 'react-native';
 import { signInWithEmailAndPassword } from 'firebase/auth';
-import { auth } from '../firebaseConfig'; // Ensure correct path to firebaseConfig
+import { getDownloadURL, ref } from 'firebase/storage'; // Import Firebase storage
+import { auth, storage } from '../firebaseConfig'; // Ensure correct path to firebaseConfig
 
 export default function LoginScreen({ navigation }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [logoUrl, setLogoUrl] = useState(null); // State to store the logo URL
   
   const scheme = useColorScheme(); // Detect dark mode
   const isDarkMode = scheme === 'dark'; // Check if it's dark mode
+
+  useEffect(() => {
+    // Fetch the logo from Firebase Storage
+    const fetchLogo = async () => {
+      try {
+        const logoRef = ref(storage, 'logoText.png'); // Reference to the logo in Firebase Storage
+        const url = await getDownloadURL(logoRef); // Fetch the download URL
+        setLogoUrl(url); // Set the URL to state
+      } catch (error) {
+        console.error('Error fetching logo: ', error);
+      }
+    };
+
+    fetchLogo();
+  }, []);
 
   const handleLogin = () => {
     signInWithEmailAndPassword(auth, email, password)
       .then(() => {
         // Successfully logged in
-        //Alert.alert('Success', 'Logged in successfully');
-  
-        // Reset the navigation stack to the home screen
         navigation.reset({
           index: 0,
           routes: [{ name: 'HomeTab' }], // Use 'HomeTab' here to match the route name in BottomTabs
@@ -31,7 +45,9 @@ export default function LoginScreen({ navigation }) {
   return (
     <View style={isDarkMode ? styles.darkContainer : styles.container}>
       {/* Logo */}
-      <Image source={require('../assets/logoText.png')} style={styles.logo} />
+      {logoUrl && (
+        <Image source={{ uri: logoUrl }} style={styles.logo} /> // Dynamically load the logo from Firebase
+      )}
 
       <TextInput
         value={email}

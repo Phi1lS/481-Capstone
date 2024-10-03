@@ -1,6 +1,7 @@
 import React, { createContext, useState, useEffect } from 'react';
-import { auth, db } from './firebaseConfig'; // Ensure firebaseConfig is imported
+import { auth, db, storage } from './firebaseConfig'; // Ensure firebaseConfig is imported
 import { doc, getDoc } from 'firebase/firestore'; // Firestore functions
+import { ref, getDownloadURL } from 'firebase/storage'; // Firebase Storage functions
 
 export const UserContext = createContext();
 
@@ -9,7 +10,10 @@ export const UserProvider = ({ children }) => {
     firstName: '',
     lastName: '',
     email: '',
+    avatarPath: '',
   });
+
+  const [avatarUri, setAvatarUri] = useState(null); // New state for avatar URI
 
   // Fetch the user's profile from Firestore and update the state
   useEffect(() => {
@@ -24,7 +28,21 @@ export const UserProvider = ({ children }) => {
             firstName: userData.firstName || '',
             lastName: userData.lastName || '',
             email: userData.email || '',
+            avatarPath: userData.avatarPath || '',
           });
+
+          // Fetch avatar URL from Firebase Storage or use default
+          try {
+            const avatarRef = userData.avatarPath
+              ? ref(storage, userData.avatarPath)
+              : ref(storage, 'default/avatar.png');
+            const url = await getDownloadURL(avatarRef);
+            setAvatarUri(url); // Set the avatar URL
+          } catch (error) {
+            console.error('Error fetching avatar:', error);
+            const fallbackUrl = await getDownloadURL(ref(storage, 'default/avatar.png'));
+            setAvatarUri(fallbackUrl); // Fallback to default avatar
+          }
         }
       }
     };
@@ -33,7 +51,7 @@ export const UserProvider = ({ children }) => {
   }, []);
 
   return (
-    <UserContext.Provider value={{ userProfile, setUserProfile }}>
+    <UserContext.Provider value={{ userProfile, setUserProfile, avatarUri, setAvatarUri }}>
       {children}
     </UserContext.Provider>
   );
