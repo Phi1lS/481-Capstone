@@ -1,18 +1,41 @@
 import * as React from 'react';
+import { useState, useEffect, useContext } from 'react';
 import { View, StyleSheet, ScrollView, TouchableOpacity, Animated, StatusBar, Text, useColorScheme, Platform } from 'react-native';
 import { Title, Card, Avatar } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
+import { UserContext } from '../UserContext';
+import { getDownloadURL, ref } from 'firebase/storage';
+import { storage } from '../firebaseConfig';
 
 export default function InvestmentScreen() {
   const navigation = useNavigation();
   const scheme = useColorScheme();
   const isDarkMode = scheme === 'dark';
 
+  const { userProfile, avatarUri, setAvatarUri } = useContext(UserContext); // Accessing avatarUri from UserContext
+
   React.useLayoutEffect(() => {
     navigation.setOptions({
       headerShown: false,
     });
   }, [navigation]);
+
+  useEffect(() => {
+    const fetchAvatarUrl = async () => {
+      try {
+        const avatarRef = userProfile.avatarPath
+          ? ref(storage, userProfile.avatarPath)
+          : ref(storage, 'default/avatar.png');
+        const url = await getDownloadURL(avatarRef);
+        setAvatarUri(url);
+      } catch (error) {
+        const fallbackUrl = await getDownloadURL(ref(storage, 'default/avatar.png'));
+        setAvatarUri(fallbackUrl);
+      }
+    };
+
+    fetchAvatarUrl();
+  }, [userProfile.avatarPath, setAvatarUri]);
 
   const handlePressIn = (animatedValue) => {
     Animated.timing(animatedValue, {
@@ -62,7 +85,12 @@ export default function InvestmentScreen() {
       {/* Header Section */}
       <View style={isDarkMode ? styles.darkHeaderBackground : styles.headerBackground}>
         <View style={styles.header}>
-          <Avatar.Image size={50} source={require('../assets/avatar.png')} style={styles.avatar} />
+          {/* Display user avatar if available, else show a placeholder avatar */}
+          {avatarUri ? (
+            <Avatar.Image size={50} source={{ uri: avatarUri }} style={styles.avatar} />
+          ) : (
+            <Avatar.Icon size={50} icon="account" style={styles.avatar} />
+          )}
           <View style={styles.headerText}>
             <Text style={styles.greeting}>Investment Accounts</Text>
             <Text style={styles.subGreeting}>Manage and optimize your investments</Text>

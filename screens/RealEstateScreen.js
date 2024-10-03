@@ -1,13 +1,17 @@
 import * as React from 'react';
+import { useState, useEffect, useContext } from 'react';
 import { View, StyleSheet, ScrollView, TouchableOpacity, Animated, StatusBar, Text, useColorScheme, Platform } from 'react-native';
 import { Title, Card, Avatar } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
+import { UserContext } from '../UserContext';
 
 export default function RealEstateScreen() {
   const navigation = useNavigation();
   const scheme = useColorScheme();
   const isDarkMode = scheme === 'dark';
-
+  
+  const { userProfile, avatarUri } = useContext(UserContext); // Accessing avatarUri from UserContext
+  
   React.useLayoutEffect(() => {
     navigation.setOptions({
       headerShown: false,
@@ -62,7 +66,12 @@ export default function RealEstateScreen() {
       {/* Header Section */}
       <View style={isDarkMode ? styles.darkHeaderBackground : styles.headerBackground}>
         <View style={styles.header}>
-          <Avatar.Image size={50} source={require('../assets/avatar.png')} style={styles.avatar} />
+          {/* Display user avatar if available, else show a placeholder avatar */}
+          {avatarUri ? (
+            <Avatar.Image size={50} source={{ uri: avatarUri }} style={styles.avatar} />
+          ) : (
+            <Avatar.Icon size={50} icon="account" style={styles.avatar} />
+          )}
           <View style={styles.headerText}>
             <Text style={styles.greeting}>Real Estate Management</Text>
             <Text style={styles.subGreeting}>Manage your properties and finances</Text>

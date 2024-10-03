@@ -1,16 +1,19 @@
 import React, { useContext, useState, useEffect } from 'react';
-import { UserContext } from '../../UserContext'; // Import the context
+import { UserContext } from '../../UserContext'; 
 import { View, StyleSheet, ScrollView, Text, TextInput, TouchableOpacity, useColorScheme, Keyboard } from 'react-native';
 import { Card, Avatar } from 'react-native-paper';
-import { auth, db } from '../../firebaseConfig'; 
+import { auth, db, storage } from '../../firebaseConfig'; 
 import { doc, getDoc, updateDoc } from 'firebase/firestore'; 
+import { ref, getDownloadURL, uploadBytesResumable } from 'firebase/storage';
+import * as ImagePicker from 'expo-image-picker';
 
 export default function ProfileScreen() {
   const scheme = useColorScheme();
   const isDarkMode = scheme === 'dark';
-  const { userProfile, setUserProfile } = useContext(UserContext); // Accessing user profile and updater
+  const { userProfile, setUserProfile, avatarUri, setAvatarUri } = useContext(UserContext); 
   const [isEditing, setIsEditing] = useState(false);
   const [editedFullName, setEditedFullName] = useState(`${userProfile.firstName} ${userProfile.lastName}`);
+  const [newAvatarUri, setNewAvatarUri] = useState(null);
 
   const user = auth.currentUser;
 
@@ -25,13 +28,25 @@ export default function ProfileScreen() {
             firstName: userData.firstName || '',
             lastName: userData.lastName || '',
             email: userData.email || '',
+            avatarPath: userData.avatarPath || null,
           });
           setEditedFullName(`${userData.firstName} ${userData.lastName}`);
+
+          try {
+            const avatarRef = userData.avatarPath
+              ? ref(storage, userData.avatarPath)
+              : ref(storage, 'default/avatar.png');
+            const url = await getDownloadURL(avatarRef);
+            setAvatarUri(url);
+          } catch (error) {
+            const fallbackUrl = await getDownloadURL(ref(storage, 'default/avatar.png'));
+            setAvatarUri(fallbackUrl); // Fallback to default avatar
+          }
         }
       }
     };
     fetchUserProfile();
-  }, [user]);
+  }, [user, setUserProfile, setAvatarUri]);
 
   const toggleEdit = () => {
     setIsEditing(!isEditing);
@@ -47,7 +62,11 @@ export default function ProfileScreen() {
       lastName: lastNameJoined || '',
     });
 
-    // Update the global state
+    // If a new avatar was selected, save it and update Firestore
+    if (newAvatarUri) {
+      await uploadImage(newAvatarUri);
+    }
+
     setUserProfile({
       ...userProfile,
       firstName: firstName || '',
@@ -59,8 +78,62 @@ export default function ProfileScreen() {
 
   const handleCancel = () => {
     setEditedFullName(`${userProfile.firstName} ${userProfile.lastName}`);
+    setNewAvatarUri(null); // Reset new avatar state if canceled
     setIsEditing(false);
     Keyboard.dismiss();
+  };
+
+  const pickImage = async () => {
+    try {
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (status !== 'granted') {
+        alert('Sorry, we need camera roll permissions to make this work!');
+        return;
+      }
+
+      let result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 1,
+      });
+
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        setNewAvatarUri(result.assets[0].uri);
+      } else {
+        console.log('Image selection was cancelled or no URI provided.');
+      }
+    } catch (error) {
+      // console.error('Error picking image:', error);
+    }
+  };
+
+  const uploadImage = async (uri) => {
+    try {
+      const response = await fetch(uri);
+      const blob = await response.blob();
+
+      const avatarRef = ref(storage, `user_avatars/${user.uid}.jpg`); 
+      const uploadTask = uploadBytesResumable(avatarRef, blob);
+
+      uploadTask.on(
+        'state_changed',
+        (snapshot) => {
+          console.log(`Upload progress: ${snapshot.bytesTransferred}/${snapshot.totalBytes}`);
+        },
+        (error) => {
+          // console.error('Upload failed:', error);
+        },
+        async () => {
+          const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+          await updateDoc(doc(db, 'users', user.uid), { avatarPath: `user_avatars/${user.uid}.jpg` });
+          setAvatarUri(downloadURL);
+        }
+      );
+    } catch (error) {
+      // console.error('Failed to upload image:', error);
+      alert('Failed to upload image. Please try again.');
+    }
   };
 
   return (
@@ -68,7 +141,22 @@ export default function ProfileScreen() {
       <ScrollView contentContainerStyle={isDarkMode ? styles.darkContainer : styles.container}>
         <Card style={isDarkMode ? styles.darkCard : styles.card}>
           <View style={styles.profileHeader}>
-            <Avatar.Icon size={50} icon="account" style={styles.icon} />
+            <View style={styles.avatarContainer}>
+              {newAvatarUri ? (
+                <Avatar.Image size={50} source={{ uri: newAvatarUri }} style={styles.icon} />
+              ) : avatarUri ? (
+                <Avatar.Image size={50} source={{ uri: avatarUri }} style={styles.icon} />
+              ) : (
+                <Avatar.Icon size={50} icon="account" style={styles.icon} />
+              )}
+              
+              {isEditing && (
+                <TouchableOpacity onPress={pickImage} style={styles.cameraIconOverlay}>
+                  <Avatar.Icon size={50} icon="camera" style={styles.cameraIcon} />
+                </TouchableOpacity>
+              )}
+            </View>
+            
             <View style={styles.nameContainer}>
               {isEditing ? (
                 <TextInput
@@ -99,14 +187,13 @@ export default function ProfileScreen() {
                 </TouchableOpacity>
               </View>
             ) : (
-              <TouchableOpacity onPress={toggleEdit}>
+              <TouchableOpacity onPress={() => setIsEditing(true)}>
                 <Text style={isDarkMode ? styles.darkEdit : styles.edit}>Edit</Text>
               </TouchableOpacity>
             )}
           </View>
         </Card>
 
-        {/* Contact Details Section */}
         <Card style={isDarkMode ? styles.darkCard : styles.card}>
           <Card.Title title="Contact Details" titleStyle={isDarkMode ? styles.darkCardTitle : styles.cardTitle} />
           <View style={styles.divider} />
@@ -124,7 +211,6 @@ export default function ProfileScreen() {
           </View>
         </Card>
 
-        {/* External Accounts Section */}
         <Card style={isDarkMode ? styles.darkCard : styles.card}>
           <Card.Title title="External Accounts" titleStyle={isDarkMode ? styles.darkCardTitle : styles.cardTitle} />
           <View style={styles.detailsContainer}>
@@ -134,7 +220,6 @@ export default function ProfileScreen() {
           </View>
         </Card>
 
-        {/* Account Type Section */}
         <Card style={isDarkMode ? styles.darkCard : styles.card}>
           <Card.Title title="Account Type" titleStyle={isDarkMode ? styles.darkCardTitle : styles.cardTitle} />
           <View style={styles.divider} />
@@ -143,7 +228,6 @@ export default function ProfileScreen() {
           </View>
         </Card>
 
-        {/* Employment & Income Section */}
         <Card style={isDarkMode ? styles.darkCard : styles.card}>
           <Card.Title title="Employment & Income" titleStyle={isDarkMode ? styles.darkCardTitle : styles.cardTitle} />
         </Card>
@@ -153,7 +237,6 @@ export default function ProfileScreen() {
 }
 
 const styles = StyleSheet.create({
-  // Light mode styles
   container: {
     flexGrow: 1,
     padding: 20,
@@ -165,6 +248,20 @@ const styles = StyleSheet.create({
   },
   icon: {
     backgroundColor: '#E8F5E9',
+  },
+  cameraIconOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.3)',
+    borderRadius: 25,
+  },
+  cameraIcon: {
+    backgroundColor: 'transparent',
   },
   nameContainer: {
     flex: 1,
@@ -186,17 +283,6 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     color: '#333',
-  },
-  textInput: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#333',
-    backgroundColor: '#FFFFFF',
-    padding: 5,
-    borderRadius: 5,
-    borderColor: '#00796B',
-    borderWidth: 1,
-    marginBottom: 5,
   },
   text: {
     fontSize: 16,
@@ -224,7 +310,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginLeft: 10,
   },
-  // Dark mode styles
   darkContainer: {
     flexGrow: 1,
     padding: 20,
@@ -290,5 +375,8 @@ const styles = StyleSheet.create({
     margin: 10,
     marginTop: 6,
   },
+  // New styles added for the camera icon overlay on the avatar image
+  avatarContainer: {
+    position: 'relative',
+  },
 });
-

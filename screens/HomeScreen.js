@@ -1,30 +1,72 @@
-import React, { useContext } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import { View, StyleSheet, ScrollView, StatusBar, Image, Text, useColorScheme, Platform } from 'react-native';
 import { Avatar } from 'react-native-paper';
 import { UserContext } from '../UserContext';
+import { getDownloadURL, ref } from 'firebase/storage';
+import { storage } from '../firebaseConfig';
 
 export default function HomeScreen() {
-  const { userProfile } = useContext(UserContext); 
-  const scheme = useColorScheme();
-  const isDarkMode = scheme === 'dark';
+  const { userProfile, avatarUri, setAvatarUri } = useContext(UserContext); 
+  const [logoUrl, setLogoUrl] = useState('');  
+  const scheme = useColorScheme();  
+  const isDarkMode = scheme === 'dark';  
+
+  useEffect(() => {
+    const fetchLogoUrl = async () => {
+      try {
+        const logoRef = ref(storage, 'logo.png');  
+        const url = await getDownloadURL(logoRef);
+        setLogoUrl(url);
+        console.log('Logo URL fetched:', url);
+      } catch (error) {
+        console.log('Error fetching logo:', error);
+      }
+    };
+
+    fetchLogoUrl();
+  }, []);
+
+  useEffect(() => {
+    const fetchAvatarUrl = async () => {
+      try {
+        const avatarRef = userProfile.avatarPath
+          ? ref(storage, userProfile.avatarPath)
+          : ref(storage, 'default/avatar.png');
+        const url = await getDownloadURL(avatarRef);
+        setAvatarUri(url);
+      } catch (error) {
+        const fallbackUrl = await getDownloadURL(ref(storage, 'default/avatar.png'));
+        setAvatarUri(fallbackUrl);
+      }
+    };
+
+    fetchAvatarUrl();
+  }, [userProfile.avatarPath, setAvatarUri]);
 
   return (
     <View style={isDarkMode ? styles.darkContainer : styles.container}>
-      {/* StatusBar with correct color */}
       <StatusBar 
         barStyle={isDarkMode ? "light-content" : "dark-content"} 
-        backgroundColor={isDarkMode ? "#121212" : "#F5F5F5"} // Gray background for light mode
+        backgroundColor={isDarkMode ? "#121212" : "#F5F5F5"} 
       />
 
-      {/* Header Section */}
       <View style={isDarkMode ? styles.darkHeaderBackground : styles.headerBackground}>
-        <Image
-          source={require('../assets/logo.png')}
-          style={styles.logo}
-          resizeMode="contain"
-        />
+        {logoUrl ? (
+          <Image
+            source={{ uri: logoUrl }}  
+            style={styles.logo}
+            resizeMode="contain"
+          />
+        ) : (
+          <Text>Logo not available</Text>  
+        )}
+        
         <View style={styles.header}>
-          <Avatar.Image size={50} source={require('../assets/avatar.png')} style={styles.avatar} />
+          {avatarUri ? (
+            <Avatar.Image size={50} source={{ uri: avatarUri }} style={styles.avatar} /> 
+          ) : (
+            <Text>Avatar not available</Text>  
+          )}
           <View style={styles.headerText}>
             <Text style={styles.greeting}>Hello, {userProfile.firstName} {userProfile.lastName}</Text>
             <Text style={styles.subGreeting}>Welcome back to InvestAlign</Text>
@@ -32,7 +74,6 @@ export default function HomeScreen() {
         </View>
       </View>
 
-      {/* Dashboard Section */}
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         <Text style={isDarkMode ? styles.darkSectionTitle : styles.sectionTitle}>Your Dashboard</Text>
 
