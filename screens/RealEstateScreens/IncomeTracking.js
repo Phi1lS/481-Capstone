@@ -2,11 +2,14 @@ import React from 'react';
 import { View, StyleSheet, ScrollView, Text, useColorScheme } from 'react-native';
 import { Title, Card, Avatar } from 'react-native-paper';
 import { FAB } from 'react-native-paper';
+import { useNavigation } from '@react-navigation/native';
+
 
 
 export default function IncomeTrackingScreen() {
   const scheme = useColorScheme();
   const isDarkMode = scheme === 'dark';
+  const navigation = useNavigation();
 
   const data = [
     { name: 'Stocks', population: 60, color: '#00796B', legendFontColor: '#00796B', legendFontSize: 15 },
@@ -56,7 +59,7 @@ export default function IncomeTrackingScreen() {
       <FAB
         icon="plus"
         style={styles.fab}
-        onPress={() => console.log('Pressed')}
+        onPress={() => navigation.navigate("AddIncome")}
       />
     </View>
   );
