@@ -37,11 +37,11 @@ export const UserProvider = ({ children }) => {
               ? ref(storage, userData.avatarPath)
               : ref(storage, 'default/avatar.png');
             const url = await getDownloadURL(avatarRef);
-            setAvatarUri(url); // Set the avatar URL
+            setAvatarUri(`${url}?t=${new Date().getTime()}`); // Add timestamp to bust cache
           } catch (error) {
             // console.error('Error fetching avatar:', error);
             const fallbackUrl = await getDownloadURL(ref(storage, 'default/avatar.png'));
-            setAvatarUri(fallbackUrl); // Fallback to default avatar
+            setAvatarUri(`${fallbackUrl}?t=${new Date().getTime()}`); // Ensure fallback busts cache too
           }
         }
       }
