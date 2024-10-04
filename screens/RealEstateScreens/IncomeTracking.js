@@ -1,6 +1,8 @@
 import React from 'react';
 import { View, StyleSheet, ScrollView, Text, useColorScheme } from 'react-native';
 import { Title, Card, Avatar } from 'react-native-paper';
+import { FAB } from 'react-native-paper';
+
 
 export default function IncomeTrackingScreen() {
   const scheme = useColorScheme();
@@ -51,6 +53,11 @@ export default function IncomeTrackingScreen() {
           </View>
         </Card>
       </ScrollView>
+      <FAB
+        icon="plus"
+        style={styles.fab}
+        onPress={() => console.log('Pressed')}
+      />
     </View>
   );
 }
@@ -135,5 +142,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#AAAAAA',
     marginBottom: 10,
+  },
+  fab: {
+    position: 'absolute',
+    margin: 16,
+    right: 16,
+    bottom: 16,
   },
 });
