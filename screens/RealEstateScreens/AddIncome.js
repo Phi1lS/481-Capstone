@@ -2,17 +2,36 @@ import React from 'react';
 import { View, StyleSheet, ScrollView, Text, useColorScheme } from 'react-native';
 import { Title, Card, Avatar } from 'react-native-paper';
 import { FAB } from 'react-native-paper';
+import { TextInput } from 'react-native-paper';
 
 
 export default function AddIncomeScreen() {
   const scheme = useColorScheme();
   const isDarkMode = scheme === 'dark';
 
-  
+
 
   return (
     <View style={isDarkMode ? styles.darkSafeArea : styles.safeArea}>
-      <Text>This is the add income page</Text>
+      <View style={isDarkMode ? styles.darkContainer : styles.container}>
+        <TextInput
+          placeholder="Name"
+          style={isDarkMode ? styles.darkInput : styles.input}
+          placeholderTextColor={isDarkMode ? '#AAAAAA' : '#888'}
+          
+        />
+        <TextInput
+          placeholder="Category"
+          style={isDarkMode ? styles.darkInput : styles.input}
+          placeholderTextColor={isDarkMode ? '#AAAAAA' : '#888'}
+        />
+        <TextInput
+          placeholder="Income Per Month"
+          style={isDarkMode ? styles.darkInput : styles.input}
+          placeholderTextColor={isDarkMode ? '#AAAAAA' : '#888'}
+
+        />
+      </View>
     </View>
   );
 }
@@ -61,6 +80,22 @@ const styles = StyleSheet.create({
     color: '#555',
     marginBottom: 10,
   },
+  fab: {
+    position: 'absolute',
+    margin: 16,
+    right: 16,
+    bottom: 16,
+  },
+  input: {
+    height: 50,
+    backgroundColor: '#FFF',
+    borderRadius: 8,
+    paddingHorizontal: 15,
+    fontSize: 16,
+    marginBottom: 20,
+    borderColor: '#00796B',
+    borderWidth: 1,
+  },
   // Dark mode styles
   darkSafeArea: {
     flex: 1,
@@ -98,10 +133,16 @@ const styles = StyleSheet.create({
     color: '#AAAAAA',
     marginBottom: 10,
   },
-  fab: {
-    position: 'absolute',
-    margin: 16,
-    right: 16,
-    bottom: 16,
+
+  darkInput: {
+    height: 50,
+    backgroundColor: '#1E1E1E',
+    borderRadius: 8,
+    paddingHorizontal: 15,
+    fontSize: 16,
+    marginBottom: 20,
+    borderColor: '#4CAF50',
+    borderWidth: 1,
+    color: '#FFFFFF',
   },
 });
