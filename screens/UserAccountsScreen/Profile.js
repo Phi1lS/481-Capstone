@@ -14,6 +14,11 @@ export default function ProfileScreen() {
   const [isEditing, setIsEditing] = useState(false);
   const [editedFullName, setEditedFullName] = useState(`${userProfile.firstName} ${userProfile.lastName}`);
   const [newAvatarUri, setNewAvatarUri] = useState(null);
+  const [isContactEditing, setIsContactEditing] = useState(false);
+  const [editedPhone, setEditedPhone] = useState(userProfile.phone || '');
+  const [editedAddress, setEditedAddress] = useState(userProfile.address || '');
+  const [accountType, setAccountType] = useState(userProfile.accountType || 'Checking');
+  const [isAccountEditing, setIsAccountEditing] = useState(false);
 
   const user = auth.currentUser;
 
@@ -28,23 +33,27 @@ export default function ProfileScreen() {
             firstName: userData.firstName || '',
             lastName: userData.lastName || '',
             email: userData.email || '',
+            phone: userData.phone || '',
+            address: userData.address || '',
+            accountType: userData.accountType || 'Checking', 
             avatarPath: userData.avatarPath || null,
-          });
+          });          
           setEditedFullName(`${userData.firstName} ${userData.lastName}`);
-
+          setEditedPhone(userData.phone || '');
+          setEditedAddress(userData.address || '');
+    
+          // Load avatar
           try {
-            const avatarRef = userData.avatarPath
-              ? ref(storage, userData.avatarPath)
-              : ref(storage, 'default/avatar.png');
+            const avatarRef = userData.avatarPath ? ref(storage, userData.avatarPath) : ref(storage, 'default/avatar.png');
             const url = await getDownloadURL(avatarRef);
             setAvatarUri(url);
           } catch (error) {
             const fallbackUrl = await getDownloadURL(ref(storage, 'default/avatar.png'));
-            setAvatarUri(fallbackUrl); // Fallback to default avatar
+            setAvatarUri(fallbackUrl);
           }
         }
       }
-    };
+    };    
     fetchUserProfile();
   }, [user, setUserProfile, setAvatarUri]);
 
@@ -60,21 +69,47 @@ export default function ProfileScreen() {
     await updateDoc(userRef, {
       firstName: firstName || '',
       lastName: lastNameJoined || '',
+      accountType: accountType,
     });
 
     // If a new avatar was selected, save it and update Firestore
-    if (newAvatarUri) {
+    if (newAvatarUri && newAvatarUri !== avatarUri) {
       await uploadImage(newAvatarUri);
+      setNewAvatarUri(null); // Reset avatar URI after upload
     }
 
     setUserProfile({
       ...userProfile,
       firstName: firstName || '',
       lastName: lastNameJoined || '',
+      accountType: accountType,
     });
 
+    setIsAccountEditing(false);
     setIsEditing(false);
   };
+
+  const handleContactSave = async () => {
+    if (editedPhone && editedPhone.length !== 14) {
+      alert('Phone number must be 10 digits long.');
+      return;
+    }
+  
+    const userRef = doc(db, 'users', user.uid);
+    await updateDoc(userRef, {
+      phone: editedPhone || '',  // Ensure phone is either fully formatted or empty
+      address: editedAddress || '',
+    });
+  
+    setUserProfile({
+      ...userProfile,
+      phone: editedPhone || '',
+      address: editedAddress || '',
+    });
+  
+    setIsContactEditing(false);
+  };
+  
 
   const handleCancel = () => {
     setEditedFullName(`${userProfile.firstName} ${userProfile.lastName}`);
@@ -82,6 +117,35 @@ export default function ProfileScreen() {
     setIsEditing(false);
     Keyboard.dismiss();
   };
+
+  const handleContactCancel = () => {
+    setEditedPhone(userProfile.phone || '');
+    setEditedAddress(userProfile.address || '');
+    setIsContactEditing(false);
+  };
+  
+  const handlePhoneChange = (text) => {
+    // Remove all non-digit characters
+    const cleaned = text.replace(/\D+/g, '');
+  
+    if (cleaned.length === 0) {
+      setEditedPhone('');  // Allow clearing the phone number
+      return;
+    }
+  
+    // Format the number as (XXX) XXX-XXXX
+    let formattedPhone = '';
+    if (cleaned.length <= 3) {
+      formattedPhone = `(${cleaned}`;
+    } else if (cleaned.length <= 6) {
+      formattedPhone = `(${cleaned.slice(0, 3)}) ${cleaned.slice(3)}`;
+    } else {
+      formattedPhone = `(${cleaned.slice(0, 3)}) ${cleaned.slice(3, 6)}-${cleaned.slice(6, 10)}`;
+    }
+  
+    setEditedPhone(formattedPhone);
+  };
+  
 
   const pickImage = async () => {
     try {
@@ -112,29 +176,34 @@ export default function ProfileScreen() {
     try {
       const response = await fetch(uri);
       const blob = await response.blob();
-
-      const avatarRef = ref(storage, `user_avatars/${user.uid}.jpg`); 
+      const avatarRef = ref(storage, `user_avatars/${user.uid}.jpg`);
       const uploadTask = uploadBytesResumable(avatarRef, blob);
-
+  
       uploadTask.on(
         'state_changed',
         (snapshot) => {
           console.log(`Upload progress: ${snapshot.bytesTransferred}/${snapshot.totalBytes}`);
         },
         (error) => {
-          // console.error('Upload failed:', error);
+          alert('Failed to upload image. Please try again.');
         },
         async () => {
           const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+          const avatarURLWithTimestamp = `${downloadURL}?t=${new Date().getTime()}`;
           await updateDoc(doc(db, 'users', user.uid), { avatarPath: `user_avatars/${user.uid}.jpg` });
-          setAvatarUri(downloadURL);
+  
+          // Update the avatar in the UserContext for consistency
+          setUserProfile((prevProfile) => ({
+            ...prevProfile,
+            avatarPath: avatarURLWithTimestamp,
+          }));
+          setAvatarUri(avatarURLWithTimestamp); // Update the local state too
         }
       );
     } catch (error) {
-      // console.error('Failed to upload image:', error);
       alert('Failed to upload image. Please try again.');
     }
-  };
+  };  
 
   return (
     <View>
@@ -194,42 +263,157 @@ export default function ProfileScreen() {
           </View>
         </Card>
 
+        {/* Contact Details Card */}
         <Card style={isDarkMode ? styles.darkCard : styles.card}>
           <Card.Title title="Contact Details" titleStyle={isDarkMode ? styles.darkCardTitle : styles.cardTitle} />
           <View style={styles.divider} />
           <View style={styles.contactRow}>
             <Text style={isDarkMode ? styles.darkCardTitle : styles.cardTitle}>Phone</Text>
-            <Text style={isDarkMode ? styles.darkText : styles.text}>+1 212-123-4567</Text>
+            <View style={styles.inputContainer}>
+              {isContactEditing ? (
+                <TextInput
+                  style={isDarkMode ? styles.darkTextInput : styles.text}
+                  value={editedPhone}
+                  onChangeText={handlePhoneChange}
+                  placeholder="Phone Number"
+                  keyboardType="numeric"
+                  maxLength={14}
+                  placeholderTextColor={isDarkMode ? '#AAAAAA' : '#888'}
+                  selectionColor="#4CAF50"
+                />
+              ) : (
+                <Text style={isDarkMode ? styles.darkText : styles.text}>
+                  {userProfile.phone || 'Add a Phone Number'}
+                </Text>
+              )}
           </View>
+        </View>
+
           <View style={styles.contactRow}>
             <Text style={isDarkMode ? styles.darkCardTitle : styles.cardTitle}>Email</Text>
             <Text style={isDarkMode ? styles.darkText : styles.text}>{userProfile.email}</Text>
           </View>
           <View style={styles.contactRow}>
             <Text style={isDarkMode ? styles.darkCardTitle : styles.cardTitle}>Address</Text>
-            <Text style={isDarkMode ? styles.darkText : styles.text}>18 Wall Street, NY</Text>
+            <View style={styles.inputContainer}>
+              {isContactEditing ? (
+                <TextInput
+                  style={isDarkMode ? styles.darkTextInput : styles.text}
+                  value={editedAddress}
+                  onChangeText={setEditedAddress}
+                  placeholder="Address"
+                  placeholderTextColor={isDarkMode ? '#AAAAAA' : '#888'}
+                  selectionColor="#4CAF50"
+                  maxLength={30}
+                />
+              ) : (
+                <Text style={isDarkMode ? styles.darkText : styles.text}>
+                  {userProfile.address || 'Add an Address'}
+                </Text>
+              )}
+          </View>
+        </View>
+          <View style={styles.editContainer}>
+            {isContactEditing ? (
+              <View style={styles.editButtons}>
+                <TouchableOpacity onPress={handleContactSave}>
+                  <Text style={isDarkMode ? styles.darkSave : styles.save}>Save</Text>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={handleContactCancel}>
+                  <Text style={isDarkMode ? styles.darkCancel : styles.cancel}>Cancel</Text>
+                </TouchableOpacity>
+              </View>
+            ) : (
+              <TouchableOpacity onPress={() => setIsContactEditing(true)}>
+                <Text style={isDarkMode ? styles.darkEdit : styles.edit}>Edit</Text>
+              </TouchableOpacity>
+            )}
           </View>
         </Card>
 
         <Card style={isDarkMode ? styles.darkCard : styles.card}>
+        <View style={styles.cardHeader}>
           <Card.Title title="External Accounts" titleStyle={isDarkMode ? styles.darkCardTitle : styles.cardTitle} />
-          <View style={styles.detailsContainer}>
-            <Text style={isDarkMode ? styles.darkText : styles.text}>
-              As an InvestAlign user, you can transfer funds between accounts.
-            </Text>
+          <View style={styles.editContainer}>
+            <TouchableOpacity onPress={() => navigation.navigate('AddExternalAccountsScreen')}>
+              <Text style={isDarkMode ? styles.darkEdit : styles.edit}>Add</Text>
+            </TouchableOpacity>
           </View>
-        </Card>
+        </View>
+
+        <View style={styles.divider} />
+
+        <View style={styles.detailsContainer}>
+          <Text style={isDarkMode ? styles.darkText : styles.text}>
+            As an InvestAlign user, you can transfer funds between accounts.
+          </Text>
+        </View>
+      </Card>
+
 
         <Card style={isDarkMode ? styles.darkCard : styles.card}>
-          <Card.Title title="Account Type" titleStyle={isDarkMode ? styles.darkCardTitle : styles.cardTitle} />
+          <View style={styles.cardHeader}>
+            <Card.Title title="Account Type" titleStyle={isDarkMode ? styles.darkCardTitle : styles.cardTitle} />
+            <View style={styles.editContainer}>
+              {isAccountEditing ? (
+                <View style={styles.editButtons}>
+                  <TouchableOpacity onPress={handleSave}>
+                    <Text style={isDarkMode ? styles.darkSave : styles.save}>Save</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity onPress={() => setIsAccountEditing(false)}>
+                    <Text style={isDarkMode ? styles.darkCancel : styles.cancel}>Cancel</Text>
+                  </TouchableOpacity>
+                </View>
+              ) : (
+                <TouchableOpacity onPress={() => setIsAccountEditing(true)}>
+                  <Text style={isDarkMode ? styles.darkEdit : styles.edit}>Edit</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          </View>
+
           <View style={styles.divider} />
           <View style={styles.detailsContainer}>
-            <Text style={isDarkMode ? styles.darkText : styles.text}>Business Checking</Text>
-          </View>
+          {isAccountEditing ? (
+            <View>
+              <TouchableOpacity onPress={() => setAccountType('Business')}>
+                <Text style={accountType === 'Business' 
+                  ? (isDarkMode ? styles.darkSelected : styles.selected) 
+                  : (isDarkMode ? styles.darkText : styles.text)}
+                >
+                  Business
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => setAccountType('Checking')}>
+                <Text style={accountType === 'Checking' 
+                  ? (isDarkMode ? styles.darkSelected : styles.selected) 
+                  : (isDarkMode ? styles.darkText : styles.text)}
+                >
+                  Checking
+                </Text>
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <Text style={isDarkMode ? styles.darkText : styles.text}>
+              {accountType || 'Select Account Type'}
+            </Text>
+          )}
+        </View>
         </Card>
 
         <Card style={isDarkMode ? styles.darkCard : styles.card}>
+        <View style={styles.cardHeader}>
           <Card.Title title="Employment & Income" titleStyle={isDarkMode ? styles.darkCardTitle : styles.cardTitle} />
+          <View style={styles.editContainer}>
+            <TouchableOpacity onPress={() => navigation.navigate('AddEmploymentScreen')}>
+              <Text style={isDarkMode ? styles.darkEdit : styles.edit}>Add</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+        <View style={styles.divider} />
+          <Text style={isDarkMode ? styles.darkText : styles.text}>
+            {/* Placeholder for current employment details or "No details added yet" */}
+          </Text>
         </Card>
       </ScrollView>
     </View>
@@ -332,15 +516,9 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
   },
   darkTextInput: {
-    fontSize: 18,
-    fontWeight: 'bold',
+    fontSize: 16,
     color: '#FFFFFF',
-    backgroundColor: '#1E1E1E',
-    padding: 5,
-    borderRadius: 5,
-    borderColor: '#4CAF50',
-    borderWidth: 1,
-    marginBottom: 5,
+    marginBottom: 10,
   },
   darkText: {
     fontSize: 16,
@@ -379,4 +557,22 @@ const styles = StyleSheet.create({
   avatarContainer: {
     position: 'relative',
   },
+  selected: {
+    color: '#00796B', // Green color for selected item
+    fontWeight: 'bold', // Optional, to make the selection stand out
+    fontSize: 16,
+    marginBottom: 10,
+  },
+  darkSelected: {
+    color: '#4CAF50', // Green color for selected item
+    fontWeight: 'bold', // Optional, to make the selection stand out
+    fontSize: 16,
+    marginBottom: 10,
+  },
+  inputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  }
+  
 });
