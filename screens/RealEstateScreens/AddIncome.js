@@ -1,15 +1,12 @@
 import React from 'react';
-import { View, StyleSheet, ScrollView, Text, useColorScheme } from 'react-native';
-import { Title, Card, Avatar } from 'react-native-paper';
-import { FAB } from 'react-native-paper';
+import { View, StyleSheet, useColorScheme } from 'react-native';
 import { TextInput } from 'react-native-paper';
+import Picker from 'react-native-picker-select';
 
 
 export default function AddIncomeScreen() {
   const scheme = useColorScheme();
   const isDarkMode = scheme === 'dark';
-
-
 
   return (
     <View style={isDarkMode ? styles.darkSafeArea : styles.safeArea}>
@@ -20,6 +17,15 @@ export default function AddIncomeScreen() {
           placeholderTextColor={isDarkMode ? '#AAAAAA' : '#888'}
           
         />
+        <RNPickerSelect
+          onValueChange={(value) => console.log(value)}
+          items={[
+            { label: "Employment", name: "employment" },
+            { label: "Real Estate", "name": "realEstate" }
+          ]}
+        />
+
+          
         <TextInput
           placeholder="Category"
           style={isDarkMode ? styles.darkInput : styles.input}
