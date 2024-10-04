@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, StyleSheet, useColorScheme } from 'react-native';
 import { TextInput } from 'react-native-paper';
-import Picker from 'react-native-picker-select';
+import RNPickerSelect from 'react-native-picker-select';
 
 
 export default function AddIncomeScreen() {
