@@ -75,6 +75,7 @@ export default function ProfileScreen() {
     // If a new avatar was selected, save it and update Firestore
     if (newAvatarUri && newAvatarUri !== avatarUri) {
       await uploadImage(newAvatarUri);
+      setNewAvatarUri(null); // Reset avatar URI after upload
     }
 
     setUserProfile({
