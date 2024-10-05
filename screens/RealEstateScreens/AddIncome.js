@@ -1,26 +1,43 @@
-import React from 'react';
-import { View, StyleSheet, useColorScheme } from 'react-native';
+import React, {useState} from 'react';
+import { View, StyleSheet, useColorScheme, TouchableOpacity, Text } from 'react-native';
 import { TextInput, Avatar, Icon } from 'react-native-paper';
 import RNPickerSelect from 'react-native-picker-select';
 
 
 export default function AddIncomeScreen() {
+  //state
+  const [name, setName] = useState("");
+  const [category, setCategory] = useState(null);
+  const [incomePerMonth, setIncomePerMonth] = useState(0);
+
   const scheme = useColorScheme();
   const isDarkMode = scheme === 'dark';
   const inputStyle = isDarkMode ? styles.darkInput : styles.input;
+
+
+  const handleAddIncome = () => {
+    console.log(`
+      Name: ${name}
+      Category: ${category}
+      Income Per Month: ${incomePerMonth}
+      `);
+  };
+
   return (
     <View style={isDarkMode ? styles.darkSafeArea : styles.safeArea}>
       <View style={isDarkMode ? styles.darkContainer : styles.container}>
         <TextInput
           placeholder="Name"
+          value={name}
           style={isDarkMode ? styles.darkInput : styles.input}
           placeholderTextColor={isDarkMode ? '#AAAAAA' : '#888'}
+          onValueChange={setName}
 
         />
         <RNPickerSelect
           useNativeAndroidPickerStyle={false}
           placeholder={{ label: "Category", value: null }}
-          onValueChange={(value) => console.log(value)}
+          onValueChange={category => setCategory(category)}
           Icon={() => <Icon source="menu-down" style={styles.icon} size={24} />}
           style={{
             inputAndroid: inputStyle,
@@ -39,10 +56,16 @@ export default function AddIncomeScreen() {
 
         <TextInput
           placeholder="Income Per Month"
+          onValueChange={incomePerMonth => setIncomePerMonth(incomePerMonth)}
           style={isDarkMode ? styles.darkInput : styles.input}
           placeholderTextColor={isDarkMode ? '#AAAAAA' : '#888'}
 
         />
+
+        <TouchableOpacity style={isDarkMode ? styles.darkButton : styles.button} onPress={handleAddIncome}>
+          <Text style={styles.buttonText}>Add income</Text>
+        </TouchableOpacity>
+
       </View>
     </View>
   );
@@ -58,6 +81,18 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     padding: 20,
     backgroundColor: '#f7f9fc',
+  },
+  button: {
+    backgroundColor: '#00796B',
+    paddingVertical: 15,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  buttonText: {
+    color: '#FFF',
+    fontSize: 18,
+    fontWeight: '600',
   },
   title: {
     fontSize: 22,
@@ -112,6 +147,13 @@ const styles = StyleSheet.create({
   darkSafeArea: {
     flex: 1,
     backgroundColor: '#121212',
+  },
+  darkButton: {
+    backgroundColor: '#4CAF50',
+    paddingVertical: 15,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginBottom: 20,
   },
   darkContainer: {
     flexGrow: 1,
