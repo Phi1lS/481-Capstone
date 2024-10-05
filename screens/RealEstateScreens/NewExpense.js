@@ -191,7 +191,7 @@ export default function ExpenseTracking({ navigation }) {
         {/* Card for expense type */}
         <Card style={isDarkMode ? styles.darkCard : styles.card}>
           <Card.Title
-            title="Expense Name"
+            title="Expense Type"
             left={(props) => (
               <Avatar.Icon {...props} icon="rename-box" style={styles.icon} />
             )}
