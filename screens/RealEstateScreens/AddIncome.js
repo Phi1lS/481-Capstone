@@ -1,26 +1,24 @@
-import React, {useState} from 'react';
+import React, { useState } from 'react';
 import { View, StyleSheet, useColorScheme, TouchableOpacity, Text } from 'react-native';
 import { TextInput, Avatar, Icon } from 'react-native-paper';
 import RNPickerSelect from 'react-native-picker-select';
-
 
 export default function AddIncomeScreen() {
   //state
   const [name, setName] = useState("");
   const [category, setCategory] = useState(null);
-  const [incomePerMonth, setIncomePerMonth] = useState(0);
+  const [incomePerMonth, setIncomePerMonth] = useState("");
 
   const scheme = useColorScheme();
   const isDarkMode = scheme === 'dark';
   const inputStyle = isDarkMode ? styles.darkInput : styles.input;
-
 
   const handleAddIncome = () => {
     console.log(`
       Name: ${name}
       Category: ${category}
       Income Per Month: ${incomePerMonth}
-      `);
+    `);
   };
 
   return (
@@ -29,15 +27,14 @@ export default function AddIncomeScreen() {
         <TextInput
           placeholder="Name"
           value={name}
-          style={isDarkMode ? styles.darkInput : styles.input}
+          style={inputStyle}
           placeholderTextColor={isDarkMode ? '#AAAAAA' : '#888'}
-          onValueChange={setName}
-
+          onChangeText={setName}
         />
         <RNPickerSelect
           useNativeAndroidPickerStyle={false}
           placeholder={{ label: "Category", value: null }}
-          onValueChange={category => setCategory(category)}
+          onValueChange={setCategory}
           Icon={() => <Icon source="menu-down" style={styles.icon} size={24} />}
           style={{
             inputAndroid: inputStyle,
@@ -47,7 +44,6 @@ export default function AddIncomeScreen() {
               padding: 8,
             }
           }}
-          and
           items={[
             { label: "Employment", value: "employment" },
             { label: "Real Estate", value: "realEstate" }
@@ -56,10 +52,11 @@ export default function AddIncomeScreen() {
 
         <TextInput
           placeholder="Income Per Month"
-          onValueChange={incomePerMonth => setIncomePerMonth(incomePerMonth)}
-          style={isDarkMode ? styles.darkInput : styles.input}
+          value={incomePerMonth}
+          onChangeText={setIncomePerMonth}
+          style={inputStyle}
           placeholderTextColor={isDarkMode ? '#AAAAAA' : '#888'}
-
+          keyboardType="numeric"
         />
 
         <TouchableOpacity style={isDarkMode ? styles.darkButton : styles.button} onPress={handleAddIncome}>
