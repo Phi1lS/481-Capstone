@@ -18,19 +18,16 @@ export default function AddIncomeScreen() {
           
         />
         <RNPickerSelect
+          useAndroidNativePickerStyle={false}
+          placeholder={{label: "Category", value: null}}
           onValueChange={(value) => console.log(value)}
+          and
           items={[
-            { label: "Employment", name: "employment" },
-            { label: "Real Estate", "name": "realEstate" }
+            { label: "Employment", value: "employment" },
+            { label: "Real Estate", value: "realEstate" }
           ]}
         />
 
-          
-        <TextInput
-          placeholder="Category"
-          style={isDarkMode ? styles.darkInput : styles.input}
-          placeholderTextColor={isDarkMode ? '#AAAAAA' : '#888'}
-        />
         <TextInput
           placeholder="Income Per Month"
           style={isDarkMode ? styles.darkInput : styles.input}

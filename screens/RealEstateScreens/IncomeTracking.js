@@ -3,6 +3,7 @@ import { View, StyleSheet, ScrollView, Text, useColorScheme } from 'react-native
 import { Title, Card, Avatar } from 'react-native-paper';
 import { FAB } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
+import { CombinedDarkTheme, CombinedDefaultTheme } from '../../themes';
 
 
 
@@ -58,8 +59,10 @@ export default function IncomeTrackingScreen() {
       </ScrollView>
       <FAB
         icon="plus"
+        color="rgba(255, 255, 255, 0.9)"
         style={styles.fab}
         onPress={() => navigation.navigate("AddIncome")}
+        theme={isDarkMode ? CombinedDefaultTheme : CombinedDarkTheme}
       />
     </View>
   );
@@ -151,5 +154,7 @@ const styles = StyleSheet.create({
     margin: 16,
     right: 16,
     bottom: 16,
+    backgroundColor: CombinedDefaultTheme.colors.primary,
+    color: "rgba(255, 255, 255, 0.9)"
   },
 });
