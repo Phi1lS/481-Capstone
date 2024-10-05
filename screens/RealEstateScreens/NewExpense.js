@@ -81,30 +81,22 @@ export default function ExpenseTracking({ navigation }) {
           isDarkMode ? styles.darkContainer : styles.container
         }
       >
-        <Title style={isDarkMode ? styles.darkTitle : styles.title}>
-          Add Expense
-        </Title>
 
         {/* Card for expense name */}
-        <Card style={isDarkMode ? styles.darkCard : styles.card}>
-          <Card.Title
-            title="Expense Name"
-            left={(props) => (
-              <Avatar.Icon {...props} icon="rename-box" style={styles.icon} />
-            )}
-            titleStyle={isDarkMode ? styles.darkCardTitle : styles.cardTitle}
-          />
-          <View style={styles.detailsContainer}>
+
+          <View>
             <TextInput
               style={[
-                isDarkMode ? styles.darkCard : styles.card,
+                isDarkMode ? styles.darkInputBox : styles.inputBox,
                 {
-                  width: 300,
+                  width: '90%',
                   height: 10,
                   color: isDarkMode ? "#4CAF50" : "#00796B",
                   alignSelf: "center",
                   textAlign: "center",
                   fontSize: 25,
+                  borderColor: '#00796B',
+                  marginTop: 40
                 },
               ]}
               keyboardType="default"
@@ -114,16 +106,9 @@ export default function ExpenseTracking({ navigation }) {
               placeholderTextColor={isDarkMode ? "#FFFFFF" : "#333"}
             />
           </View>
-        </Card>
+
         {/* Card for expense Amount */}
-        <Card style={isDarkMode ? styles.darkCard : styles.card}>
-          <Card.Title
-            title="Expense Amount"
-            left={(props) => (
-              <Avatar.Icon {...props} icon="cash" style={styles.icon} />
-            )}
-            titleStyle={isDarkMode ? styles.darkCardTitle : styles.cardTitle}
-          />
+        <Card style={isDarkMode ? styles.darkInputBox : styles.inputBox}>
           <View style={styles.detailsContainer}>
             {isEditing ? (
               <TextInput
@@ -189,34 +174,18 @@ export default function ExpenseTracking({ navigation }) {
         </Card>
 
         {/* Card for expense type */}
-        <Card style={isDarkMode ? styles.darkCard : styles.card}>
-          <Card.Title
-            title="Expense Type"
-            left={(props) => (
-              <Avatar.Icon {...props} icon="rename-box" style={styles.icon} />
-            )}
-            titleStyle={isDarkMode ? styles.darkCardTitle : styles.cardTitle}
-          />
-          <View style={styles.detailsContainer}>
+
+          <View style={ styles.detailsContainer}>
             <List.Accordion
               style={[
-                isDarkMode ? styles.darkCard : styles.card,
-                {
-                  height: 80,
-                  marginBottom: 0,
-                  color: isDarkMode ? "#4CAF50" : "#00796B",
-                  alignSelf: "center",
-                  textAlign: "center",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  fontSize: 25,
-                  backgroundColor: isDarkMode ? "#4CAF50" : "#00796B",
-                },
+                isDarkMode ? styles.darkInputBox : styles.inputBox
+                ,{marginBottom: 0}
               ]}
-              title={expenseType ? expenseType : "Choose an Option"}
+              title={expenseType ? expenseType : "Choose an Expense Type"}
               titleStyle={[
                 styles.buttonLabel,
                 {
+                  color: isDarkMode ? "#FFFFFF" : "#333",
                   paddingBottom: 10,
                   textAlign: "center",
                   fontSize: 20,
@@ -233,7 +202,8 @@ export default function ExpenseTracking({ navigation }) {
                   setExpenseType("Employment");
                   setListOpen(false);
                 }}
-                titleStyle={[{ textAlign: "center" }]}
+                titleStyle={[isDarkMode ? styles.darkInputBox : styles.inputBox,{ textAlign: "center", marginVertical: 0,
+                  paddingLeft: 0 }]}
               />
               <List.Item
                 title="Real Estate"
@@ -241,41 +211,25 @@ export default function ExpenseTracking({ navigation }) {
                   setExpenseType("Real Estate");
                   setListOpen(false);
                 }}
-                titleStyle={[{ textAlign: "center" }]}
+                titleStyle={[isDarkMode ? styles.darkInputBox : styles.inputBox,{ textAlign: "center", marginVertical: 0,
+                  paddingLeft: 0 }]}
               />
             </List.Accordion>
           </View>
-        </Card>
+
 
         {/* Card for expense Date */}
-        <Card style={isDarkMode ? styles.darkCard : styles.card}>
-          <Card.Title
-            title="Expense Date"
-            left={(props) => (
-              <Avatar.Icon {...props} icon="calendar" style={styles.icon} />
-            )}
-            titleStyle={isDarkMode ? styles.darkCardTitle : styles.cardTitle}
-          />
+
           <View style={styles.detailsContainer}>
             <List.Accordion
               style={[
-                isDarkMode ? styles.darkCard : styles.card,
-                {
-                  height: 80,
-                  marginBottom: 0,
-                  color: isDarkMode ? "#4CAF50" : "#00796B",
-                  alignSelf: "center",
-                  textAlign: "center",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  fontSize: 25,
-                  backgroundColor: isDarkMode ? "#4CAF50" : "#00796B",
-                },
+                isDarkMode ? styles.darkInputBox : styles.inputBox
               ]}
               title={expenseDate ? expenseDate : "Choose a Month"}
               titleStyle={[
                 styles.buttonLabel,
                 {
+                  color: isDarkMode ? "#FFFFFF" : "#333",
                   paddingBottom: 10,
                   textAlign: "center",
                   fontSize: 20,
@@ -305,13 +259,17 @@ export default function ExpenseTracking({ navigation }) {
                       setDateListOpen(false);
                     }}
                     titleStyle={[{ textAlign: "center" }]}
-                    style={[{ width: "30%" }]}
+                    style={[isDarkMode ? styles.darkInputBox : styles.inputBox,
+                      { width: "30%", 
+                        marginVertical: 5,
+                        paddingLeft: 0
+                    }]}
                   />
                 ))}
               </View>
             </List.Accordion>
           </View>
-        </Card>
+
 
         <Button
           mode="contained"
@@ -395,7 +353,37 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     fontSize: 16,
   },
+  inputBox: {
+    marginVertical: 20,
+    padding: 20,
+    width: '90%',
+
+    alignSelf: 'center',
+    
+    borderWidth: 1.5,
+    borderRadius: 10,
+    borderStyle: 'solid',
+    borderBlockColor: '#00796B',
+    borderColor: '#00796B',
+   
+    backgroundColor: "#ffffff"
+  },
   // Dark mode styles
+  darkInputBox: {
+    marginVertical: 20,
+    padding: 20,
+    width: '90%',
+
+    alignSelf: 'center',
+    
+    borderWidth: 1.5,
+    borderRadius: 10,
+    borderStyle: 'solid',
+    borderBlockColor: '#4CAF50',
+    borderColor: '#4CAF50',
+   
+    backgroundColor: "#1E1E1E"
+  },
   darkContainer: {
     flexGrow: 1,
     padding: 20,
