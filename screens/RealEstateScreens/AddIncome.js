@@ -1,13 +1,13 @@
 import React from 'react';
 import { View, StyleSheet, useColorScheme } from 'react-native';
-import { TextInput } from 'react-native-paper';
+import { TextInput, Avatar, Icon } from 'react-native-paper';
 import RNPickerSelect from 'react-native-picker-select';
 
 
 export default function AddIncomeScreen() {
   const scheme = useColorScheme();
   const isDarkMode = scheme === 'dark';
-
+  const inputStyle = isDarkMode ? styles.darkInput : styles.input;
   return (
     <View style={isDarkMode ? styles.darkSafeArea : styles.safeArea}>
       <View style={isDarkMode ? styles.darkContainer : styles.container}>
@@ -15,12 +15,21 @@ export default function AddIncomeScreen() {
           placeholder="Name"
           style={isDarkMode ? styles.darkInput : styles.input}
           placeholderTextColor={isDarkMode ? '#AAAAAA' : '#888'}
-          
+
         />
         <RNPickerSelect
-          useAndroidNativePickerStyle={false}
-          placeholder={{label: "Category", value: null}}
+          useNativeAndroidPickerStyle={false}
+          placeholder={{ label: "Category", value: null }}
           onValueChange={(value) => console.log(value)}
+          Icon={() => <Icon source="menu-down" style={styles.icon} size={24} />}
+          style={{
+            inputAndroid: inputStyle,
+            inputIOS: inputStyle,
+            iconContainer: {
+              top: (inputStyle.height / 2) - 20,
+              padding: 8,
+            }
+          }}
           and
           items={[
             { label: "Employment", value: "employment" },
