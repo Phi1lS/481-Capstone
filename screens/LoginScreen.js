@@ -46,9 +46,9 @@ export default function LoginScreen({ navigation }) {
     <View style={isDarkMode ? styles.darkContainer : styles.container}>
       {/* Logo */}
       {logoUrl && (
-        <Image source={{ uri: logoUrl }} style={styles.logo} /> // Dynamically load the logo from Firebase
+        <Image source={{ uri: logoUrl }} style={styles.logo} />
       )}
-
+  
       <TextInput
         value={email}
         onChangeText={setEmail}
@@ -58,7 +58,7 @@ export default function LoginScreen({ navigation }) {
         placeholderTextColor={isDarkMode ? '#AAAAAA' : '#888'}
         style={isDarkMode ? styles.darkInput : styles.input}
       />
-
+  
       <TextInput
         value={password}
         onChangeText={setPassword}
@@ -67,16 +67,24 @@ export default function LoginScreen({ navigation }) {
         placeholderTextColor={isDarkMode ? '#AAAAAA' : '#888'}
         style={isDarkMode ? styles.darkInput : styles.input}
       />
-
+  
       <TouchableOpacity style={isDarkMode ? styles.darkButton : styles.button} onPress={handleLogin}>
         <Text style={styles.buttonText}>Login</Text>
       </TouchableOpacity>
-
+  
       <Text style={isDarkMode ? styles.darkText : styles.text}>Don't have an account?</Text>
-
       <TouchableOpacity onPress={() => navigation.navigate('CreateAccountScreen')}>
         <Text style={isDarkMode ? styles.darkLinkText : styles.linkText}>Create Account</Text>
       </TouchableOpacity>
+  
+      {/* Spacer View */}
+      <View style={{ flex: 0.10 }} />
+  
+      {/* Demo credentials at the bottom */}
+      <View style={styles.demoCredentialsContainer}>
+        <Text style={isDarkMode ? styles.darkText : styles.text}>Demo login: demo@example.com</Text>
+        <Text style={isDarkMode ? styles.darkText : styles.text}>Password: password</Text>
+      </View>
     </View>
   );
 }

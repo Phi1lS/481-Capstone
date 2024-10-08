@@ -62,6 +62,14 @@ export default function ProfileScreen() {
   };
 
   const handleSave = async () => {
+    if (user.uid === 'L8EH4N1JP5NX9C6AjRT9a6gOjd03') {
+      // Prevent demo user from changing name or password
+      if (editedFullName !== `${userProfile.firstName} ${userProfile.lastName}`) {
+        alert("You can't change the name in the demo account.");
+        return;
+      }
+    }
+
     const [firstName, ...lastName] = editedFullName.split(' ');
     const lastNameJoined = lastName.join(' ');
 

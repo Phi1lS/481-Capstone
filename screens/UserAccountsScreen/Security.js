@@ -27,16 +27,23 @@ export default function SecurityScreen() {
   };
 
   const handleSavePassword = async () => {
+    const demoUserId = 'L8EH4N1JP5NX9C6AjRT9a6gOjd03'; // Replace with actual demo user UID
+  
+    // Prevent demo user from changing the password
+    const user = auth.currentUser;
+    if (user.uid === demoUserId) {
+      Alert.alert('Error', 'Demo account password cannot be changed');
+      return;
+    }
+  
     if (newPassword !== confirmNewPassword) {
       Alert.alert('Error', 'New passwords do not match');
       return;
     }
-
+  
     try {
       // Re-authenticate the user
-      const user = auth.currentUser;
       const credential = EmailAuthProvider.credential(user.email, currentPassword);
-  
       await reauthenticateWithCredential(user, credential); // Re-authentication
   
       // If re-authentication succeeds, update the password
