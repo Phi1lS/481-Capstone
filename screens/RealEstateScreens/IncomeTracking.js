@@ -1,10 +1,16 @@
 import React from 'react';
 import { View, StyleSheet, ScrollView, Text, useColorScheme } from 'react-native';
 import { Title, Card, Avatar } from 'react-native-paper';
+import { FAB } from 'react-native-paper';
+import { useNavigation } from '@react-navigation/native';
+import { CombinedDarkTheme, CombinedDefaultTheme } from '../../themes';
+
+
 
 export default function IncomeTrackingScreen() {
   const scheme = useColorScheme();
   const isDarkMode = scheme === 'dark';
+  const navigation = useNavigation();
 
   const data = [
     { name: 'Stocks', population: 60, color: '#00796B', legendFontColor: '#00796B', legendFontSize: 15 },
@@ -51,6 +57,13 @@ export default function IncomeTrackingScreen() {
           </View>
         </Card>
       </ScrollView>
+      <FAB
+        icon="plus"
+        color="rgba(255, 255, 255, 0.9)"
+        style={styles.fab}
+        onPress={() => navigation.navigate("AddIncome")}
+        theme={isDarkMode ? CombinedDefaultTheme : CombinedDarkTheme}
+      />
     </View>
   );
 }
@@ -135,5 +148,13 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#AAAAAA',
     marginBottom: 10,
+  },
+  fab: {
+    position: 'absolute',
+    margin: 16,
+    right: 16,
+    bottom: 16,
+    backgroundColor: CombinedDefaultTheme.colors.primary,
+    color: "rgba(255, 255, 255, 0.9)"
   },
 });
