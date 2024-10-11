@@ -1,7 +1,7 @@
 import React, { createContext, useState, useEffect } from 'react';
 import { auth, db, storage } from './firebaseConfig'; // Firebase config
-import { doc, getDoc, collection, onSnapshot } from 'firebase/firestore'; // Firestore functions
-import { ref, getDownloadURL } from 'firebase/storage'; // Firebase Storage functions
+import { doc, getDoc, collection, onSnapshot } from 'firebase/firestore'; 
+import { ref, getDownloadURL } from 'firebase/storage';
 
 export const UserContext = createContext();
 
@@ -11,52 +11,54 @@ export const UserProvider = ({ children }) => {
     lastName: '',
     email: '',
     avatarPath: '',
-    incomes: [], // New incomes field
+    incomes: [],
   });
+  const [avatarUri, setAvatarUri] = useState(null);
 
-  const [avatarUri, setAvatarUri] = useState(null); // State for avatar URI
-
-  // Fetch the user's profile from Firestore and listen for income updates
+  // Listen for authentication state changes
   useEffect(() => {
-    const fetchUserProfile = async () => {
-      const user = auth.currentUser;
+    const unsubscribeAuth = auth.onAuthStateChanged((user) => {
       if (user) {
-        const userRef = doc(db, 'users', user.uid);
-        const userSnapshot = await getDoc(userRef);
-        if (userSnapshot.exists()) {
-          const userData = userSnapshot.data();
-          setUserProfile((prevProfile) => ({
-            ...prevProfile,
-            firstName: userData.firstName || '',
-            lastName: userData.lastName || '',
-            email: userData.email || '',
-            avatarPath: userData.avatarPath || '',
-          }));
-
-          // Fetch avatar URL from Firebase Storage or use default
-          try {
-            const avatarRef = userData.avatarPath
-              ? ref(storage, userData.avatarPath)
-              : ref(storage, 'default/avatar.png');
-            const url = await getDownloadURL(avatarRef);
-            setAvatarUri(`${url}?t=${new Date().getTime()}`); // Add timestamp to bust cache
-          } catch (error) {
-            const fallbackUrl = await getDownloadURL(ref(storage, 'default/avatar.png'));
-            setAvatarUri(`${fallbackUrl}?t=${new Date().getTime()}`); // Ensure fallback cache bust
-          }
-        }
+        fetchUserProfile(user.uid);
       }
-    };
-
-    fetchUserProfile();
+    });
+    return () => unsubscribeAuth();
   }, []);
 
-  // Listen for income updates dynamically and update the context
+  // Fetch user profile and avatar
+  const fetchUserProfile = async (userId) => {
+    const userRef = doc(db, 'users', userId);
+    const userSnapshot = await getDoc(userRef);
+    if (userSnapshot.exists()) {
+      const userData = userSnapshot.data();
+      setUserProfile((prevProfile) => ({
+        ...prevProfile,
+        firstName: userData.firstName || '',
+        lastName: userData.lastName || '',
+        email: userData.email || '',
+        avatarPath: userData.avatarPath || '',
+      }));
+
+      try {
+        const avatarRef = userData.avatarPath
+          ? ref(storage, userData.avatarPath)
+          : ref(storage, 'default/avatar.png');
+        const url = await getDownloadURL(avatarRef);
+        setAvatarUri(url);
+      } catch (error) {
+        const fallbackUrl = await getDownloadURL(ref(storage, 'default/avatar.png'));
+        setAvatarUri(fallbackUrl);
+      }
+    }
+  };
+
+  // Listen for income updates
   useEffect(() => {
     const user = auth.currentUser;
+    let unsubscribe; // Store the unsubscribe function
     if (user) {
       const incomeRef = collection(db, 'incomes');
-      const unsubscribe = onSnapshot(incomeRef, (snapshot) => {
+      unsubscribe = onSnapshot(incomeRef, (snapshot) => {
         const incomes = snapshot.docs
           .filter((doc) => doc.data().userId === user.uid)
           .map((doc) => ({
@@ -68,8 +70,14 @@ export const UserProvider = ({ children }) => {
           incomes,
         }));
       });
-      return () => unsubscribe();
     }
+    
+    // Cleanup listener when user logs out or component unmounts
+    return () => {
+      if (unsubscribe) {
+        unsubscribe();
+      }
+    };
   }, []);
 
   return (

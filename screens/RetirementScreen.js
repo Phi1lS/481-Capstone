@@ -10,7 +10,7 @@ export default function RetirementScreen() {
   const scheme = useColorScheme();
   const isDarkMode = scheme === 'dark';
   
-  const { userProfile, avatarUri } = useContext(UserContext); // Accessing avatarUri from UserContext
+  const { avatarUri } = useContext(UserContext); // Accessing avatarUri from UserContext
 
   React.useLayoutEffect(() => {
     navigation.setOptions({

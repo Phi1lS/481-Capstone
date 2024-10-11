@@ -11,36 +11,41 @@ export default function HomeScreen() {
   const scheme = useColorScheme();  
   const isDarkMode = scheme === 'dark';  
 
+  // Fetch logo once
   useEffect(() => {
     const fetchLogoUrl = async () => {
       try {
         const logoRef = ref(storage, 'logo.png');  
         const url = await getDownloadURL(logoRef);
         setLogoUrl(url);
-        console.log('Logo URL fetched:', url);
       } catch (error) {
-        console.log('Error fetching logo:', error);
+        console.error('Error fetching logo:', error);
       }
     };
 
     fetchLogoUrl();
   }, []);
 
+  // Fetch avatar URL when the user profile or avatarPath changes
   useEffect(() => {
-    const fetchAvatarUrl = async () => {
-      try {
-        const avatarRef = userProfile.avatarPath
-          ? ref(storage, userProfile.avatarPath)
-          : ref(storage, 'default/avatar.png');
-        const url = await getDownloadURL(avatarRef);
-        setAvatarUri(url);
-      } catch (error) {
-        const fallbackUrl = await getDownloadURL(ref(storage, 'default/avatar.png'));
-        setAvatarUri(fallbackUrl);
-      }
-    };
-
-    fetchAvatarUrl();
+    if (userProfile.avatarPath) {
+      const fetchAvatarUrl = async () => {
+        try {
+          const avatarRef = ref(storage, userProfile.avatarPath);
+          const url = await getDownloadURL(avatarRef);
+          
+          // Prefetch the image and update cached URL
+          await Image.prefetch(url);
+          setAvatarUri(url);
+        } catch (error) {
+          const fallbackUrl = await getDownloadURL(ref(storage, 'default/avatar.png'));
+          await Image.prefetch(fallbackUrl);
+          setAvatarUri(fallbackUrl);
+        }
+      };
+  
+      fetchAvatarUrl();
+    }
   }, [userProfile.avatarPath, setAvatarUri]);
 
   return (

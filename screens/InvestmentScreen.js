@@ -12,30 +12,13 @@ export default function InvestmentScreen() {
   const scheme = useColorScheme();
   const isDarkMode = scheme === 'dark';
 
-  const { userProfile, avatarUri, setAvatarUri } = useContext(UserContext); // Accessing avatarUri from UserContext
+  const { avatarUri } = useContext(UserContext); // Accessing cached avatarUri from UserContext
 
   React.useLayoutEffect(() => {
     navigation.setOptions({
       headerShown: false,
     });
   }, [navigation]);
-
-  useEffect(() => {
-    const fetchAvatarUrl = async () => {
-      try {
-        const avatarRef = userProfile.avatarPath
-          ? ref(storage, userProfile.avatarPath)
-          : ref(storage, 'default/avatar.png');
-        const url = await getDownloadURL(avatarRef);
-        setAvatarUri(url);
-      } catch (error) {
-        const fallbackUrl = await getDownloadURL(ref(storage, 'default/avatar.png'));
-        setAvatarUri(fallbackUrl);
-      }
-    };
-
-    fetchAvatarUrl();
-  }, [userProfile.avatarPath, setAvatarUri]);
 
   const handlePressIn = (animatedValue) => {
     Animated.timing(animatedValue, {
