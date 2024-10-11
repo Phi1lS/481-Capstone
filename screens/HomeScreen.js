@@ -11,37 +11,40 @@ export default function HomeScreen() {
   const scheme = useColorScheme();  
   const isDarkMode = scheme === 'dark';  
 
+  // Fetch logo once
   useEffect(() => {
     const fetchLogoUrl = async () => {
       try {
         const logoRef = ref(storage, 'logo.png');  
         const url = await getDownloadURL(logoRef);
         setLogoUrl(url);
-        console.log('Logo URL fetched:', url);
       } catch (error) {
-        console.log('Error fetching logo:', error);
+        console.error('Error fetching logo:', error);
       }
     };
 
     fetchLogoUrl();
   }, []);
 
+  // Fetch avatar URL if not cached
   useEffect(() => {
     const fetchAvatarUrl = async () => {
       try {
-        const avatarRef = userProfile.avatarPath
-          ? ref(storage, userProfile.avatarPath)
-          : ref(storage, 'default/avatar.png');
-        const url = await getDownloadURL(avatarRef);
-        setAvatarUri(url);
+        if (!avatarUri && userProfile.avatarPath) {  // Fetch only if no avatarUri in context
+          const avatarRef = ref(storage, userProfile.avatarPath);
+          const url = await getDownloadURL(avatarRef);
+          await Image.prefetch(url); // Prefetch for caching
+          setAvatarUri(url);
+        }
       } catch (error) {
         const fallbackUrl = await getDownloadURL(ref(storage, 'default/avatar.png'));
+        await Image.prefetch(fallbackUrl);
         setAvatarUri(fallbackUrl);
       }
     };
 
     fetchAvatarUrl();
-  }, [userProfile.avatarPath, setAvatarUri]);
+  }, [userProfile.avatarPath, avatarUri, setAvatarUri]);
 
   return (
     <View style={isDarkMode ? styles.darkContainer : styles.container}>
@@ -52,15 +55,11 @@ export default function HomeScreen() {
 
       <View style={isDarkMode ? styles.darkHeaderBackground : styles.headerBackground}>
         {logoUrl ? (
-          <Image
-            source={{ uri: logoUrl }}  
-            style={styles.logo}
-            resizeMode="contain"
-          />
+          <Image source={{ uri: logoUrl }} style={styles.logo} resizeMode="contain" />
         ) : (
           <Text>Logo not available</Text>  
         )}
-        
+
         <View style={styles.header}>
           {avatarUri ? (
             <Avatar.Image size={50} source={{ uri: avatarUri }} style={styles.avatar} /> 

@@ -1,7 +1,7 @@
 import React, { createContext, useState, useEffect } from 'react';
-import { auth, db, storage } from './firebaseConfig'; // Firebase config
-import { doc, getDoc, collection, onSnapshot } from 'firebase/firestore'; // Firestore functions
-import { ref, getDownloadURL } from 'firebase/storage'; // Firebase Storage functions
+import { auth, db, storage } from './firebaseConfig';
+import { doc, getDoc, collection, onSnapshot } from 'firebase/firestore';
+import { ref, getDownloadURL } from 'firebase/storage';
 
 export const UserContext = createContext();
 
@@ -11,69 +11,94 @@ export const UserProvider = ({ children }) => {
     lastName: '',
     email: '',
     avatarPath: '',
-    incomes: [], // New incomes field
+    incomes: [],
   });
 
-  const [avatarUri, setAvatarUri] = useState(null); // State for avatar URI
+  const [avatarUri, setAvatarUri] = useState(null);
+  const [cachedAvatar, setCachedAvatar] = useState(null);
 
-  // Fetch the user's profile from Firestore and listen for income updates
+  // Listen for authentication state changes
   useEffect(() => {
-    const fetchUserProfile = async () => {
-      const user = auth.currentUser;
+    let unsubscribeIncomeListener;  // Declare listener unsubscribe handler
+
+    const unsubscribeAuth = auth.onAuthStateChanged((user) => {
       if (user) {
-        const userRef = doc(db, 'users', user.uid);
-        const userSnapshot = await getDoc(userRef);
-        if (userSnapshot.exists()) {
-          const userData = userSnapshot.data();
+        fetchUserProfile(user.uid);
+
+        // Listen for income updates only if the user is authenticated
+        const incomeRef = collection(db, 'incomes');
+        unsubscribeIncomeListener = onSnapshot(incomeRef, (snapshot) => {
+          const incomes = snapshot.docs
+            .filter((doc) => doc.data().userId === user.uid)
+            .map((doc) => ({
+              id: doc.id,
+              ...doc.data(),
+            }));
           setUserProfile((prevProfile) => ({
             ...prevProfile,
-            firstName: userData.firstName || '',
-            lastName: userData.lastName || '',
-            email: userData.email || '',
-            avatarPath: userData.avatarPath || '',
+            incomes,
           }));
+        });
+      } else {
+        // If the user logs out, reset user profile and avatar
+        setUserProfile({
+          firstName: '',
+          lastName: '',
+          email: '',
+          avatarPath: '',
+          incomes: [],
+        });
+        setAvatarUri(null);
 
-          // Fetch avatar URL from Firebase Storage or use default
-          try {
-            const avatarRef = userData.avatarPath
-              ? ref(storage, userData.avatarPath)
-              : ref(storage, 'default/avatar.png');
-            const url = await getDownloadURL(avatarRef);
-            setAvatarUri(`${url}?t=${new Date().getTime()}`); // Add timestamp to bust cache
-          } catch (error) {
-            const fallbackUrl = await getDownloadURL(ref(storage, 'default/avatar.png'));
-            setAvatarUri(`${fallbackUrl}?t=${new Date().getTime()}`); // Ensure fallback cache bust
-          }
+        // Unsubscribe from income listener when user logs out
+        if (unsubscribeIncomeListener) {
+          unsubscribeIncomeListener();
         }
       }
+    });
+
+    return () => {
+      unsubscribeAuth();  // Unsubscribe from auth listener
+      if (unsubscribeIncomeListener) {
+        unsubscribeIncomeListener();  // Unsubscribe from Firestore listener
+      }
     };
-
-    fetchUserProfile();
   }, []);
 
-  // Listen for income updates dynamically and update the context
-  useEffect(() => {
-    const user = auth.currentUser;
-    if (user) {
-      const incomeRef = collection(db, 'incomes');
-      const unsubscribe = onSnapshot(incomeRef, (snapshot) => {
-        const incomes = snapshot.docs
-          .filter((doc) => doc.data().userId === user.uid)
-          .map((doc) => ({
-            id: doc.id,
-            ...doc.data(),
-          }));
-        setUserProfile((prevProfile) => ({
-          ...prevProfile,
-          incomes,
-        }));
-      });
-      return () => unsubscribe();
+  // Fetch user profile and avatar
+  const fetchUserProfile = async (userId) => {
+    const userRef = doc(db, 'users', userId);
+    const userSnapshot = await getDoc(userRef);
+    if (userSnapshot.exists()) {
+      const userData = userSnapshot.data();
+      setUserProfile((prevProfile) => ({
+        ...prevProfile,
+        firstName: userData.firstName || '',
+        lastName: userData.lastName || '',
+        email: userData.email || '',
+        avatarPath: userData.avatarPath || '',
+      }));
+
+      // Cache the avatar URL to avoid re-fetching
+      if (!cachedAvatar) {
+        try {
+          const avatarRef = userData.avatarPath
+            ? ref(storage, userData.avatarPath)
+            : ref(storage, 'default/avatar.png');
+          const url = await getDownloadURL(avatarRef);
+          setCachedAvatar(url);
+          setAvatarUri(url);
+        } catch (error) {
+          const fallbackUrl = await getDownloadURL(ref(storage, 'default/avatar.png'));
+          setCachedAvatar(fallbackUrl);
+          setAvatarUri(fallbackUrl);
+        }
+      }
     }
-  }, []);
+  };
 
   return (
-    <UserContext.Provider value={{ userProfile, setUserProfile, avatarUri, setAvatarUri }}>
+    <UserContext.Provider value={{ userProfile, setUserProfile, avatarUri, setAvatarUri, cachedAvatar }}>
       {children}
     </UserContext.Provider>
   );
