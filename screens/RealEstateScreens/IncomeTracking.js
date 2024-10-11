@@ -6,8 +6,8 @@ import { FAB } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
 import { getMonth, getYear, subMonths } from 'date-fns';
 import { UserContext } from '../../UserContext';
-import { Timestamp, doc, deleteDoc } from 'firebase/firestore';
-import { db } from '../../firebaseConfig'
+import { Timestamp, doc, deleteDoc, collection, getDocs } from 'firebase/firestore';
+import { db, auth } from '../../firebaseConfig'
 
 export default function IncomeTrackingScreen() {
   const scheme = useColorScheme();
@@ -75,6 +75,38 @@ export default function IncomeTrackingScreen() {
       { cancelable: true }
     );
   };
+
+  // Logic to re-fetch incomes if incomes is missing or empty
+  useEffect(() => {
+    const fetchIncomes = async () => {
+      const user = auth.currentUser; // Get the logged-in user
+      if (user) {
+        try {
+          const incomeRef = collection(db, 'incomes');
+          const querySnapshot = await getDocs(incomeRef);
+          const incomes = querySnapshot.docs
+            .filter(doc => doc.data().userId === user.uid)
+            .map(doc => ({
+              id: doc.id,
+              ...doc.data(),
+            }));
+          
+          // Update the userProfile context with the fetched incomes
+          setUserProfile(prevProfile => ({
+            ...prevProfile,
+            incomes,
+          }));
+        } catch (error) {
+          console.error("Error fetching incomes:", error);
+        }
+      }
+    };
+  
+    // Re-fetch if incomes are missing
+    if (!userProfile?.incomes || userProfile.incomes.length === 0) {
+      fetchIncomes();
+    }
+  }, [userProfile, setUserProfile]);
 
   useEffect(() => {
     const processIncomeData = () => {

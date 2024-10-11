@@ -165,6 +165,8 @@ function UserAccountStack() {
       <Stack.Screen name="Security" component={Security} />
       <Stack.Screen name="Notifications" component={Notifications} />
       <Stack.Screen name="Preferences" component={Preferences} />
+      <Stack.Screen name="IncomeTracking" component={IncomeTracking} />
+      <Stack.Screen name="AddIncome" component={AddIncomeScreen} />
     </Stack.Navigator>
   );
 }

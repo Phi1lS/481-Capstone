@@ -1,4 +1,5 @@
 import React, { useContext, useState, useEffect } from 'react';
+import { useNavigation } from '@react-navigation/native';
 import { UserContext } from '../../UserContext'; 
 import { View, StyleSheet, ScrollView, Text, TextInput, TouchableOpacity, useColorScheme, Keyboard } from 'react-native';
 import { Card, Avatar } from 'react-native-paper';
@@ -8,6 +9,7 @@ import { ref, getDownloadURL, uploadBytesResumable } from 'firebase/storage';
 import * as ImagePicker from 'expo-image-picker';
 
 export default function ProfileScreen() {
+  const navigation = useNavigation();
   const scheme = useColorScheme();
   const isDarkMode = scheme === 'dark';
   const { userProfile, setUserProfile, avatarUri, setAvatarUri } = useContext(UserContext); 
@@ -407,6 +409,24 @@ export default function ProfileScreen() {
             </Text>
           )}
         </View>
+        </Card>
+
+        <Card style={isDarkMode ? styles.darkCard : styles.card}>
+          <View style={styles.cardHeader}>
+            <Card.Title 
+              title="Employment & Income" 
+              titleStyle={isDarkMode ? styles.darkCardTitle : styles.cardTitle} 
+            />
+            <View style={styles.editContainer}>
+              <TouchableOpacity onPress={() => navigation.navigate('IncomeTracking')}>
+                <Text style={isDarkMode ? styles.darkEdit : styles.edit}>Track</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+          <View style={styles.divider} />
+          <Text style={isDarkMode ? styles.darkText : styles.text}>
+            {/* Placeholder for current employment details or "No details added yet" */}
+          </Text>
         </Card>
       </ScrollView>
     </View>
