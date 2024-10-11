@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useContext } from 'react';
-import { View, StyleSheet, ScrollView, Text, TouchableOpacity, useColorScheme } from 'react-native';
+import { Alert, View, StyleSheet, ScrollView, Text, TouchableOpacity, useColorScheme } from 'react-native';
 import { Title, Card, Avatar } from 'react-native-paper';
 import { PieChart } from 'react-native-chart-kit';
 import { FAB } from 'react-native-paper';
@@ -36,27 +36,44 @@ export default function IncomeTrackingScreen() {
 
   // Function to handle deleting an income from Firestore
   const handleDeleteIncome = async (incomeId) => {
-    try {
-      // Delete the income from Firestore
-      await deleteDoc(doc(db, 'incomes', incomeId));
-  
-      // Update UserContext by removing the deleted income
-      setUserProfile((prevProfile) => {
-        const updatedIncomes = prevProfile.incomes.filter((income) => income.id !== incomeId);
-  
-        return {
-          ...prevProfile,
-          incomes: updatedIncomes,
-        };
-      });
-  
-      // Also update the local incomeSources state
-      setIncomeSources((prevSources) => prevSources.filter((income) => income.id !== incomeId));
-  
-      console.log('Income deleted successfully');
-    } catch (error) {
-      console.error('Error deleting income:', error);
-    }
+    Alert.alert(
+      "Confirm Deletion",
+      "Are you sure you want to delete this income source?",
+      [
+        {
+          text: "Cancel",
+          style: "default",
+        },
+        {
+          text: "Delete",
+          onPress: async () => {
+            try {
+              // Delete the income from Firestore
+              await deleteDoc(doc(db, 'incomes', incomeId));
+        
+              // Update UserContext by removing the deleted income
+              setUserProfile((prevProfile) => {
+                const updatedIncomes = prevProfile.incomes.filter((income) => income.id !== incomeId);
+        
+                return {
+                  ...prevProfile,
+                  incomes: updatedIncomes,
+                };
+              });
+        
+              // Also update the local incomeSources state
+              setIncomeSources((prevSources) => prevSources.filter((income) => income.id !== incomeId));
+        
+              console.log('Income deleted successfully');
+            } catch (error) {
+              console.error('Error deleting income:', error);
+            }
+          },
+          style: "destructive", // Makes the "Delete" button stand out
+        },
+      ],
+      { cancelable: true }
+    );
   };
 
   useEffect(() => {
