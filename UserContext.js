@@ -1,6 +1,6 @@
 import React, { createContext, useState, useEffect } from 'react';
-import { auth, db, storage } from './firebaseConfig'; // Firebase config
-import { doc, getDoc, collection, onSnapshot } from 'firebase/firestore'; 
+import { auth, db, storage } from './firebaseConfig';
+import { doc, getDoc, collection, onSnapshot } from 'firebase/firestore';
 import { ref, getDownloadURL } from 'firebase/storage';
 
 export const UserContext = createContext();
@@ -13,16 +13,56 @@ export const UserProvider = ({ children }) => {
     avatarPath: '',
     incomes: [],
   });
+
   const [avatarUri, setAvatarUri] = useState(null);
+  const [cachedAvatar, setCachedAvatar] = useState(null);
 
   // Listen for authentication state changes
   useEffect(() => {
+    let unsubscribeIncomeListener;  // Declare listener unsubscribe handler
+
     const unsubscribeAuth = auth.onAuthStateChanged((user) => {
       if (user) {
         fetchUserProfile(user.uid);
+
+        // Listen for income updates only if the user is authenticated
+        const incomeRef = collection(db, 'incomes');
+        unsubscribeIncomeListener = onSnapshot(incomeRef, (snapshot) => {
+          const incomes = snapshot.docs
+            .filter((doc) => doc.data().userId === user.uid)
+            .map((doc) => ({
+              id: doc.id,
+              ...doc.data(),
+            }));
+          setUserProfile((prevProfile) => ({
+            ...prevProfile,
+            incomes,
+          }));
+        });
+      } else {
+        // If the user logs out, reset user profile and avatar
+        setUserProfile({
+          firstName: '',
+          lastName: '',
+          email: '',
+          avatarPath: '',
+          incomes: [],
+        });
+        setAvatarUri(null);
+
+        // Unsubscribe from income listener when user logs out
+        if (unsubscribeIncomeListener) {
+          unsubscribeIncomeListener();
+        }
       }
     });
-    return () => unsubscribeAuth();
+
+    return () => {
+      unsubscribeAuth();  // Unsubscribe from auth listener
+      if (unsubscribeIncomeListener) {
+        unsubscribeIncomeListener();  // Unsubscribe from Firestore listener
+      }
+    };
   }, []);
 
   // Fetch user profile and avatar
@@ -39,49 +79,26 @@ export const UserProvider = ({ children }) => {
         avatarPath: userData.avatarPath || '',
       }));
 
-      try {
-        const avatarRef = userData.avatarPath
-          ? ref(storage, userData.avatarPath)
-          : ref(storage, 'default/avatar.png');
-        const url = await getDownloadURL(avatarRef);
-        setAvatarUri(url);
-      } catch (error) {
-        const fallbackUrl = await getDownloadURL(ref(storage, 'default/avatar.png'));
-        setAvatarUri(fallbackUrl);
+      // Cache the avatar URL to avoid re-fetching
+      if (!cachedAvatar) {
+        try {
+          const avatarRef = userData.avatarPath
+            ? ref(storage, userData.avatarPath)
+            : ref(storage, 'default/avatar.png');
+          const url = await getDownloadURL(avatarRef);
+          setCachedAvatar(url);
+          setAvatarUri(url);
+        } catch (error) {
+          const fallbackUrl = await getDownloadURL(ref(storage, 'default/avatar.png'));
+          setCachedAvatar(fallbackUrl);
+          setAvatarUri(fallbackUrl);
+        }
       }
     }
   };
 
-  // Listen for income updates
-  useEffect(() => {
-    const user = auth.currentUser;
-    let unsubscribe; // Store the unsubscribe function
-    if (user) {
-      const incomeRef = collection(db, 'incomes');
-      unsubscribe = onSnapshot(incomeRef, (snapshot) => {
-        const incomes = snapshot.docs
-          .filter((doc) => doc.data().userId === user.uid)
-          .map((doc) => ({
-            id: doc.id,
-            ...doc.data(),
-          }));
-        setUserProfile((prevProfile) => ({
-          ...prevProfile,
-          incomes,
-        }));
-      });
-    }
-    
-    // Cleanup listener when user logs out or component unmounts
-    return () => {
-      if (unsubscribe) {
-        unsubscribe();
-      }
-    };
-  }, []);
-
   return (
-    <UserContext.Provider value={{ userProfile, setUserProfile, avatarUri, setAvatarUri }}>
+    <UserContext.Provider value={{ userProfile, setUserProfile, avatarUri, setAvatarUri, cachedAvatar }}>
       {children}
     </UserContext.Provider>
   );

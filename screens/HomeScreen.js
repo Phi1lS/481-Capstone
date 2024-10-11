@@ -26,27 +26,25 @@ export default function HomeScreen() {
     fetchLogoUrl();
   }, []);
 
-  // Fetch avatar URL when the user profile or avatarPath changes
+  // Fetch avatar URL if not cached
   useEffect(() => {
-    if (userProfile.avatarPath) {
-      const fetchAvatarUrl = async () => {
-        try {
+    const fetchAvatarUrl = async () => {
+      try {
+        if (!avatarUri && userProfile.avatarPath) {  // Fetch only if no avatarUri in context
           const avatarRef = ref(storage, userProfile.avatarPath);
           const url = await getDownloadURL(avatarRef);
-          
-          // Prefetch the image and update cached URL
-          await Image.prefetch(url);
+          await Image.prefetch(url); // Prefetch for caching
           setAvatarUri(url);
-        } catch (error) {
-          const fallbackUrl = await getDownloadURL(ref(storage, 'default/avatar.png'));
-          await Image.prefetch(fallbackUrl);
-          setAvatarUri(fallbackUrl);
         }
-      };
-  
-      fetchAvatarUrl();
-    }
-  }, [userProfile.avatarPath, setAvatarUri]);
+      } catch (error) {
+        const fallbackUrl = await getDownloadURL(ref(storage, 'default/avatar.png'));
+        await Image.prefetch(fallbackUrl);
+        setAvatarUri(fallbackUrl);
+      }
+    };
+
+    fetchAvatarUrl();
+  }, [userProfile.avatarPath, avatarUri, setAvatarUri]);
 
   return (
     <View style={isDarkMode ? styles.darkContainer : styles.container}>
@@ -57,15 +55,11 @@ export default function HomeScreen() {
 
       <View style={isDarkMode ? styles.darkHeaderBackground : styles.headerBackground}>
         {logoUrl ? (
-          <Image
-            source={{ uri: logoUrl }}  
-            style={styles.logo}
-            resizeMode="contain"
-          />
+          <Image source={{ uri: logoUrl }} style={styles.logo} resizeMode="contain" />
         ) : (
           <Text>Logo not available</Text>  
         )}
-        
+
         <View style={styles.header}>
           {avatarUri ? (
             <Avatar.Image size={50} source={{ uri: avatarUri }} style={styles.avatar} /> 
