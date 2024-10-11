@@ -293,6 +293,7 @@ const styles = StyleSheet.create({
     color: 'green',
     fontWeight: 'bold',
     marginBottom: 10,
+    marginRight: 15,
   },
   card: {
     marginBottom: 25,
