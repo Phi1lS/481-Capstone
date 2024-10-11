@@ -1,10 +1,12 @@
 import React, { useEffect, useState, useContext } from 'react';
 import { View, StyleSheet, ScrollView, Text, TouchableOpacity, useColorScheme } from 'react-native';
 import { Title, Card, Avatar } from 'react-native-paper';
+import { PieChart } from 'react-native-chart-kit';
 import { FAB } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
 import { getMonth, getYear, subMonths } from 'date-fns';
 import { UserContext } from '../../UserContext';
+import { Timestamp } from 'firebase/firestore';
 
 export default function IncomeTrackingScreen() {
   const scheme = useColorScheme();
@@ -15,7 +17,8 @@ export default function IncomeTrackingScreen() {
   const [currentMonthIncome, setCurrentMonthIncome] = useState(0);
   const [previousMonthIncome, setPreviousMonthIncome] = useState(0);
   const [incomeSources, setIncomeSources] = useState([]);
-  const [showAll, setShowAll] = useState(false); // Toggle to show all income
+  const [chartData, setChartData] = useState([]);
+  const [showAll, setShowAll] = useState(false);
 
   const translateCategory = (category) => {
     switch (category) {
@@ -31,41 +34,80 @@ export default function IncomeTrackingScreen() {
   };
 
   useEffect(() => {
-    const currentDate = new Date();
-    const currentMonth = getMonth(currentDate);
-    const previousMonthDate = subMonths(currentDate, 1);
-    const previousMonth = getMonth(previousMonthDate);
-    const year = getYear(currentDate);
+    const processIncomeData = () => {
+      const currentDate = new Date();
+      const currentMonth = getMonth(currentDate);
+      const previousMonthDate = subMonths(currentDate, 1);
+      const previousMonth = getMonth(previousMonthDate);
+      const year = getYear(currentDate);
+  
+      let currentIncomeTotal = 0;
+      let previousIncomeTotal = 0;
+      const monthlyIncomes = [];
+      const allIncomes = [];
+  
+      userProfile?.incomes?.forEach((income) => {
+        if (income?.timestamp && income.timestamp instanceof Timestamp) {
+          const incomeDate = income.timestamp.toDate();
+          const incomeMonth = getMonth(incomeDate);
+          const incomeYear = getYear(incomeDate);
+  
+          if (incomeMonth === currentMonth && incomeYear === year) {
+            currentIncomeTotal += income.incomePerMonth;
+            monthlyIncomes.push(income);
+          } else if (incomeMonth === previousMonth && incomeYear === year) {
+            previousIncomeTotal += income.incomePerMonth;
+          }
+          allIncomes.push(income);
+        }
+      });
+  
+      setCurrentMonthIncome(currentIncomeTotal);
+      setPreviousMonthIncome(previousIncomeTotal);
+  
+      return { monthlyIncomes, allIncomes };
+    };
+  
+    const { monthlyIncomes, allIncomes } = processIncomeData();
+    
+    // Use a small delay to ensure the component refreshes state correctly
+    setTimeout(() => {
+      setIncomeSources(
+        (showAll ? allIncomes : monthlyIncomes).sort(
+          (a, b) => (b?.timestamp?.toDate() || 0) - (a?.timestamp?.toDate() || 0)
+        )
+      );
+    }, 100); // Delay to trigger the correct update
+  }, [userProfile, showAll]);
 
-    let currentIncomeTotal = 0;
-    let previousIncomeTotal = 0;
-    const monthlyIncomes = [];
-    const allIncomes = [];
+  useEffect(() => {
+    if (userProfile?.incomes) {
+      const incomeData = userProfile.incomes.map(income => ({
+        ...income,
+        categoryLabel: translateCategory(income.category),
+      }));
 
-    userProfile?.incomes?.forEach((income) => {
-      const incomeDate = income.timestamp.toDate();
-      const incomeMonth = getMonth(incomeDate);
-      const incomeYear = getYear(incomeDate);
+      setIncomeSources(incomeData);
 
-      // Calculate income for the current and previous month
-      if (incomeMonth === currentMonth && incomeYear === year) {
-        currentIncomeTotal += income.incomePerMonth;
-        monthlyIncomes.push(income);
-      } else if (incomeMonth === previousMonth && incomeYear === year) {
-        previousIncomeTotal += income.incomePerMonth;
-      }
-      // Add to all incomes for potential display
-      allIncomes.push(income);
-    });
+      // Preparing data for PieChart
+      const categoryTotals = incomeData.reduce((totals, income) => {
+        if (income.category && !isNaN(income.incomePerMonth)) {
+          totals[income.category] = (totals[income.category] || 0) + income.incomePerMonth;
+        }
+        return totals;
+      }, {});
 
-    setCurrentMonthIncome(currentIncomeTotal);
-    setPreviousMonthIncome(previousIncomeTotal);
-    setIncomeSources(
-      (showAll ? allIncomes : monthlyIncomes).sort(
-        (a, b) => b.timestamp.toDate() - a.timestamp.toDate()
-      )
-    ); // Show either all or only the monthly income sources, sorted
-  }, [userProfile, showAll]); // Re-run effect when userProfile or showAll changes
+      const chartData = Object.entries(categoryTotals).map(([category, total]) => ({
+        name: translateCategory(category),
+        population: total,
+        color: category === 'investment' ? '#00796B' : category === 'realEstate' ? '#004D40' : '#B2DFDB',
+        legendFontColor: isDarkMode ? '#FFFFFF' : '#000000',
+        legendFontSize: 11,
+      }));
+
+      setChartData(chartData);
+    }
+  }, [userProfile, isDarkMode]);
 
   const incomeChange = currentMonthIncome - previousMonthIncome;
 
@@ -106,6 +148,33 @@ export default function IncomeTrackingScreen() {
             <Text style={[isDarkMode ? styles.darkText : styles.text, getTextStyle(incomeChange)]}>
               {incomeChange >= 0 ? `+$${incomeChange.toFixed(2)}` : `-$${Math.abs(incomeChange).toFixed(2)}`}
             </Text>
+          </View>
+        </Card>
+
+        {/* Income Sources Chart */}
+        <Card style={isDarkMode ? styles.darkCard : styles.card}>
+          <Card.Title
+            title="Income Sources Chart"
+            left={(props) => <Avatar.Icon {...props} icon="chart-pie" style={styles.icon} />}
+            titleStyle={isDarkMode ? styles.darkCardTitle : styles.cardTitle}
+          />
+          <View style={styles.chartContainer}>
+            <PieChart
+              data={chartData}
+              width={300} // Adjust width if needed
+              height={220} // Adjust height if needed
+              chartConfig={{
+                backgroundColor: isDarkMode ? '#1E1E1E' : '#FFFFFF',
+                backgroundGradientFrom: isDarkMode ? '#1E1E1E' : '#FFFFFF',
+                backgroundGradientTo: isDarkMode ? '#1E1E1E' : '#FFFFFF',
+                color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
+                labelColor: isDarkMode ? '#FFFFFF' : '#333',
+              }}
+              accessor="population"
+              backgroundColor="transparent"
+              paddingLeft="15"
+              absolute
+            />
           </View>
         </Card>
 
