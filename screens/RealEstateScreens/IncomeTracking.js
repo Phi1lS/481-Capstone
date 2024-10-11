@@ -6,13 +6,14 @@ import { FAB } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
 import { getMonth, getYear, subMonths } from 'date-fns';
 import { UserContext } from '../../UserContext';
-import { Timestamp } from 'firebase/firestore';
+import { Timestamp, doc, deleteDoc } from 'firebase/firestore';
+import { db } from '../../firebaseConfig'
 
 export default function IncomeTrackingScreen() {
   const scheme = useColorScheme();
   const isDarkMode = scheme === 'dark';
   const navigation = useNavigation();
-  const { userProfile } = useContext(UserContext);
+  const { userProfile, setUserProfile } = useContext(UserContext);
 
   const [currentMonthIncome, setCurrentMonthIncome] = useState(0);
   const [previousMonthIncome, setPreviousMonthIncome] = useState(0);
@@ -30,6 +31,31 @@ export default function IncomeTrackingScreen() {
         return 'Retirement';
       default:
         return 'Unknown';
+    }
+  };
+
+  // Function to handle deleting an income from Firestore
+  const handleDeleteIncome = async (incomeId) => {
+    try {
+      // Delete the income from Firestore
+      await deleteDoc(doc(db, 'incomes', incomeId));
+  
+      // Update UserContext by removing the deleted income
+      setUserProfile((prevProfile) => {
+        const updatedIncomes = prevProfile.incomes.filter((income) => income.id !== incomeId);
+  
+        return {
+          ...prevProfile,
+          incomes: updatedIncomes,
+        };
+      });
+  
+      // Also update the local incomeSources state
+      setIncomeSources((prevSources) => prevSources.filter((income) => income.id !== incomeId));
+  
+      console.log('Income deleted successfully');
+    } catch (error) {
+      console.error('Error deleting income:', error);
     }
   };
 
@@ -208,6 +234,9 @@ export default function IncomeTrackingScreen() {
                 Income Per Month: ${income.incomePerMonth.toFixed(2)}
               </Text>
             </View>
+            <TouchableOpacity onPress={() => handleDeleteIncome(income.id)}>
+              <Text style={isDarkMode ? styles.deleteText : styles.deleteText}>Delete</Text>
+            </TouchableOpacity>
           </Card>
         ))}
       </ScrollView>
@@ -324,5 +353,12 @@ const styles = StyleSheet.create({
     right: 16,
     bottom: 16,
     backgroundColor: 'rgba(76, 175, 80, 0.6)', // 60% opacity
+  },
+  deleteText: {
+    color: 'red',
+    fontWeight: 'bold',
+    textAlign: 'right',
+    right: 15,
+    bottom: 125,
   },
 });
