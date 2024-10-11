@@ -6,12 +6,8 @@ import {
   Text,
   useColorScheme,
 } from "react-native";
-import { Title, Card, Avatar, Button } from "react-native-paper";
+import { Title, Card, Avatar, Button, FAB } from "react-native-paper";
 import { PieChart } from "react-native-chart-kit";
-import Slider from "@react-native-community/slider";
-
-
-
 
 export default function ExpenseTracking({navigation}) {
   const scheme = useColorScheme();
@@ -64,40 +60,13 @@ export default function ExpenseTracking({navigation}) {
         <Card style={isDarkMode ? styles.darkCard : styles.card}>
           <Card.Title
             title="Expenses for Month"
-            left={(props) => (
-              <Avatar.Icon {...props} icon="tune" style={styles.icon} />
-            )}
+            left={(props) => <Avatar.Icon {...props} icon="tune" style={styles.icon} />}
             titleStyle={isDarkMode ? styles.darkCardTitle : styles.cardTitle}
           />
           <View style={styles.sliderContainer}>
-            <Text style={isDarkMode ? styles.darkText : styles.text}>
-              $XXX,XXX
-            </Text>
+            <Text style={isDarkMode ? styles.darkText : styles.text}>$XXX,XXX</Text>
           </View>
 
-          <View style={styles.sliderContainer}>
-            <Button
-              style={[{ alignSelf: "flex-end" }]}
-              onPressIn={() => setExpenseButtonPressed(true)}
-              onPressOut={() => setExpenseButtonPressed(false)}
-              onPress={() => navigation.navigate('NewExpense')}
-            >
-              <Text
-                style={[
-                  isDarkMode ? styles.darkText : styles.text,
-                  { color: expenseButtonPressed ?  '#3b883e': '#4CAF50'},
-                ]}
-              >
-                Add Expense
-              </Text>
-              <Avatar.Icon
-                icon="plus"
-                size={25}
-                color="#4CAF50"
-                style={[styles.icon, { backgroundColor: "transparent" }]}
-              />
-            </Button>
-          </View>
         </Card>
         <Card style={isDarkMode ? styles.darkCard : styles.card}>
           <Card.Title
@@ -175,6 +144,13 @@ export default function ExpenseTracking({navigation}) {
 
         {/* Add more sliders for other asset classes */}
       </ScrollView>
+
+      <FAB
+        icon="plus"
+        color="rgba(255, 255, 255, 0.9)"
+        style={isDarkMode ? styles.darkFab : styles.fab}
+        onPress={() => navigation.navigate("NewExpense")}
+      />
     </View>
   );
 }
@@ -255,5 +231,19 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "#AAAAAA",
     marginBottom: 10,
+  },
+  fab: {
+    position: 'absolute',
+    margin: 16,
+    right: 16,
+    bottom: 16,
+    backgroundColor: 'rgba(0, 121, 107, 0.6)', // 60% opacity
+  },
+  darkFab: {
+    position: 'absolute',
+    margin: 16,
+    right: 16,
+    bottom: 16,
+    backgroundColor: 'rgba(76, 175, 80, 0.6)', // 60% opacity
   },
 });
