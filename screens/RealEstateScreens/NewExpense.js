@@ -76,6 +76,7 @@ export default function ExpenseTracking() {
               style={isDarkMode ? styles.darkInput : styles.input}
               placeholderTextColor={isDarkMode ? '#AAAAAA' : '#888'}
               onChangeText={setExpenseName}
+              selectionColor={isDarkMode ? '#4CAF50' : '#00796B'} // Green caret
             />
           </View>
 
@@ -105,6 +106,7 @@ export default function ExpenseTracking() {
               placeholderTextColor={isDarkMode ? '#AAAAAA' : '#888'}
               onChangeText={setExpenseAmount}
               keyboardType="numeric"
+              selectionColor={isDarkMode ? '#4CAF50' : '#00796B'} // Green caret
             />
           </View>
 

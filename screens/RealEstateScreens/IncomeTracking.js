@@ -1,29 +1,91 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, StyleSheet, ScrollView, Text, useColorScheme } from 'react-native';
 import { Title, Card, Avatar } from 'react-native-paper';
 import { FAB } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
-import { CombinedDarkTheme, CombinedDefaultTheme } from '../../themes';
-
-
+import { collection, query, where, getDocs } from 'firebase/firestore';
+import { auth, db } from '../../firebaseConfig';
+import { getMonth, getYear, subMonths } from 'date-fns'; // For date manipulation
 
 export default function IncomeTrackingScreen() {
   const scheme = useColorScheme();
   const isDarkMode = scheme === 'dark';
   const navigation = useNavigation();
 
-  const data = [
-    { name: 'Stocks', population: 60, color: '#00796B', legendFontColor: '#00796B', legendFontSize: 15 },
-    { name: 'Bonds', population: 20, color: '#004D40', legendFontColor: '#004D40', legendFontSize: 15 },
-    { name: 'Real Estate', population: 10, color: '#B2DFDB', legendFontColor: '#B2DFDB', legendFontSize: 15 },
-    { name: 'Cash', population: 10, color: '#4CAF50', legendFontColor: '#4CAF50', legendFontSize: 15 },
-  ];
+  const [currentMonthIncome, setCurrentMonthIncome] = useState(0);
+  const [previousMonthIncome, setPreviousMonthIncome] = useState(0);
+  const [incomeSources, setIncomeSources] = useState([]);
+
+  const translateCategory = (category) => {
+    switch (category) {
+      case 'investment':
+        return 'Investment';
+      case 'realEstate':
+        return 'Real Estate';
+      case 'retirement':
+        return 'Retirement';
+      default:
+        return 'Unknown';
+    }
+  };
+
+  useEffect(() => {
+    const fetchIncomes = async () => {
+      try {
+        const user = auth.currentUser;
+        if (!user) return;
+
+        const currentDate = new Date();
+        const currentMonth = getMonth(currentDate);
+        const previousMonthDate = subMonths(currentDate, 1);
+        const previousMonth = getMonth(previousMonthDate);
+        const year = getYear(currentDate);
+
+        const incomeQuery = query(collection(db, 'incomes'), where('userId', '==', user.uid));
+        const querySnapshot = await getDocs(incomeQuery);
+
+        let currentIncomeTotal = 0;
+        let previousIncomeTotal = 0;
+        const incomes = [];
+
+        querySnapshot.forEach((doc) => {
+          const income = doc.data();
+          const incomeDate = income.timestamp.toDate(); // Assuming you store the timestamp as Firestore timestamp
+
+          if (getMonth(incomeDate) === currentMonth && getYear(incomeDate) === year) {
+            currentIncomeTotal += income.incomePerMonth;
+            incomes.push(income); // Collecting income sources only for the current month
+          } else if (getMonth(incomeDate) === previousMonth && getYear(incomeDate) === year) {
+            previousIncomeTotal += income.incomePerMonth;
+          }
+        });
+
+        setCurrentMonthIncome(currentIncomeTotal);
+        setPreviousMonthIncome(previousIncomeTotal);
+        setIncomeSources(incomes); // Setting income sources for the current month
+      } catch (error) {
+        console.error('Error fetching income data:', error);
+      }
+    };
+
+    fetchIncomes();
+  }, []);
+
+  const incomeChange = currentMonthIncome - previousMonthIncome;
+
+  const getTextStyle = (amount) => {
+    return {
+      color: amount >= 0 ? 'green' : 'red',
+      fontWeight: 'bold',
+    };
+  };
 
   return (
     <View style={isDarkMode ? styles.darkSafeArea : styles.safeArea}>
       <ScrollView contentContainerStyle={isDarkMode ? styles.darkContainer : styles.container}>
         <Title style={isDarkMode ? styles.darkTitle : styles.title}>Income Tracking</Title>
 
+        {/* Income for Month Card */}
         <Card style={isDarkMode ? styles.darkCard : styles.card}>
           <Card.Title
             title="Income for Month"
@@ -31,10 +93,13 @@ export default function IncomeTrackingScreen() {
             titleStyle={isDarkMode ? styles.darkCardTitle : styles.cardTitle}
           />
           <View style={styles.sliderContainer}>
-            <Text style={isDarkMode ? styles.darkText : styles.text}>$XXX,XXX</Text>
+            <Text style={[isDarkMode ? styles.darkText : styles.text, getTextStyle(currentMonthIncome)]}>
+              ${currentMonthIncome.toFixed(2)}
+            </Text>
           </View>
         </Card>
 
+        {/* Change From Last Month Card */}
         <Card style={isDarkMode ? styles.darkCard : styles.card}>
           <Card.Title
             title="Change From Last Month"
@@ -42,27 +107,38 @@ export default function IncomeTrackingScreen() {
             titleStyle={isDarkMode ? styles.darkCardTitle : styles.cardTitle}
           />
           <View style={styles.sliderContainer}>
-            <Text style={isDarkMode ? styles.darkText : styles.text}>XXXXXX</Text>
+            <Text style={[isDarkMode ? styles.darkText : styles.text, getTextStyle(incomeChange)]}>
+              {incomeChange >= 0 ? `+$${incomeChange.toFixed(2)}` : `-$${Math.abs(incomeChange).toFixed(2)}`}
+            </Text>
           </View>
         </Card>
 
-        <Card style={isDarkMode ? styles.darkCard : styles.card}>
-          <Card.Title
-            title="Income Sources for Month"
-            left={(props) => <Avatar.Icon {...props} icon="tune" style={styles.icon} />}
-            titleStyle={isDarkMode ? styles.darkCardTitle : styles.cardTitle}
-          />
-          <View style={styles.sliderContainer}>
-            <Text style={isDarkMode ? styles.darkText : styles.text}>$XXX,XXX</Text>
-          </View>
-        </Card>
+        {/* Income Sources */}
+        <Title style={isDarkMode ? styles.darkTitle : styles.title}>Income Sources</Title>
+        {incomeSources.map((income, index) => (
+          <Card key={index} style={isDarkMode ? styles.darkCard : styles.card}>
+            <Card.Title
+              title={income.name}
+              left={(props) => <Avatar.Icon {...props} icon="cash" style={styles.icon} />}
+              titleStyle={isDarkMode ? styles.darkCardTitle : styles.cardTitle}
+            />
+            <View style={styles.sliderContainer}>
+              <Text style={isDarkMode ? styles.darkText : styles.text}>
+                Category: {translateCategory(income.category)}
+              </Text>
+              <Text style={isDarkMode ? styles.darkText : styles.text}>
+                Income Per Month: ${income.incomePerMonth.toFixed(2)}
+              </Text>
+            </View>
+          </Card>
+        ))}
       </ScrollView>
       <FAB
-        icon="plus"
-        color="rgba(255, 255, 255, 0.9)"
-        style={isDarkMode ? styles.darkFab : styles.fab}
-        onPress={() => navigation.navigate("AddIncome")}
-      />
+          icon="plus"
+          color="rgba(255, 255, 255, 0.9)"
+          style={isDarkMode ? styles.darkFab : styles.fab}
+          onPress={() => navigation.navigate("AddIncome")}
+        />
     </View>
   );
 }

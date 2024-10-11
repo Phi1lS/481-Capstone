@@ -1,18 +1,53 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { View, Text, TouchableOpacity, TextInput, StyleSheet, useColorScheme } from 'react-native';
 import RNPickerSelect from 'react-native-picker-select';
-import { Avatar, Icon } from 'react-native-paper';
+import { Icon } from 'react-native-paper';
+import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
+import { auth, db } from '../../firebaseConfig';
+import { UserContext } from '../../UserContext';
 
 export default function AddIncomeScreen() {
   const [selectedTab, setSelectedTab] = useState('addYourOwn');
   const [name, setName] = useState("");
   const [category, setCategory] = useState(null);
   const [incomePerMonth, setIncomePerMonth] = useState("");
+  const { userProfile, setUserProfile } = useContext(UserContext); 
   const scheme = useColorScheme();
   const isDarkMode = scheme === 'dark';
 
-  const handleAddIncome = () => {
-    console.log(`Name: ${name}, Category: ${category}, Income Per Month: ${incomePerMonth}`);
+  const handleAddIncome = async () => {
+    try {
+      const user = auth.currentUser;
+
+      if (!user) {
+        console.error('User not logged in');
+        return;
+      }
+
+      // Add income to Firestore with a timestamp
+      const newIncome = {
+        userId: user.uid,
+        name: name,
+        category: category,
+        incomePerMonth: parseFloat(incomePerMonth.replace('$', '')), // Remove dollar sign before submitting
+        timestamp: serverTimestamp(),
+      };
+
+      await addDoc(collection(db, 'incomes'), newIncome);
+      console.log('Income added to Firestore');
+
+      // Update UserContext to reflect changes dynamically
+      setUserProfile((prevProfile) => ({
+        ...prevProfile,
+        incomes: [...(prevProfile.incomes || []), newIncome],
+      }));
+
+      setName('');
+      setCategory(null);
+      setIncomePerMonth('');
+    } catch (error) {
+      console.error('Error adding income:', error);
+    }
   };
 
   return (
@@ -24,11 +59,21 @@ export default function AddIncomeScreen() {
           style={[
             styles.tab,
             selectedTab === 'addYourOwn' && (isDarkMode ? styles.darkActiveTab : styles.activeTab),
-            styles.curvedTab
+            styles.curvedTab,
           ]}
           onPress={() => setSelectedTab('addYourOwn')}
         >
-          <Text style={selectedTab === 'addYourOwn' ? (isDarkMode ? styles.darkActiveTabText : styles.activeTabText) : (isDarkMode ? styles.darkTabText : styles.tabText)}>
+          <Text
+            style={
+              selectedTab === 'addYourOwn'
+                ? isDarkMode
+                  ? styles.darkActiveTabText
+                  : styles.activeTabText
+                : isDarkMode
+                ? styles.darkTabText
+                : styles.tabText
+            }
+          >
             Add Your Own
           </Text>
         </TouchableOpacity>
@@ -36,11 +81,21 @@ export default function AddIncomeScreen() {
           style={[
             styles.tab,
             selectedTab === 'addFromBank' && (isDarkMode ? styles.darkActiveTab : styles.activeTab),
-            styles.curvedTab
+            styles.curvedTab,
           ]}
           onPress={() => setSelectedTab('addFromBank')}
         >
-          <Text style={selectedTab === 'addFromBank' ? (isDarkMode ? styles.darkActiveTabText : styles.activeTabText) : (isDarkMode ? styles.darkTabText : styles.tabText)}>
+          <Text
+            style={
+              selectedTab === 'addFromBank'
+                ? isDarkMode
+                  ? styles.darkActiveTabText
+                  : styles.activeTabText
+                : isDarkMode
+                ? styles.darkTabText
+                : styles.tabText
+            }
+          >
             Add From Bank
           </Text>
         </TouchableOpacity>
@@ -55,6 +110,7 @@ export default function AddIncomeScreen() {
               style={isDarkMode ? styles.darkInput : styles.input}
               placeholderTextColor={isDarkMode ? '#AAAAAA' : '#888'}
               onChangeText={setName}
+              selectionColor={isDarkMode ? '#4CAF50' : '#00796B'} // Green caret
             />
           </View>
 
@@ -77,14 +133,15 @@ export default function AddIncomeScreen() {
           </View>
 
           <View style={isDarkMode ? styles.darkInputCard : styles.inputCard}>
-            <TextInput
-              placeholder="Income Per Month"
-              value={incomePerMonth}
-              style={isDarkMode ? styles.darkInput : styles.input}
-              placeholderTextColor={isDarkMode ? '#AAAAAA' : '#888'}
-              onChangeText={setIncomePerMonth}
-              keyboardType="numeric"
-            />
+          <TextInput
+            placeholder="Income Per Month"  // Keep the placeholder text initially
+            value={incomePerMonth.length > 0 ? `$${incomePerMonth}` : incomePerMonth} // Show dollar sign only when typing
+            style={isDarkMode ? styles.darkInput : styles.input}
+            placeholderTextColor={isDarkMode ? '#AAAAAA' : '#888'}
+            onChangeText={(text) => setIncomePerMonth(text.replace('$', ''))}  // Remove dollar sign for input
+            keyboardType="numeric"
+            selectionColor={isDarkMode ? '#4CAF50' : '#00796B'} // Green caret
+          />
           </View>
 
           <TouchableOpacity style={isDarkMode ? styles.darkButton : styles.button} onPress={handleAddIncome}>
