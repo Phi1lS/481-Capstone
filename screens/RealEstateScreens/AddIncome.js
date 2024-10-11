@@ -2,9 +2,10 @@ import React, { useState, useContext } from 'react';
 import { View, Text, TouchableOpacity, TextInput, StyleSheet, useColorScheme } from 'react-native';
 import RNPickerSelect from 'react-native-picker-select';
 import { Icon } from 'react-native-paper';
-import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
+import { addDoc, collection, serverTimestamp, Timestamp } from 'firebase/firestore';
 import { auth, db } from '../../firebaseConfig';
 import { UserContext } from '../../UserContext';
+import { subMonths } from 'date-fns';
 
 export default function AddIncomeScreen() {
   const [selectedTab, setSelectedTab] = useState('addYourOwn');
@@ -47,6 +48,34 @@ export default function AddIncomeScreen() {
       setIncomePerMonth('');
     } catch (error) {
       console.error('Error adding income:', error);
+    }
+  };
+
+  const handleAddTestIncome = async () => {
+    try {
+      const user = auth.currentUser;
+      if (!user) return;
+
+      const lastMonthDate = subMonths(new Date(), 1);
+      const lastMonthTimestamp = Timestamp.fromDate(lastMonthDate);
+
+      const newIncome = {
+        userId: user.uid,
+        name: 'Test Income Last Month',
+        category: 'investment',
+        incomePerMonth: 1500,
+        timestamp: lastMonthTimestamp,
+      };
+
+      await addDoc(collection(db, 'incomes'), newIncome);
+
+      // Update UserContext with new test income
+      setUserProfile((prevProfile) => ({
+        ...prevProfile,
+        incomes: [...(prevProfile.incomes || []), newIncome],
+      }));
+    } catch (error) {
+      console.error('Error adding test income:', error);
     }
   };
 
@@ -133,19 +162,27 @@ export default function AddIncomeScreen() {
           </View>
 
           <View style={isDarkMode ? styles.darkInputCard : styles.inputCard}>
-          <TextInput
-            placeholder="Income Per Month"  // Keep the placeholder text initially
-            value={incomePerMonth.length > 0 ? `$${incomePerMonth}` : incomePerMonth} // Show dollar sign only when typing
-            style={isDarkMode ? styles.darkInput : styles.input}
-            placeholderTextColor={isDarkMode ? '#AAAAAA' : '#888'}
-            onChangeText={(text) => setIncomePerMonth(text.replace('$', ''))}  // Remove dollar sign for input
-            keyboardType="numeric"
-            selectionColor={isDarkMode ? '#4CAF50' : '#00796B'} // Green caret
-          />
+            <TextInput
+              placeholder="Income Per Month"
+              value={incomePerMonth.length > 0 ? `$${incomePerMonth}` : incomePerMonth}
+              style={isDarkMode ? styles.darkInput : styles.input}
+              placeholderTextColor={isDarkMode ? '#AAAAAA' : '#888'}
+              onChangeText={(text) => setIncomePerMonth(text.replace('$', ''))}
+              keyboardType="numeric"
+              selectionColor={isDarkMode ? '#4CAF50' : '#00796B'} // Green caret
+            />
           </View>
 
           <TouchableOpacity style={isDarkMode ? styles.darkButton : styles.button} onPress={handleAddIncome}>
             <Text style={styles.buttonText}>Add income</Text>
+          </TouchableOpacity>
+          
+          {/* Add Test Income Button */}
+          <TouchableOpacity 
+            style={isDarkMode ? styles.darkButton : [styles.button, { marginTop: 20, backgroundColor: '#800000' }]} 
+            onPress={handleAddTestIncome}
+          >
+            <Text style={styles.buttonText}>Add test income</Text>
           </TouchableOpacity>
         </View>
       ) : (

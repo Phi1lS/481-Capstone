@@ -1,16 +1,16 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import { View, StyleSheet, ScrollView, Text, useColorScheme } from 'react-native';
 import { Title, Card, Avatar } from 'react-native-paper';
 import { FAB } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
-import { collection, query, where, getDocs } from 'firebase/firestore';
-import { auth, db } from '../../firebaseConfig';
-import { getMonth, getYear, subMonths } from 'date-fns'; // For date manipulation
+import { getMonth, getYear, subMonths } from 'date-fns';
+import { UserContext } from '../../UserContext';
 
 export default function IncomeTrackingScreen() {
   const scheme = useColorScheme();
   const isDarkMode = scheme === 'dark';
   const navigation = useNavigation();
+  const { userProfile } = useContext(UserContext); // Access UserContext
 
   const [currentMonthIncome, setCurrentMonthIncome] = useState(0);
   const [previousMonthIncome, setPreviousMonthIncome] = useState(0);
@@ -30,46 +30,31 @@ export default function IncomeTrackingScreen() {
   };
 
   useEffect(() => {
-    const fetchIncomes = async () => {
-      try {
-        const user = auth.currentUser;
-        if (!user) return;
+    const currentDate = new Date();
+    const currentMonth = getMonth(currentDate);
+    const previousMonthDate = subMonths(currentDate, 1);
+    const previousMonth = getMonth(previousMonthDate);
+    const year = getYear(currentDate);
 
-        const currentDate = new Date();
-        const currentMonth = getMonth(currentDate);
-        const previousMonthDate = subMonths(currentDate, 1);
-        const previousMonth = getMonth(previousMonthDate);
-        const year = getYear(currentDate);
+    let currentIncomeTotal = 0;
+    let previousIncomeTotal = 0;
+    const incomes = [];
 
-        const incomeQuery = query(collection(db, 'incomes'), where('userId', '==', user.uid));
-        const querySnapshot = await getDocs(incomeQuery);
+    userProfile?.incomes?.forEach((income) => {
+      const incomeDate = income.timestamp.toDate();
 
-        let currentIncomeTotal = 0;
-        let previousIncomeTotal = 0;
-        const incomes = [];
-
-        querySnapshot.forEach((doc) => {
-          const income = doc.data();
-          const incomeDate = income.timestamp.toDate(); // Assuming you store the timestamp as Firestore timestamp
-
-          if (getMonth(incomeDate) === currentMonth && getYear(incomeDate) === year) {
-            currentIncomeTotal += income.incomePerMonth;
-            incomes.push(income); // Collecting income sources only for the current month
-          } else if (getMonth(incomeDate) === previousMonth && getYear(incomeDate) === year) {
-            previousIncomeTotal += income.incomePerMonth;
-          }
-        });
-
-        setCurrentMonthIncome(currentIncomeTotal);
-        setPreviousMonthIncome(previousIncomeTotal);
-        setIncomeSources(incomes); // Setting income sources for the current month
-      } catch (error) {
-        console.error('Error fetching income data:', error);
+      if (getMonth(incomeDate) === currentMonth && getYear(incomeDate) === year) {
+        currentIncomeTotal += income.incomePerMonth;
+        incomes.push(income); // Collecting income sources for the current month
+      } else if (getMonth(incomeDate) === previousMonth && getYear(incomeDate) === year) {
+        previousIncomeTotal += income.incomePerMonth;
       }
-    };
+    });
 
-    fetchIncomes();
-  }, []);
+    setCurrentMonthIncome(currentIncomeTotal);
+    setPreviousMonthIncome(previousIncomeTotal);
+    setIncomeSources(incomes); // Setting income sources for the current month
+  }, [userProfile]);
 
   const incomeChange = currentMonthIncome - previousMonthIncome;
 
@@ -134,11 +119,11 @@ export default function IncomeTrackingScreen() {
         ))}
       </ScrollView>
       <FAB
-          icon="plus"
-          color="rgba(255, 255, 255, 0.9)"
-          style={isDarkMode ? styles.darkFab : styles.fab}
-          onPress={() => navigation.navigate("AddIncome")}
-        />
+        icon="plus"
+        color="rgba(255, 255, 255, 0.9)"
+        style={isDarkMode ? styles.darkFab : styles.fab}
+        onPress={() => navigation.navigate("AddIncome")}
+      />
     </View>
   );
 }
