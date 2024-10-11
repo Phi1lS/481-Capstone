@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useContext } from 'react';
-import { View, StyleSheet, ScrollView, Text, useColorScheme } from 'react-native';
+import { View, StyleSheet, ScrollView, Text, TouchableOpacity, useColorScheme } from 'react-native';
 import { Title, Card, Avatar } from 'react-native-paper';
 import { FAB } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
@@ -10,11 +10,12 @@ export default function IncomeTrackingScreen() {
   const scheme = useColorScheme();
   const isDarkMode = scheme === 'dark';
   const navigation = useNavigation();
-  const { userProfile } = useContext(UserContext); // Access UserContext
+  const { userProfile } = useContext(UserContext);
 
   const [currentMonthIncome, setCurrentMonthIncome] = useState(0);
   const [previousMonthIncome, setPreviousMonthIncome] = useState(0);
   const [incomeSources, setIncomeSources] = useState([]);
+  const [showAll, setShowAll] = useState(false); // Toggle to show all income
 
   const translateCategory = (category) => {
     switch (category) {
@@ -38,23 +39,33 @@ export default function IncomeTrackingScreen() {
 
     let currentIncomeTotal = 0;
     let previousIncomeTotal = 0;
-    const incomes = [];
+    const monthlyIncomes = [];
+    const allIncomes = [];
 
     userProfile?.incomes?.forEach((income) => {
       const incomeDate = income.timestamp.toDate();
+      const incomeMonth = getMonth(incomeDate);
+      const incomeYear = getYear(incomeDate);
 
-      if (getMonth(incomeDate) === currentMonth && getYear(incomeDate) === year) {
+      // Calculate income for the current and previous month
+      if (incomeMonth === currentMonth && incomeYear === year) {
         currentIncomeTotal += income.incomePerMonth;
-        incomes.push(income); // Collecting income sources for the current month
-      } else if (getMonth(incomeDate) === previousMonth && getYear(incomeDate) === year) {
+        monthlyIncomes.push(income);
+      } else if (incomeMonth === previousMonth && incomeYear === year) {
         previousIncomeTotal += income.incomePerMonth;
       }
+      // Add to all incomes for potential display
+      allIncomes.push(income);
     });
 
     setCurrentMonthIncome(currentIncomeTotal);
     setPreviousMonthIncome(previousIncomeTotal);
-    setIncomeSources(incomes); // Setting income sources for the current month
-  }, [userProfile]);
+    setIncomeSources(
+      (showAll ? allIncomes : monthlyIncomes).sort(
+        (a, b) => b.timestamp.toDate() - a.timestamp.toDate()
+      )
+    ); // Show either all or only the monthly income sources, sorted
+  }, [userProfile, showAll]); // Re-run effect when userProfile or showAll changes
 
   const incomeChange = currentMonthIncome - previousMonthIncome;
 
@@ -98,8 +109,14 @@ export default function IncomeTrackingScreen() {
           </View>
         </Card>
 
-        {/* Income Sources */}
-        <Title style={isDarkMode ? styles.darkTitle : styles.title}>Income Sources</Title>
+        {/* Income Sources with "Show All" button */}
+        <View style={styles.titleRow}>
+          <Title style={isDarkMode ? styles.darkTitle : styles.title}>Income Sources</Title>
+          <TouchableOpacity onPress={() => setShowAll(!showAll)}>
+            <Text style={styles.showAllButton}>Show {showAll ? "Less" : "All"}</Text>
+          </TouchableOpacity>
+        </View>
+
         {incomeSources.map((income, index) => (
           <Card key={index} style={isDarkMode ? styles.darkCard : styles.card}>
             <Card.Title
@@ -129,7 +146,6 @@ export default function IncomeTrackingScreen() {
 }
 
 const styles = StyleSheet.create({
-  // Light mode styles
   safeArea: {
     flex: 1,
     backgroundColor: '#F5F5F5',
@@ -144,6 +160,17 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#333',
     marginBottom: 20,
+  },
+  titleRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between', // Align "Show All" to the right
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  showAllButton: {
+    color: 'green',
+    fontWeight: 'bold',
+    marginBottom: 10,
   },
   card: {
     marginBottom: 25,
@@ -172,7 +199,6 @@ const styles = StyleSheet.create({
     color: '#555',
     marginBottom: 10,
   },
-  // Dark mode styles
   darkSafeArea: {
     flex: 1,
     backgroundColor: '#121212',
