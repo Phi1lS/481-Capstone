@@ -55,10 +55,10 @@ export default function AddIncomeScreen() {
     try {
       const user = auth.currentUser;
       if (!user) return;
-
+  
       const lastMonthDate = subMonths(new Date(), 1);
       const lastMonthTimestamp = Timestamp.fromDate(lastMonthDate);
-
+  
       const newIncome = {
         userId: user.uid,
         name: 'Test Income Last Month',
@@ -66,14 +66,9 @@ export default function AddIncomeScreen() {
         incomePerMonth: 1500,
         timestamp: lastMonthTimestamp,
       };
-
+  
+      // Add income to Firestore without updating the local state
       await addDoc(collection(db, 'incomes'), newIncome);
-
-      // Update UserContext with new test income
-      setUserProfile((prevProfile) => ({
-        ...prevProfile,
-        incomes: [...(prevProfile.incomes || []), newIncome],
-      }));
     } catch (error) {
       console.error('Error adding test income:', error);
     }
