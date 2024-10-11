@@ -408,21 +408,6 @@ export default function ProfileScreen() {
           )}
         </View>
         </Card>
-
-        <Card style={isDarkMode ? styles.darkCard : styles.card}>
-        <View style={styles.cardHeader}>
-          <Card.Title title="Employment & Income" titleStyle={isDarkMode ? styles.darkCardTitle : styles.cardTitle} />
-          <View style={styles.editContainer}>
-            <TouchableOpacity onPress={() => navigation.navigate('AddEmploymentScreen')}>
-              <Text style={isDarkMode ? styles.darkEdit : styles.edit}>Add</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-        <View style={styles.divider} />
-          <Text style={isDarkMode ? styles.darkText : styles.text}>
-            {/* Placeholder for current employment details or "No details added yet" */}
-          </Text>
-        </Card>
       </ScrollView>
     </View>
   );
