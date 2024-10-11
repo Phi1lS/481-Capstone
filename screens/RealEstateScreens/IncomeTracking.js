@@ -81,22 +81,29 @@ export default function IncomeTrackingScreen() {
   }, [userProfile, showAll]);
 
   useEffect(() => {
+    const currentDate = new Date();
+    const currentMonth = getMonth(currentDate);
+    const currentYear = getYear(currentDate);
+  
     if (userProfile?.incomes) {
-      const incomeData = userProfile.incomes.map(income => ({
-        ...income,
-        categoryLabel: translateCategory(income.category),
-      }));
-
-      setIncomeSources(incomeData);
-
-      // Preparing data for PieChart
-      const categoryTotals = incomeData.reduce((totals, income) => {
+      const currentMonthIncomes = userProfile.incomes.filter((income) => {
+        if (income.timestamp instanceof Timestamp) {
+          const incomeDate = income.timestamp.toDate();
+          const incomeMonth = getMonth(incomeDate);
+          const incomeYear = getYear(incomeDate);
+          return incomeMonth === currentMonth && incomeYear === currentYear;
+        }
+        return false;
+      });
+  
+      // Prepare PieChart data
+      const categoryTotals = currentMonthIncomes.reduce((totals, income) => {
         if (income.category && !isNaN(income.incomePerMonth)) {
           totals[income.category] = (totals[income.category] || 0) + income.incomePerMonth;
         }
         return totals;
       }, {});
-
+  
       const chartData = Object.entries(categoryTotals).map(([category, total]) => ({
         name: translateCategory(category),
         population: total,
@@ -104,7 +111,7 @@ export default function IncomeTrackingScreen() {
         legendFontColor: isDarkMode ? '#FFFFFF' : '#000000',
         legendFontSize: 11,
       }));
-
+  
       setChartData(chartData);
     }
   }, [userProfile, isDarkMode]);
