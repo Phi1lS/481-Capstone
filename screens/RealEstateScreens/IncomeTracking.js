@@ -60,9 +60,8 @@ export default function IncomeTrackingScreen() {
       <FAB
         icon="plus"
         color="rgba(255, 255, 255, 0.9)"
-        style={styles.fab}
+        style={isDarkMode ? styles.darkFab : styles.fab}
         onPress={() => navigation.navigate("AddIncome")}
-        theme={isDarkMode ? CombinedDefaultTheme : CombinedDarkTheme}
       />
     </View>
   );
@@ -154,7 +153,13 @@ const styles = StyleSheet.create({
     margin: 16,
     right: 16,
     bottom: 16,
-    backgroundColor: CombinedDefaultTheme.colors.primary,
-    color: "rgba(255, 255, 255, 0.9)"
+    backgroundColor: 'rgba(0, 121, 107, 0.6)', // 60% opacity
+  },
+  darkFab: {
+    position: 'absolute',
+    margin: 16,
+    right: 16,
+    bottom: 16,
+    backgroundColor: 'rgba(76, 175, 80, 0.6)', // 60% opacity
   },
 });
