@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity, TextInput, StyleSheet, useColorScheme } f
 import RNPickerSelect from 'react-native-picker-select';
 import { Icon } from 'react-native-paper';
 import { addDoc, collection, serverTimestamp, Timestamp } from 'firebase/firestore';
-import { auth, darkActiveTabText } from '../../firebaseConfig';
+import { auth, db } from '../../firebaseConfig';
 import { UserContext } from '../../UserContext';
 
 
@@ -43,7 +43,7 @@ export default function ExpenseTracking() {
         incomes: [...(prevProfile.expenses || []), newIncome],
       }));
 
-      setName('');
+      setExpenseName('');
       setCategory(null);
       setExpenseAmount('');
     } catch (error) {
