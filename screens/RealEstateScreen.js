@@ -173,14 +173,16 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
   },
   needHelpText:{
-    fontSize: 25,
+    fontSize: 16,
     color: '#00796B',
-     textAlign: 'right'
+    textAlign: 'right',
+    bottom: 552,
   },
   darkNeedHelpText:{
     fontSize: 25,
     color: '#4CAF50',
-    textAlign: 'right'
+    textAlign: 'right',
+    bottom: 552,
   },
   // Dark mode styles
   darkContainer: {
