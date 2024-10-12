@@ -89,7 +89,7 @@ export default function MarketPredictionsScreen() {
                <List.Item
                 title = "Amount (For Expense)"
                 titleStyle = {{fontWeight: 'bold', color: 'red'}}
-                description="The amount of money expense is."
+                description="The amount of money the expense is."
                 descriptionStyle = {{color: isDarkMode ? 'white' : 'black'}}
                 left={props => <List.Icon icon = "chart-donut"/>}
               />
