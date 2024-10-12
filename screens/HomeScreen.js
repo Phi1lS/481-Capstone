@@ -2,7 +2,7 @@ import React, { useContext, useState, useEffect } from 'react';
 import { View, StyleSheet, ScrollView, StatusBar, Image, Text, useColorScheme, Platform } from 'react-native';
 import { Avatar } from 'react-native-paper';
 import { UserContext } from '../UserContext';
-import { getDownloadURL, ref } from 'firebase/storage';
+import { getDownloadURL, ref, Timestamp } from 'firebase/storage';
 import { storage } from '../firebaseConfig';
 import { getMonth, getYear, subMonths } from 'date-fns';
 
@@ -54,18 +54,25 @@ export default function HomeScreen() {
       const currentDate = new Date();
       const currentMonth = getMonth(currentDate);
       const currentYear = getYear(currentDate);
-
+  
       const realEstateIncomes = userProfile?.incomes?.filter((income) => {
-        const incomeDate = income.timestamp?.toDate();
-        const incomeMonth = getMonth(incomeDate);
-        const incomeYear = getYear(incomeDate);
-        return income.category === 'realEstate' && incomeMonth === currentMonth && incomeYear === currentYear;
+        // Check if timestamp exists and is of correct type
+        const incomeDate = income.timestamp && typeof income.timestamp === 'object' && income.timestamp.toDate 
+          ? income.timestamp.toDate() 
+          : null; 
+        
+        if (incomeDate) {
+          const incomeMonth = getMonth(incomeDate);
+          const incomeYear = getYear(incomeDate);
+          return income.category === 'realEstate' && incomeMonth === currentMonth && incomeYear === currentYear;
+        }
+        return false; // Exclude if incomeDate is not valid
       });
-
+  
       const totalRealEstateIncome = realEstateIncomes?.reduce((total, income) => total + income.incomePerMonth, 0);
       setRealEstateIncome(totalRealEstateIncome || 0);
     };
-
+  
     calculateRealEstateIncome();
   }, [userProfile]);
 
