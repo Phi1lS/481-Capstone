@@ -126,7 +126,7 @@ export default function HomeScreen() {
             </Text>
             {realEstateIncome !== null && (
               <Text style={isDarkMode ? styles.darkSummaryValue : styles.summaryValue}>
-                ${realEstateIncome.toFixed(2)}
+                ${realEstateIncome.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </Text>
             )}
           </View>
