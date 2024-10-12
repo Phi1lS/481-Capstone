@@ -1,18 +1,54 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { View, Text, TouchableOpacity, TextInput, StyleSheet, useColorScheme } from 'react-native';
 import RNPickerSelect from 'react-native-picker-select';
 import { Icon } from 'react-native-paper';
+import { addDoc, collection, serverTimestamp, Timestamp } from 'firebase/firestore';
+import { auth, darkActiveTabText } from '../../firebaseConfig';
+import { UserContext } from '../../UserContext';
+
 
 export default function ExpenseTracking() {
   const [selectedTab, setSelectedTab] = useState('addYourOwn');
   const [expenseName, setExpenseName] = useState("");
   const [category, setCategory] = useState(null);
   const [expenseAmount, setExpenseAmount] = useState("");
+  const { userProfile, setUserProfile } = useContext(UserContext); 
   const scheme = useColorScheme();
   const isDarkMode = scheme === 'dark';
 
-  const handleAddExpense = () => {
-    console.log(`Name: ${expenseName}, Category: ${category}, Expense Amount: ${expenseAmount}`);
+  const handleAddExpense = async () => {
+    try {
+      const user = auth.currentUser;
+
+      if (!user) {
+        console.error('User not logged in');
+        return;
+      }
+
+      // Add income to Firestore with a timestamp
+      const newIncome = {
+        userId: user.uid,
+        name: expenseName,
+        category: category,
+        expenseAmount: parseFloat(expenseAmount), 
+        timestamp: serverTimestamp(),
+      };
+
+      await addDoc(collection(db, 'expenses'), newIncome);
+      console.log('Income added to Firestore');
+
+      // Update UserContext to reflect changes dynamically
+      setUserProfile((prevProfile) => ({
+        ...prevProfile,
+        incomes: [...(prevProfile.expenses || []), newIncome],
+      }));
+
+      setName('');
+      setCategory(null);
+      setExpenseAmount('');
+    } catch (error) {
+      console.error('Error adding income:', error);
+    }
   };
 
   return (
