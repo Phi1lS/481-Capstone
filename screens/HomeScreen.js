@@ -4,10 +4,12 @@ import { Avatar } from 'react-native-paper';
 import { UserContext } from '../UserContext';
 import { getDownloadURL, ref } from 'firebase/storage';
 import { storage } from '../firebaseConfig';
+import { getMonth, getYear, subMonths } from 'date-fns';
 
 export default function HomeScreen() {
   const { userProfile, avatarUri, setAvatarUri } = useContext(UserContext); 
   const [logoUrl, setLogoUrl] = useState('');  
+  const [realEstateIncome, setRealEstateIncome] = useState(0); // Add state for real estate income
   const scheme = useColorScheme();  
   const isDarkMode = scheme === 'dark';  
 
@@ -45,6 +47,27 @@ export default function HomeScreen() {
 
     fetchAvatarUrl();
   }, [userProfile.avatarPath, avatarUri, setAvatarUri]);
+
+  // Calculate the real estate income for the current month
+  useEffect(() => {
+    const calculateRealEstateIncome = () => {
+      const currentDate = new Date();
+      const currentMonth = getMonth(currentDate);
+      const currentYear = getYear(currentDate);
+
+      const realEstateIncomes = userProfile?.incomes?.filter((income) => {
+        const incomeDate = income.timestamp?.toDate();
+        const incomeMonth = getMonth(incomeDate);
+        const incomeYear = getYear(incomeDate);
+        return income.category === 'realEstate' && incomeMonth === currentMonth && incomeYear === currentYear;
+      });
+
+      const totalRealEstateIncome = realEstateIncomes?.reduce((total, income) => total + income.incomePerMonth, 0);
+      setRealEstateIncome(totalRealEstateIncome || 0);
+    };
+
+    calculateRealEstateIncome();
+  }, [userProfile]);
 
   return (
     <View style={isDarkMode ? styles.darkContainer : styles.container}>
@@ -91,8 +114,14 @@ export default function HomeScreen() {
           </View>
 
           <View style={isDarkMode ? styles.darkDashboardItem : styles.dashboardItem}>
-            <Text style={isDarkMode ? styles.darkSummaryLabel : styles.summaryLabel}>Real Estate Income</Text>
-            <Text style={isDarkMode ? styles.darkSummaryValue : styles.summaryValue}>$X,XXX</Text>
+            <Text style={isDarkMode ? styles.darkSummaryLabel : styles.summaryLabel}>
+              Real Estate Income
+            </Text>
+            {realEstateIncome !== null && (
+              <Text style={isDarkMode ? styles.darkSummaryValue : styles.summaryValue}>
+                ${realEstateIncome.toFixed(2)}
+              </Text>
+            )}
           </View>
 
           <View style={isDarkMode ? styles.darkDashboardItem : styles.dashboardItem}>
