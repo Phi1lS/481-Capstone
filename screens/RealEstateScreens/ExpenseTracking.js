@@ -1,17 +1,202 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import {
   View,
   StyleSheet,
   ScrollView,
   Text,
   useColorScheme,
+  TouchableOpacity,
 } from "react-native";
+import { getMonth, getYear, subMonths } from 'date-fns';
+
+import { UserContext } from '../../UserContext';
+
 import { Title, Card, Avatar, Button, FAB } from "react-native-paper";
 import { PieChart } from "react-native-chart-kit";
+import { Timestamp, doc, deleteDoc, collection, getDocs } from 'firebase/firestore';
+
 
 export default function ExpenseTracking({navigation}) {
   const scheme = useColorScheme();
   const isDarkMode = scheme === "dark";
+  const [currentMonthIncome, setCurrentMonthIncome] = useState(0);
+  const [previousMonthIncome, setPreviousMonthIncome] = useState(0);
+  const [incomeSources, setIncomeSources] = useState([]);
+  const [chartData, setChartData] = useState([]);
+  const [showAll, setShowAll] = useState(false);
+  const { userProfile, setUserProfile } = useContext(UserContext);
+
+  const translateCategory = (category) => {
+    switch (category) {
+      case 'investment':
+        return 'Investment';
+      case 'realEstate':
+        return 'Real Estate';
+      case 'retirement':
+        return 'Retirement';
+      default:
+        return 'Unknown';
+    }
+  };
+
+
+  // Function to handle deleting an income from Firestore
+  const handleDeleteIncome = async (incomeId) => {
+    Alert.alert(
+      "Confirm Deletion",
+      "Are you sure you want to delete this income source?",
+      [
+        {
+          text: "Cancel",
+          style: "default",
+        },
+        {
+          text: "Delete",
+          onPress: async () => {
+            try {
+              // Delete the income from Firestore
+              await deleteDoc(doc(db, 'incomes', incomeId));
+        
+              // Update UserContext by removing the deleted income
+              setUserProfile((prevProfile) => {
+                const updatedIncomes = prevProfile.incomes.filter((income) => income.id !== incomeId);
+        
+                return {
+                  ...prevProfile,
+                  incomes: updatedIncomes,
+                };
+              });
+        
+              // Also update the local incomeSources state
+              setIncomeSources((prevSources) => prevSources.filter((income) => income.id !== incomeId));
+        
+              console.log('Income deleted successfully');
+            } catch (error) {
+              console.error('Error deleting income:', error);
+            }
+          },
+          style: "destructive", // Makes the "Delete" button stand out
+        },
+      ],
+      { cancelable: true }
+    );
+  };
+
+  // Logic to re-fetch incomes if incomes is missing or empty
+  useEffect(() => {
+    const fetchIncomes = async () => {
+      const user = auth.currentUser; // Get the logged-in user
+      if (user) {
+        try {
+          const incomeRef = collection(db, 'incomes');
+          const querySnapshot = await getDocs(incomeRef);
+          const incomes = querySnapshot.docs
+            .filter(doc => doc.data().userId === user.uid)
+            .map(doc => ({
+              id: doc.id,
+              ...doc.data(),
+            }));
+          
+          // Update the userProfile context with the fetched incomes
+          setUserProfile(prevProfile => ({
+            ...prevProfile,
+            incomes,
+          }));
+        } catch (error) {
+          console.error("Error fetching incomes:", error);
+        }
+      }
+    };
+  
+    // Re-fetch if incomes are missing
+    if (!userProfile?.incomes || userProfile.incomes.length === 0) {
+      fetchIncomes();
+    }
+  }, [userProfile, setUserProfile]);
+
+  useEffect(() => {
+    const processIncomeData = () => {
+      const currentDate = new Date();
+      const currentMonth = getMonth(currentDate);
+      const previousMonthDate = subMonths(currentDate, 1);
+      const previousMonth = getMonth(previousMonthDate);
+      const year = getYear(currentDate);
+  
+      let currentIncomeTotal = 0;
+      let previousIncomeTotal = 0;
+      const monthlyIncomes = [];
+      const allIncomes = [];
+  
+      userProfile?.incomes?.forEach((income) => {
+        if (income?.timestamp && income.timestamp instanceof Timestamp) {
+          const incomeDate = income.timestamp.toDate();
+          const incomeMonth = getMonth(incomeDate);
+          const incomeYear = getYear(incomeDate);
+  
+          if (incomeMonth === currentMonth && incomeYear === year) {
+            currentIncomeTotal += income.incomePerMonth;
+            monthlyIncomes.push(income);
+          } else if (incomeMonth === previousMonth && incomeYear === year) {
+            previousIncomeTotal += income.incomePerMonth;
+          }
+          allIncomes.push(income);
+        }
+      });
+  
+      setCurrentMonthIncome(currentIncomeTotal);
+      setPreviousMonthIncome(previousIncomeTotal);
+  
+      return { monthlyIncomes, allIncomes };
+    };
+  
+    const { monthlyIncomes, allIncomes } = processIncomeData();
+    
+    // Use a small delay to ensure the component refreshes state correctly
+    setTimeout(() => {
+      setIncomeSources(
+        (showAll ? allIncomes : monthlyIncomes).sort(
+          (a, b) => (b?.timestamp?.toDate() || 0) - (a?.timestamp?.toDate() || 0)
+        )
+      );
+    }, 100); // Delay to trigger the correct update
+  }, [userProfile, showAll]);
+
+  useEffect(() => {
+    const currentDate = new Date();
+    const currentMonth = getMonth(currentDate);
+    const currentYear = getYear(currentDate);
+  
+    if (userProfile?.incomes) {
+      const currentMonthIncomes = userProfile.incomes.filter((income) => {
+        if (income.timestamp instanceof Timestamp) {
+          const incomeDate = income.timestamp.toDate();
+          const incomeMonth = getMonth(incomeDate);
+          const incomeYear = getYear(incomeDate);
+          return incomeMonth === currentMonth && incomeYear === currentYear;
+        }
+        return false;
+      });
+  
+      // Prepare PieChart data
+      const categoryTotals = currentMonthIncomes.reduce((totals, income) => {
+        if (income.category && !isNaN(income.incomePerMonth)) {
+          totals[income.category] = (totals[income.category] || 0) + income.incomePerMonth;
+        }
+        return totals;
+      }, {});
+  
+      const chartData = Object.entries(categoryTotals).map(([category, total]) => ({
+        name: translateCategory(category),
+        population: total,
+        color: category === 'investment' ? '#00796B' : category === 'realEstate' ? '#004D40' : '#B2DFDB',
+        legendFontColor: isDarkMode ? '#FFFFFF' : '#000000',
+        legendFontSize: 11,
+      }));
+  
+      setChartData(chartData);
+    }
+  }, [userProfile, isDarkMode]);
+
 
   const data = [
     {
@@ -43,6 +228,15 @@ export default function ExpenseTracking({navigation}) {
       legendFontSize: 15,
     },
   ];
+
+  const incomeChange = currentMonthIncome - previousMonthIncome;
+
+  const getTextStyle = (amount) => {
+    return {
+      color: amount >= 0 ? 'green' : 'red',
+      fontWeight: 'bold',
+    };
+  };
 
   const [expenseButtonPressed, setExpenseButtonPressed] = useState(false);
 
@@ -143,6 +337,35 @@ export default function ExpenseTracking({navigation}) {
         </Card>
 
         {/* Add more sliders for other asset classes */}
+
+        {/* Income Sources with "Show All" button */}
+        <View style={styles.titleRow}>
+          <Title style={isDarkMode ? styles.darkTitle : styles.title}>Income Sources</Title>
+          <TouchableOpacity onPress={() => setShowAll(!showAll)}>
+            <Text style={styles.showAllButton}>Show {showAll ? "Less" : "All"}</Text>
+          </TouchableOpacity>
+        </View>
+
+        {incomeSources.map((income, index) => (
+          <Card key={index} style={isDarkMode ? styles.darkCard : styles.card}>
+            <Card.Title
+              title={income.name}
+              left={(props) => <Avatar.Icon {...props} icon="cash" style={styles.icon} />}
+              titleStyle={isDarkMode ? styles.darkCardTitle : styles.cardTitle}
+            />
+            <View style={styles.sliderContainer}>
+              <Text style={isDarkMode ? styles.darkText : styles.text}>
+                Category: {translateCategory(income.category)}
+              </Text>
+              <Text style={isDarkMode ? styles.darkText : styles.text}>
+                Income Per Month: ${income.incomePerMonth.toFixed(2)}
+              </Text>
+            </View>
+            <TouchableOpacity onPress={() => handleDeleteIncome(income.id)}>
+              <Text style={isDarkMode ? styles.deleteText : styles.deleteText}>Delete</Text>
+            </TouchableOpacity>
+          </Card>
+        ))}
       </ScrollView>
 
       <FAB
@@ -246,4 +469,11 @@ const styles = StyleSheet.create({
     bottom: 16,
     backgroundColor: 'rgba(76, 175, 80, 0.6)', // 60% opacity
   },
+  showAllButton: {
+    color: 'green',
+    fontWeight: 'bold',
+    marginBottom: 10,
+    marginRight: 15,
+  },
+
 });

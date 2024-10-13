@@ -16,6 +16,7 @@ export default function AddIncomeScreen() {
   const scheme = useColorScheme();
   const isDarkMode = scheme === 'dark';
 
+
   const handleAddIncome = async () => {
     try {
       const user = auth.currentUser;
