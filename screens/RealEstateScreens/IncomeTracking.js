@@ -214,7 +214,7 @@ export default function IncomeTrackingScreen() {
           />
           <View style={styles.sliderContainer}>
             <Text style={[isDarkMode ? styles.darkText : styles.text, getTextStyle(currentMonthIncome)]}>
-              ${currentMonthIncome.toFixed(2)}
+              ${currentMonthIncome.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </Text>
           </View>
         </Card>
@@ -228,7 +228,7 @@ export default function IncomeTrackingScreen() {
           />
           <View style={styles.sliderContainer}>
             <Text style={[isDarkMode ? styles.darkText : styles.text, getTextStyle(incomeChange)]}>
-              {incomeChange >= 0 ? `+$${incomeChange.toFixed(2)}` : `-$${Math.abs(incomeChange).toFixed(2)}`}
+              {incomeChange >= 0 ? `+$${incomeChange.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : `-$${Math.abs(incomeChange).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
             </Text>
           </View>
         </Card>
@@ -280,7 +280,7 @@ export default function IncomeTrackingScreen() {
                 Category: {translateCategory(income.category)}
               </Text>
               <Text style={isDarkMode ? styles.darkText : styles.text}>
-                Income Per Month: ${income.incomePerMonth.toFixed(2)}
+                Income Per Month: ${income.incomePerMonth.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </Text>
             </View>
             <TouchableOpacity onPress={() => handleDeleteIncome(income.id)}>
