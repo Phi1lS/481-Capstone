@@ -14,14 +14,15 @@ import { UserContext } from '../../UserContext';
 import { Title, Card, Avatar, Button, FAB } from "react-native-paper";
 import { PieChart } from "react-native-chart-kit";
 import { Timestamp, doc, deleteDoc, collection, getDocs } from 'firebase/firestore';
+import { db, auth } from '../../firebaseConfig'
 
 
 export default function ExpenseTracking({navigation}) {
   const scheme = useColorScheme();
   const isDarkMode = scheme === "dark";
-  const [currentMonthIncome, setCurrentMonthIncome] = useState(0);
-  const [previousMonthIncome, setPreviousMonthIncome] = useState(0);
-  const [incomeSources, setIncomeSources] = useState([]);
+  const [currentMonthExpenses, setCurrentMonthExpenses] = useState(0);
+  const [previousMonthExpenses, setPreviousMonthExpenses] = useState(0);
+  const [expenses, setExpenses] = useState([]);
   const [chartData, setChartData] = useState([]);
   const [showAll, setShowAll] = useState(false);
   const { userProfile, setUserProfile } = useContext(UserContext);
@@ -40,11 +41,11 @@ export default function ExpenseTracking({navigation}) {
   };
 
 
-  // Function to handle deleting an income from Firestore
-  const handleDeleteIncome = async (incomeId) => {
+  // Function to handle deleting an expense from Firestore
+  const handleDeleteExpense = async (expenseId) => {
     Alert.alert(
       "Confirm Deletion",
-      "Are you sure you want to delete this income source?",
+      "Are you sure you want to delete this expense?",
       [
         {
           text: "Cancel",
@@ -54,25 +55,25 @@ export default function ExpenseTracking({navigation}) {
           text: "Delete",
           onPress: async () => {
             try {
-              // Delete the income from Firestore
-              await deleteDoc(doc(db, 'incomes', incomeId));
+              // Delete the expense from Firestore
+              await deleteDoc(doc(db, 'expenses', expenseId));
         
-              // Update UserContext by removing the deleted income
+              // Update UserContext by removing the deleted expense
               setUserProfile((prevProfile) => {
-                const updatedIncomes = prevProfile.incomes.filter((income) => income.id !== incomeId);
+                const updatedexpenses = prevProfile.expenses.filter((expense) => expense.id !== expenseId);
         
                 return {
                   ...prevProfile,
-                  incomes: updatedIncomes,
+                  expenses: updatedExpenses,
                 };
               });
         
-              // Also update the local incomeSources state
-              setIncomeSources((prevSources) => prevSources.filter((income) => income.id !== incomeId));
+              // Also update the local expenseSources state
+              setExpenses((prevSources) => prevSources.filter((expense) => expense.id !== expenseId));
         
-              console.log('Income deleted successfully');
+              console.log('Expense deleted successfully');
             } catch (error) {
-              console.error('Error deleting income:', error);
+              console.error('Error deleting expense:', error);
             }
           },
           style: "destructive", // Makes the "Delete" button stand out
@@ -82,79 +83,79 @@ export default function ExpenseTracking({navigation}) {
     );
   };
 
-  // Logic to re-fetch incomes if incomes is missing or empty
+  // Logic to re-fetch expenses if expenses is missing or empty
   useEffect(() => {
-    const fetchIncomes = async () => {
+    const fetchExpenses = async () => {
       const user = auth.currentUser; // Get the logged-in user
       if (user) {
         try {
-          const incomeRef = collection(db, 'incomes');
-          const querySnapshot = await getDocs(incomeRef);
-          const incomes = querySnapshot.docs
+          const expenseRef = collection(db, 'expenses');
+          const querySnapshot = await getDocs(expenseRef);
+          const expenses = querySnapshot.docs
             .filter(doc => doc.data().userId === user.uid)
             .map(doc => ({
               id: doc.id,
               ...doc.data(),
             }));
           
-          // Update the userProfile context with the fetched incomes
+          // Update the userProfile context with the fetched expenses
           setUserProfile(prevProfile => ({
             ...prevProfile,
-            incomes,
+            expenses,
           }));
         } catch (error) {
-          console.error("Error fetching incomes:", error);
+          console.error("Error fetching expenses:", error);
         }
       }
     };
   
-    // Re-fetch if incomes are missing
-    if (!userProfile?.incomes || userProfile.incomes.length === 0) {
-      fetchIncomes();
+    // Re-fetch if expenses are missing
+    if (!userProfile?.expenses || userProfile.expenses.length === 0) {
+      fetchExpenses();
     }
   }, [userProfile, setUserProfile]);
 
   useEffect(() => {
-    const processIncomeData = () => {
+    const processExpenseData = () => {
       const currentDate = new Date();
       const currentMonth = getMonth(currentDate);
       const previousMonthDate = subMonths(currentDate, 1);
       const previousMonth = getMonth(previousMonthDate);
       const year = getYear(currentDate);
   
-      let currentIncomeTotal = 0;
-      let previousIncomeTotal = 0;
-      const monthlyIncomes = [];
-      const allIncomes = [];
+      let currentExpenseTotal = 0;
+      let previousExpenseTotal = 0;
+      const monthlyExpenses = [];
+      const allExpenses = [];
   
-      userProfile?.incomes?.forEach((income) => {
-        if (income?.timestamp && income.timestamp instanceof Timestamp) {
-          const incomeDate = income.timestamp.toDate();
-          const incomeMonth = getMonth(incomeDate);
-          const incomeYear = getYear(incomeDate);
+      userProfile?.expenses?.forEach((expense) => {
+        if (expense?.timestamp && expense.timestamp instanceof Timestamp) {
+          const expenseDate = expense.timestamp.toDate();
+          const expenseMonth = getMonth(expenseDate);
+          const expenseYear = getYear(expenseDate);
   
-          if (incomeMonth === currentMonth && incomeYear === year) {
-            currentIncomeTotal += income.incomePerMonth;
-            monthlyIncomes.push(income);
-          } else if (incomeMonth === previousMonth && incomeYear === year) {
-            previousIncomeTotal += income.incomePerMonth;
+          if (expenseMonth === currentMonth && expenseYear === year) {
+            currentExpenseTotal += expense.expenseAmount;
+            monthlyExpenses.push(expense);
+          } else if (expenseMonth === previousMonth && expenseYear === year) {
+            previousExpenseTotal += expense.expenseAmount;
           }
-          allIncomes.push(income);
+          allExpenses.push(expense);
         }
       });
   
-      setCurrentMonthIncome(currentIncomeTotal);
-      setPreviousMonthIncome(previousIncomeTotal);
+      setCurrentMonthExpenses(currentExpenseTotal);
+      setPreviousMonthExpenses(previousExpenseTotal);
   
-      return { monthlyIncomes, allIncomes };
+      return { monthlyExpenses, allExpenses };
     };
   
-    const { monthlyIncomes, allIncomes } = processIncomeData();
+    const { monthlyExpenses, allExpenses } = processExpenseData();
     
     // Use a small delay to ensure the component refreshes state correctly
     setTimeout(() => {
-      setIncomeSources(
-        (showAll ? allIncomes : monthlyIncomes).sort(
+      setExpenses(
+        (showAll ? allExpenses : monthlyExpenses).sort(
           (a, b) => (b?.timestamp?.toDate() || 0) - (a?.timestamp?.toDate() || 0)
         )
       );
@@ -166,21 +167,21 @@ export default function ExpenseTracking({navigation}) {
     const currentMonth = getMonth(currentDate);
     const currentYear = getYear(currentDate);
   
-    if (userProfile?.incomes) {
-      const currentMonthIncomes = userProfile.incomes.filter((income) => {
-        if (income.timestamp instanceof Timestamp) {
-          const incomeDate = income.timestamp.toDate();
-          const incomeMonth = getMonth(incomeDate);
-          const incomeYear = getYear(incomeDate);
-          return incomeMonth === currentMonth && incomeYear === currentYear;
+    if (userProfile?.expenses) {
+      const currentMonthExpenses = userProfile.expenses.filter((expense) => {
+        if (expense.timestamp instanceof Timestamp) {
+          const expenseDate = expense.timestamp.toDate();
+          const expenseMonth = getMonth(expenseDate);
+          const expenseYear = getYear(expenseDate);
+          return expenseMonth === currentMonth && expenseYear === currentYear;
         }
         return false;
       });
   
       // Prepare PieChart data
-      const categoryTotals = currentMonthIncomes.reduce((totals, income) => {
-        if (income.category && !isNaN(income.incomePerMonth)) {
-          totals[income.category] = (totals[income.category] || 0) + income.incomePerMonth;
+      const categoryTotals = currentMonthExpenses.reduce((totals, expense) => {
+        if (expense.category && !isNaN(expense.expenseAmount)) {
+          totals[expense.category] = (totals[expense.category] || 0) + expense.expenseAmount;
         }
         return totals;
       }, {});
@@ -229,7 +230,7 @@ export default function ExpenseTracking({navigation}) {
     },
   ];
 
-  const incomeChange = currentMonthIncome - previousMonthIncome;
+  const expenseChange = currentMonthExpenses - previousMonthExpenses;
 
   const getTextStyle = (amount) => {
     return {
@@ -307,7 +308,7 @@ export default function ExpenseTracking({navigation}) {
 
         <Card style={isDarkMode ? styles.darkCard : styles.card}>
           <Card.Title
-            title="Income Sources for Month"
+            title="Expense Sources for Month"
             left={(props) => (
               <Avatar.Icon {...props} icon="tune" style={styles.icon} />
             )}
@@ -338,30 +339,30 @@ export default function ExpenseTracking({navigation}) {
 
         {/* Add more sliders for other asset classes */}
 
-        {/* Income Sources with "Show All" button */}
+        {/* Expense Sources with "Show All" button */}
         <View style={styles.titleRow}>
-          <Title style={isDarkMode ? styles.darkTitle : styles.title}>Income Sources</Title>
+          <Title style={isDarkMode ? styles.darkTitle : styles.title}>Expense Sources</Title>
           <TouchableOpacity onPress={() => setShowAll(!showAll)}>
             <Text style={styles.showAllButton}>Show {showAll ? "Less" : "All"}</Text>
           </TouchableOpacity>
         </View>
 
-        {incomeSources.map((income, index) => (
+        {expenses.map((expense, index) => (
           <Card key={index} style={isDarkMode ? styles.darkCard : styles.card}>
             <Card.Title
-              title={income.name}
+              title={expense.name}
               left={(props) => <Avatar.Icon {...props} icon="cash" style={styles.icon} />}
               titleStyle={isDarkMode ? styles.darkCardTitle : styles.cardTitle}
             />
             <View style={styles.sliderContainer}>
               <Text style={isDarkMode ? styles.darkText : styles.text}>
-                Category: {translateCategory(income.category)}
+                Category: {translateCategory(expense.category)}
               </Text>
               <Text style={isDarkMode ? styles.darkText : styles.text}>
-                Income Per Month: ${income.incomePerMonth.toFixed(2)}
+                Expense Per Month: ${expense.expenseAmount.toFixed(2)}
               </Text>
             </View>
-            <TouchableOpacity onPress={() => handleDeleteIncome(income.id)}>
+            <TouchableOpacity onPress={() => handleDeleteExpense(expense.id)}>
               <Text style={isDarkMode ? styles.deleteText : styles.deleteText}>Delete</Text>
             </TouchableOpacity>
           </Card>
@@ -422,6 +423,14 @@ const styles = StyleSheet.create({
     color: "#555",
     marginBottom: 10,
   },
+  deleteText: {
+    color: 'red',
+    fontWeight: 'bold',
+    textAlign: 'right',
+    right: 15,
+    bottom: 125,
+  },
+
   // Dark mode styles
   darkContainer: {
     flexGrow: 1,
