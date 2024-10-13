@@ -251,6 +251,10 @@ export default function IncomeTrackingScreen() {
                 backgroundGradientTo: isDarkMode ? '#1E1E1E' : '#FFFFFF',
                 color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
                 labelColor: isDarkMode ? '#FFFFFF' : '#333',
+                // Set label style
+                propsForLabels: {
+                  fontSize: 12,  // Adjust this size as needed
+                },
               }}
               accessor="population"
               backgroundColor="transparent"
