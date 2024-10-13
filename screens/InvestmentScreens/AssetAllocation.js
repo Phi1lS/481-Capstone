@@ -1,12 +1,14 @@
 import React from 'react';
 import { View, StyleSheet, ScrollView, Text, useColorScheme, Platform } from 'react-native';
-import { Title, Card, Avatar } from 'react-native-paper';
+import { Title, Card, Avatar, FAB } from 'react-native-paper';
+import { useNavigation } from '@react-navigation/native';
 import { PieChart } from 'react-native-chart-kit';
 import Slider from '@react-native-community/slider';
 
 export default function AssetAllocationScreen() {
   const scheme = useColorScheme();
   const isDarkMode = scheme === 'dark';
+  const navigation = useNavigation();
 
   const data = [
     { name: 'Stocks', population: 60, color: '#00796B', legendFontColor: '#00796B', legendFontSize: 15 },
@@ -73,6 +75,12 @@ export default function AssetAllocationScreen() {
           </View>
         </Card>
       </ScrollView>
+      <FAB
+          style={styles.fab}
+          icon="cog"
+          color="rgba(255, 255, 255, 0.9)"
+          onPress={() => navigation.navigate('ManageAssets')}
+        />
     </View>
   );
 }
@@ -153,5 +161,19 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#AAAAAA',
     marginBottom: 10,
+  },
+  fab: {
+    position: 'absolute',
+    margin: 16,
+    right: 16,
+    bottom: 16,
+    backgroundColor: 'rgba(0, 121, 107, 0.6)', // 60% opacity
+  },
+  darkFab: {
+    position: 'absolute',
+    margin: 16,
+    right: 16,
+    bottom: 16,
+    backgroundColor: 'rgba(76, 175, 80, 0.6)', // 60% opacity
   },
 });
