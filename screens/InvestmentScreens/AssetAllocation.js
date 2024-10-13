@@ -66,11 +66,16 @@ export default function AssetAllocationScreen() {
     }
   };
 
+  // Function to format numbers with commas
+  const formatValue = (value) => {
+    return value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  };
+  
   const allocationData = [
-    { name: 'Stocks', population: assets.filter(asset => asset.assetType === 'stock').reduce((total, asset) => total + (asset.value || 0), 0), color: '#00796B', legendFontSize: 9 },
-    { name: 'Bonds', population: assets.filter(asset => asset.assetType === 'bond').reduce((total, asset) => total + (asset.value || 0), 0), color: '#004D40', legendFontSize: 9 },
-    { name: 'Real Estate', population: assets.filter(asset => asset.assetType === 'realEstate').reduce((total, asset) => total + (asset.value || 0), 0), color: '#B2DFDB', legendFontSize: 9 },
-    { name: 'Cash', population: assets.filter(asset => asset.assetType === 'cash').reduce((total, asset) => total + (asset.value || 0), 0), color: '#4CAF50', legendFontSize: 9 },
+    { name: 'Stocks', population: assets.filter(asset => asset.assetType === 'stock').reduce((total, asset) => total + (asset.value || 0), 0), color: '#00796B', legendFontSize: 11 },
+    { name: 'Bonds', population: assets.filter(asset => asset.assetType === 'bond').reduce((total, asset) => total + (asset.value || 0), 0), color: '#004D40', legendFontSize: 11 },
+    { name: 'Real Estate', population: assets.filter(asset => asset.assetType === 'realEstate').reduce((total, asset) => total + (asset.value || 0), 0), color: '#B2DFDB', legendFontSize: 11 },
+    { name: 'Cash', population: assets.filter(asset => asset.assetType === 'cash').reduce((total, asset) => total + (asset.value || 0), 0), color: '#4CAF50', legendFontSize: 11 },
   ];
 
   return (
@@ -84,25 +89,36 @@ export default function AssetAllocationScreen() {
             titleStyle={isDarkMode ? styles.darkCardTitle : styles.cardTitle}
           />
           <PieChart
-            data={allocationData}
-            width={300}
-            height={220}
-            chartConfig={{
-              backgroundColor: isDarkMode ? '#1E1E1E' : '#FFFFFF',
-              backgroundGradientFrom: isDarkMode ? '#1E1E1E' : '#FFFFFF',
-              backgroundGradientTo: isDarkMode ? '#1E1E1E' : '#FFFFFF',
-              color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
-              labelColor: isDarkMode ? '#FFFFFF' : '#333',
-            }}
-            accessor="population"
-            backgroundColor="transparent"
-            paddingLeft="15"
-            absolute
-          />
+  data={allocationData}
+  width={350}  // Further increase width
+  height={220}
+  chartConfig={{
+    backgroundColor: isDarkMode ? '#1E1E1E' : '#FFFFFF',
+    backgroundGradientFrom: isDarkMode ? '#1E1E1E' : '#FFFFFF',
+    backgroundGradientTo: isDarkMode ? '#1E1E1E' : '#FFFFFF',
+    color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
+    labelColor: isDarkMode ? '#FFFFFF' : '#333',
+    style: {
+      paddingRight: 40,
+    },
+    // Set label style
+    propsForLabels: {
+      fontSize: 12,  // Adjust this size as needed
+    },
+  }}
+  accessor="population"
+  backgroundColor="transparent"
+  paddingLeft="15"
+  absolute
+/>
         </Card>
 
-        {/* Assets List */}
-        {assets.map(asset => (
+        <View style={styles.titleRow}>
+          <Title style={isDarkMode ? styles.darkTitle : styles.title}>Assets</Title>
+        </View>
+
+         {/* Assets List */}
+         {assets.map(asset => (
           <Card key={asset.id} style={isDarkMode ? styles.darkCard : styles.card}>
             <Card.Title
               title={asset.assetName}
@@ -114,7 +130,7 @@ export default function AssetAllocationScreen() {
                 Asset Type: {translateType(asset.assetType) || "None"}
               </Text>
               <Text style={isDarkMode ? styles.darkText : styles.text}>
-                Value: ${asset.value.toFixed(2)}
+                Value: ${formatValue(asset.value.toFixed(2))}
               </Text>
             </View>
             <TouchableOpacity onPress={() => handleDeleteAsset(asset.id)}>
@@ -204,6 +220,12 @@ const styles = StyleSheet.create({
   text: {
     fontSize: 16,
     color: '#555',
+    marginBottom: 10,
+  },
+  titleRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between', // Align "Show All" to the right
+    alignItems: 'center',
     marginBottom: 10,
   },
   fab: {
