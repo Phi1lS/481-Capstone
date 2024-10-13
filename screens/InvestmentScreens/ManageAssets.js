@@ -60,40 +60,43 @@ export default function ManageAssets() {
 
     const handleAddAsset = async () => {
         try {
-          const user = auth.currentUser;
-      
-          if (!user) {
-            console.error('User not logged in');
-            return;
-          }
-      
-          // Validate fields
-          if (!assetName || !category || !value || assetType === "None") {
-            Alert.alert('Error', 'Please fill out all fields before submitting.');
-            return;
-          }
-      
-          const newAsset = {
-            userId: user.uid,
-            assetName: assetName,
-            category: category,
-            value: parseFloat(value.replace('$', '')), // Remove dollar sign before submitting
-            assetType: assetType,
-            timestamp: serverTimestamp(),
-          };
-      
-          await addDoc(collection(db, 'assets'), newAsset);
-          console.log('Asset added to Firestore');
-      
-          // Clear inputs
-          setAssetName('');
-          setCategory(null);
-          setValue('');
-          setAssetType("None");
+            const user = auth.currentUser;
+    
+            if (!user) {
+                console.error('User not logged in');
+                return;
+            }
+    
+            // Log current state values for debugging
+            console.log('Asset Name:', assetName);
+            console.log('Value:', value);
+            console.log('Asset Type:', assetType);
+    
+            // Validate fields
+            if (!assetName.trim() || !value || assetType === "None") {
+                Alert.alert('Error', 'Please fill out all fields before submitting.');
+                return;
+            }
+    
+            const newAsset = {
+                userId: user.uid,
+                assetName: assetName,
+                value: parseFloat(value.replace('$', '')), // Remove dollar sign before submitting
+                assetType: assetType,
+                timestamp: serverTimestamp(),
+            };
+    
+            await addDoc(collection(db, 'assets'), newAsset);
+            console.log('Asset added to Firestore');
+    
+            // Clear inputs
+            setAssetName('');
+            setValue('');
+            setAssetType("None");
         } catch (error) {
-          console.error('Error adding asset:', error);
+            console.error('Error adding asset:', error);
         }
-      };
+    };
 
     return (
         <View style={isDarkMode ? styles.darkSafeArea : styles.safeArea}>
@@ -187,8 +190,8 @@ export default function ManageAssets() {
                 <View style={isDarkMode ? styles.darkInputCard : styles.inputCard}>
                     <TextInput
                         placeholder="Value"
-                        value={value}
-                        onChangeText={setValue}
+                        value={value.length > 0 ? `$${value}` : value} // Show dollar sign
+                        onChangeText={(text) => setValue(text.replace('$', ''))} // Remove dollar sign for submission
                         keyboardType="numeric"
                         style={isDarkMode ? styles.darkInput : styles.input}
                         selectionColor={isDarkMode ? '#4CAF50' : '#00796B'} // Green caret
