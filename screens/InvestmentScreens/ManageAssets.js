@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity, TextInput, StyleSheet, useColorScheme, Sc
 import { Title, Card, Avatar } from 'react-native-paper';
 import RNPickerSelect from 'react-native-picker-select';
 import { Icon } from 'react-native-paper';
-import { getDocs, addDoc, collection, serverTimestamp, Timestamp } from 'firebase/firestore';
+import { doc, getDocs, getDoc, addDoc, collection, serverTimestamp, Timestamp } from 'firebase/firestore';
 import { auth, db } from '../../firebaseConfig';
 import { UserContext } from '../../UserContext';
 
@@ -95,6 +95,24 @@ export default function ManageAssets() {
             setAssetType("None");
         } catch (error) {
             console.error('Error adding asset:', error);
+        }
+    };
+
+    const handleChangeAssetType = async (incomeId, newAssetType) => {
+        const income = incomeSources.find((inc) => inc.id === incomeId);
+        if (income && newAssetType !== "None") {
+            const newAsset = {
+                userId: auth.currentUser.uid,
+                assetName: income.name,
+                value: income.incomePerMonth,
+                assetType: newAssetType,
+                timestamp: income.timestamp,
+            };
+    
+            await addDoc(collection(db, 'assets'), newAsset);
+            console.log('Asset duplicated successfully');
+        } else {
+            Alert.alert('Error', 'Please select a valid asset type.');
         }
     };
 
@@ -203,7 +221,7 @@ export default function ManageAssets() {
                 </View>
             ) : (
                 <ScrollView style={isDarkMode ? styles.darkContainer : styles.container}>
-                    {incomeSources.map((income) => (
+                     {incomeSources.map((income) => (
                         <Card key={income.id} style={isDarkMode ? styles.darkCard : styles.card}>
                             <Card.Title
                                 title={income.name}
@@ -217,10 +235,25 @@ export default function ManageAssets() {
                                 <Text style={isDarkMode ? styles.darkText : styles.text}>
                                     Income Per Month: ${income.incomePerMonth.toFixed(2)}
                                 </Text>
-                                <Text style={isDarkMode ? styles.darkText : styles.text}>
-                                    Asset Type: {income.assetType || "None"}
-                                </Text>
                             </View>
+
+                            {/* Dropdown for Asset Type Selection */}
+                            <RNPickerSelect
+                                useNativeAndroidPickerStyle={false}
+                                placeholder={{ label: "Select Asset Type", value: null }}
+                                onValueChange={(value) => setAssetType(value)} // Set the selected asset type
+                                items={[
+                                    { label: "None", value: "None" },
+                                    { label: "Stock", value: "stock" },
+                                    { label: "Bond", value: "bond" },
+                                    { label: "Real Estate", value: "realEstate" },
+                                    { label: "Cash", value: "cash" },
+                                ]}
+                            />
+
+                            <TouchableOpacity onPress={() => handleChangeAssetType(income.id, assetType)}>
+                                <Text style={isDarkMode ? styles.changeText : styles.text}>Change Asset Type</Text>
+                            </TouchableOpacity>
                         </Card>
                     ))}
                 </ScrollView>
