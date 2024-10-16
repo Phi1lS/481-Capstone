@@ -1,31 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Alert, StyleSheet, Image, useColorScheme } from 'react-native';
 import { signInWithEmailAndPassword } from 'firebase/auth';
-import { getDownloadURL, ref } from 'firebase/storage'; // Import Firebase storage
-import { auth, storage } from '../firebaseConfig'; // Ensure correct path to firebaseConfig
+import { auth } from '../firebaseConfig'; // Ensure correct path to firebaseConfig
+import logoText from '../assets/logoText.png'
 
 export default function LoginScreen({ navigation }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [logoUrl, setLogoUrl] = useState(null); // State to store the logo URL
   
   const scheme = useColorScheme(); // Detect dark mode
   const isDarkMode = scheme === 'dark'; // Check if it's dark mode
-
-  useEffect(() => {
-    // Fetch the logo from Firebase Storage
-    const fetchLogo = async () => {
-      try {
-        const logoRef = ref(storage, 'logoText.png'); // Reference to the logo in Firebase Storage
-        const url = await getDownloadURL(logoRef); // Fetch the download URL
-        setLogoUrl(url); // Set the URL to state
-      } catch (error) {
-        // console.error('Error fetching logo: ', error);
-      }
-    };
-
-    fetchLogo();
-  }, []);
 
   const handleLogin = () => {
     signInWithEmailAndPassword(auth, email, password)
@@ -44,11 +28,7 @@ export default function LoginScreen({ navigation }) {
 
   return (
     <View style={isDarkMode ? styles.darkContainer : styles.container}>
-      {/* Logo */}
-      {logoUrl && (
-        <Image source={{ uri: logoUrl }} style={styles.logo} />
-      )}
-  
+      <Image source={logoText} style={styles.logo} resizeMode="contain" /> 
       <TextInput
         value={email}
         onChangeText={setEmail}
