@@ -68,9 +68,9 @@ export default function ManageAssets() {
             }
     
             // Log current state values for debugging
-            console.log('Asset Name:', assetName);
-            console.log('Value:', value);
-            console.log('Asset Type:', assetType);
+            // console.log('Asset Name:', assetName);
+            // console.log('Value:', value);
+            // console.log('Asset Type:', assetType);
     
             // Validate fields
             if (!assetName.trim() || !value || assetType === "None") {
@@ -87,7 +87,7 @@ export default function ManageAssets() {
             };
     
             await addDoc(collection(db, 'assets'), newAsset);
-            console.log('Asset added to Firestore');
+            // console.log('Asset added to Firestore');
             Alert.alert('Asset added successfully.')
     
             // Clear inputs
@@ -121,7 +121,7 @@ export default function ManageAssets() {
             };
     
             await addDoc(collection(db, 'assets'), newAsset);
-            console.log('Asset duplicated successfully');
+            // console.log('Asset duplicated successfully');
             Alert.alert('Asset added successfully.')
         } else {
             Alert.alert('Error', 'Please select a valid asset type.');

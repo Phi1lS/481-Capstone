@@ -6,7 +6,7 @@ import { FAB } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
 import { getMonth, getYear, subMonths } from 'date-fns';
 import { UserContext } from '../../UserContext';
-import { Timestamp, doc, deleteDoc, collection, getDocs } from 'firebase/firestore';
+import { Timestamp, doc, deleteDoc, collection, getDocs, getDoc } from 'firebase/firestore';
 import { db, auth } from '../../firebaseConfig'
 
 export default function IncomeTrackingScreen() {
@@ -49,27 +49,46 @@ export default function IncomeTrackingScreen() {
           onPress: async () => {
             try {
               // Delete the income from Firestore
-              await deleteDoc(doc(db, 'incomes', incomeId));
-        
-              // Update UserContext by removing the deleted income
-              setUserProfile((prevProfile) => {
-                const updatedIncomes = prevProfile.incomes.filter((income) => income.id !== incomeId);
-        
-                return {
-                  ...prevProfile,
-                  incomes: updatedIncomes,
-                };
-              });
-        
-              // Also update the local incomeSources state
-              setIncomeSources((prevSources) => prevSources.filter((income) => income.id !== incomeId));
-        
-              console.log('Income deleted successfully');
+              const incomeRef = doc(db, 'incomes', incomeId);
+              const incomeSnapshot = await getDoc(incomeRef);
+              const incomeData = incomeSnapshot.data();
+  
+              if (incomeData) {
+                // Delete the income document
+                await deleteDoc(incomeRef);
+  
+                // Check if there's an associated asset
+                const assetsRef = collection(db, 'assets');
+                const assetsSnapshot = await getDocs(assetsRef);
+                const associatedAsset = assetsSnapshot.docs.find(assetDoc => {
+                  const assetData = assetDoc.data();
+                  return assetData.assetName === incomeData.name && assetData.timestamp.isEqual(incomeData.timestamp);
+                });
+  
+                // If an associated asset is found, delete it
+                if (associatedAsset) {
+                  await deleteDoc(doc(assetsRef, associatedAsset.id));
+                }
+  
+                // Update UserContext and local state
+                setUserProfile((prevProfile) => {
+                  const updatedIncomes = prevProfile.incomes.filter((income) => income.id !== incomeId);
+                  return {
+                    ...prevProfile,
+                    incomes: updatedIncomes,
+                  };
+                });
+  
+                // Also update the local incomeSources state
+                setIncomeSources((prevSources) => prevSources.filter((income) => income.id !== incomeId));
+  
+                // console.log('Income and associated asset deleted successfully');
+              }
             } catch (error) {
               console.error('Error deleting income:', error);
             }
           },
-          style: "destructive", // Makes the "Delete" button stand out
+          style: "destructive",
         },
       ],
       { cancelable: true }

@@ -39,7 +39,7 @@ export default function AssetAllocationScreen() {
             try {
               await deleteDoc(doc(db, 'assets', assetId));
               setAssets(prevAssets => prevAssets.filter(asset => asset.id !== assetId));
-              console.log('Asset deleted successfully');
+              // console.log('Asset deleted successfully');
             } catch (error) {
               console.error('Error deleting asset:', error);
             }

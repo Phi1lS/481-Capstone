@@ -41,7 +41,7 @@ export default function AddIncomeScreen() {
       };
   
       await addDoc(collection(db, 'incomes'), newIncome);
-      console.log('Income added to Firestore');
+      // console.log('Income added to Firestore');
       Alert.alert('Income added successfully.')
   
       // Update UserContext to reflect changes dynamically
