@@ -1,7 +1,8 @@
-import React, { useContext } from 'react';
+import React, { useContext, useState } from 'react';
 import { View, StyleSheet, ScrollView, Text, useColorScheme, Platform } from 'react-native';
 import { Title, Card, Avatar, Button } from 'react-native-paper';
 import { UserContext } from '../../UserContext'; // Import UserContext
+import Slider from '@react-native-community/slider';
 
 export default function RebalancingScreen() {
   const scheme = useColorScheme();
@@ -37,6 +38,18 @@ export default function RebalancingScreen() {
   };
 
   const allocations = calculateAllocations();
+
+   // State for sliders
+   const [stockValueChange, setStockValueChange] = useState(allocations.stocks * 100);
+   const [bondValueChange, setBondValueChange] = useState(allocations.bonds * 100);
+   const [realEstateValueChange, setRealEstateValueChange] = useState(allocations.realEstate * 100);
+   const [cashValueChange, setCashValueChange] = useState(allocations.cash * 100);
+ 
+   const remainingPercent = (currentAllocation) => {
+     const total = 100 - currentAllocation;
+     return total < 0 ? 0 : total;
+   };
+ 
 
   const renderProgressBar = (progress, color) => (
     <View style={styles.progressBarBackground}>
@@ -88,6 +101,67 @@ export default function RebalancingScreen() {
             left={(props) => <Avatar.Icon {...props} icon="swap-horizontal" style={styles.icon} />}
             titleStyle={isDarkMode ? styles.darkCardTitle : styles.cardTitle}
           />
+
+           {/* Stocks Slider */}
+           <View style={styles.sliderContainer}>
+            <Text style={isDarkMode ? styles.darkText : styles.text}>Stocks: {Math.floor(stockValueChange)}%</Text>
+            <Slider
+              style={styles.slider}
+              value={stockValueChange}
+              onValueChange={(value) => setStockValueChange(value)}
+              minimumValue={0}
+              maximumValue={remainingPercent(bondValueChange + realEstateValueChange + cashValueChange)}
+              step={1}
+              minimumTrackTintColor="#00796B"
+              maximumTrackTintColor="#000000"
+            />
+          </View>
+
+          {/* Bonds Slider */}
+          <View style={styles.sliderContainer}>
+            <Text style={isDarkMode ? styles.darkText : styles.text}>Bonds: {Math.floor(bondValueChange)}%</Text>
+            <Slider
+              style={styles.slider}
+              value={bondValueChange}
+              onValueChange={(value) => setBondValueChange(value)}
+              minimumValue={0}
+              maximumValue={remainingPercent(stockValueChange + realEstateValueChange + cashValueChange)}
+              step={1}
+              minimumTrackTintColor="#004D40"
+              maximumTrackTintColor="#000000"
+            />
+          </View>
+
+          {/* Real Estate Slider */}
+          <View style={styles.sliderContainer}>
+            <Text style={isDarkMode ? styles.darkText : styles.text}>Real Estate: {Math.floor(realEstateValueChange)}%</Text>
+            <Slider
+              style={styles.slider}
+              value={realEstateValueChange}
+              onValueChange={(value) => setRealEstateValueChange(value)}
+              minimumValue={0}
+              maximumValue={remainingPercent(stockValueChange + bondValueChange + cashValueChange)}
+              step={1}
+              minimumTrackTintColor="#B2DFDB"
+              maximumTrackTintColor="#000000"
+            />
+          </View>
+
+          {/* Cash Slider */}
+          <View style={styles.sliderContainer}>
+            <Text style={isDarkMode ? styles.darkText : styles.text}>Cash: {Math.floor(cashValueChange)}%</Text>
+            <Slider
+              style={styles.slider}
+              value={cashValueChange}
+              onValueChange={(value) => setCashValueChange(value)}
+              minimumValue={0}
+              maximumValue={remainingPercent(stockValueChange + bondValueChange + realEstateValueChange)}
+              step={1}
+              minimumTrackTintColor="#4CAF50"
+              maximumTrackTintColor="#000000"
+            />
+          </View>
+          
           <View style={styles.detailsContainer}>
             <Text style={isDarkMode ? styles.darkText : styles.text}>
               Adjust your investments to maintain your desired asset allocation.

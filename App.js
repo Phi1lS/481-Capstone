@@ -40,7 +40,7 @@ import Notifications from './screens/UserAccountsScreen/Notifications';
 import Preferences from './screens/UserAccountsScreen/Preferences';
 import Profile from './screens/UserAccountsScreen/Profile';
 import Security from './screens/UserAccountsScreen/Security';
-import PortfolioRebalancing from './screens/RetirementScreens/PortfolioRebalancing';
+// import PortfolioRebalancing from './screens/RetirementScreens/PortfolioRebalancing';
 import RetirementSavings from './screens/RetirementScreens/RetirementSavings';
 import RetirementPlanning from './screens/RetirementScreens/RetirementPlanning';
 import PensionManagement from './screens/RetirementScreens/PensionManagement';
@@ -123,7 +123,7 @@ function RetirementStack() {
       }}
     >
       <Stack.Screen name="Retirement" component={RetirementScreen} />
-      <Stack.Screen name="PortfolioRebalancing" component={PortfolioRebalancing} />
+      <Stack.Screen name="Rebalancing" component={Rebalancing} />
       <Stack.Screen name="RetirementSavings" component={RetirementSavings} />
       <Stack.Screen name="RetirementPlanning" component={RetirementPlanning} /> 
       <Stack.Screen name="PensionManagement" component={PensionManagement} />
