@@ -89,28 +89,28 @@ export default function AssetAllocationScreen() {
             titleStyle={isDarkMode ? styles.darkCardTitle : styles.cardTitle}
           />
           <PieChart
-  data={allocationData}
-  width={350}  // Further increase width
-  height={220}
-  chartConfig={{
-    backgroundColor: isDarkMode ? '#1E1E1E' : '#FFFFFF',
-    backgroundGradientFrom: isDarkMode ? '#1E1E1E' : '#FFFFFF',
-    backgroundGradientTo: isDarkMode ? '#1E1E1E' : '#FFFFFF',
-    color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
-    labelColor: isDarkMode ? '#FFFFFF' : '#333',
-    style: {
-      paddingRight: 40,
-    },
-    // Set label style
-    propsForLabels: {
-      fontSize: 12,  // Adjust this size as needed
-    },
-  }}
-  accessor="population"
-  backgroundColor="transparent"
-  paddingLeft="15"
-  absolute
-/>
+            data={allocationData}
+            width={350}  // Further increase width
+            height={220}
+            chartConfig={{
+              backgroundColor: isDarkMode ? '#1E1E1E' : '#FFFFFF',
+              backgroundGradientFrom: isDarkMode ? '#1E1E1E' : '#FFFFFF',
+              backgroundGradientTo: isDarkMode ? '#1E1E1E' : '#FFFFFF',
+              color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
+              labelColor: isDarkMode ? '#FFFFFF' : '#333',
+              style: {
+                paddingRight: 40,
+              },
+              // Set label style
+              propsForLabels: {
+                fontSize: 12,  // Adjust this size as needed
+              },
+            }}
+            accessor="population"
+            backgroundColor="transparent"
+            paddingLeft="15"
+            absolute
+          />
         </Card>
 
         <View style={styles.titleRow}>
@@ -135,7 +135,10 @@ export default function AssetAllocationScreen() {
                   Value: ${formatValue(asset.value.toFixed(2))}
                 </Text>
               </View>
-              <TouchableOpacity onPress={() => handleDeleteAsset(asset.id)}>
+              <TouchableOpacity 
+                onPress={() => handleDeleteAsset(asset.id)}
+                style = {{ alignSelf: 'flex-end' }}
+              >
                 <Text style={styles.deleteText}>Delete</Text>
               </TouchableOpacity>
             </Card>

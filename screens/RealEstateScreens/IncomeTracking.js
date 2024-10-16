@@ -306,7 +306,10 @@ export default function IncomeTrackingScreen() {
                 Income Per Month: ${income.incomePerMonth.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </Text>
             </View>
-            <TouchableOpacity onPress={() => handleDeleteIncome(income.id)}>
+            <TouchableOpacity 
+              onPress={() => handleDeleteIncome(income.id)}
+              style = {{ alignSelf: 'flex-end' }}
+            >
               <Text style={isDarkMode ? styles.deleteText : styles.deleteText}>Delete</Text>
             </TouchableOpacity>
           </Card>
