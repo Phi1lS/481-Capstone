@@ -13,6 +13,7 @@ export default function AssetAllocationScreen() {
   const isDarkMode = scheme === 'dark';
   const { userProfile } = useContext(UserContext);
   const [assets, setAssets] = useState([]);
+  const [allocationData, setAllocationData] = useState([]);
   const navigation = useNavigation();
 
   useEffect(() => {
@@ -23,6 +24,27 @@ export default function AssetAllocationScreen() {
 
     fetchAssets();
   }, [userProfile]);
+
+  useEffect(() => {
+    if (userProfile?.assets) {
+      const categoryTotals = userProfile.assets.reduce((totals, asset) => {
+        if (asset.assetType) {
+          totals[asset.assetType] = (totals[asset.assetType] || 0) + asset.value;
+        }
+        return totals;
+      }, {});
+
+      const newAllocationData = Object.entries(categoryTotals).map(([type, total]) => ({
+        name: translateType(type),
+        population: total,
+        color: type === 'stock' ? '#00796B' : type === 'bond' ? '#004D40' : type === 'realEstate' ? '#B2DFDB' : '#4CAF50',
+        legendFontColor: isDarkMode ? '#FFFFFF' : '#000000',
+        legendFontSize: 11,
+      }));
+
+      setAllocationData(newAllocationData);
+    }
+  }, [userProfile, isDarkMode]);
 
   const handleDeleteAsset = async (assetId) => {
     Alert.alert(
@@ -70,13 +92,6 @@ export default function AssetAllocationScreen() {
   const formatValue = (value) => {
     return value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
   };
-  
-  const allocationData = [
-    { name: 'Stocks', population: assets.filter(asset => asset.assetType === 'stock').reduce((total, asset) => total + (asset.value || 0), 0), color: '#00796B', legendFontSize: 11 },
-    { name: 'Bonds', population: assets.filter(asset => asset.assetType === 'bond').reduce((total, asset) => total + (asset.value || 0), 0), color: '#004D40', legendFontSize: 11 },
-    { name: 'Real Estate', population: assets.filter(asset => asset.assetType === 'realEstate').reduce((total, asset) => total + (asset.value || 0), 0), color: '#B2DFDB', legendFontSize: 11 },
-    { name: 'Cash', population: assets.filter(asset => asset.assetType === 'cash').reduce((total, asset) => total + (asset.value || 0), 0), color: '#4CAF50', legendFontSize: 11 },
-  ];
 
   return (
     <View style={isDarkMode ? styles.darkSafeArea : styles.safeArea}>
@@ -90,7 +105,7 @@ export default function AssetAllocationScreen() {
           />
           <PieChart
             data={allocationData}
-            width={350}  // Further increase width
+            width={350}
             height={220}
             chartConfig={{
               backgroundColor: isDarkMode ? '#1E1E1E' : '#FFFFFF',
@@ -98,12 +113,9 @@ export default function AssetAllocationScreen() {
               backgroundGradientTo: isDarkMode ? '#1E1E1E' : '#FFFFFF',
               color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
               labelColor: isDarkMode ? '#FFFFFF' : '#333',
-              style: {
-                paddingRight: 40,
-              },
-              // Set label style
               propsForLabels: {
-                fontSize: 12,  // Adjust this size as needed
+                fontSize: 12,
+                color: isDarkMode ? '#FFFFFF' : '#333', // Adjust this color based on mode
               },
             }}
             accessor="population"
