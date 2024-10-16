@@ -42,6 +42,7 @@ export default function AddIncomeScreen() {
   
       await addDoc(collection(db, 'incomes'), newIncome);
       console.log('Income added to Firestore');
+      Alert.alert('Income added successfully.')
   
       // Update UserContext to reflect changes dynamically
       setUserProfile((prevProfile) => ({
@@ -75,6 +76,7 @@ export default function AddIncomeScreen() {
   
       // Add income to Firestore without updating the local state
       await addDoc(collection(db, 'incomes'), newIncome);
+      Alert.alert('Test income added successfully.')
     } catch (error) {
       console.error('Error adding test income:', error);
     }

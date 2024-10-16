@@ -118,26 +118,28 @@ export default function AssetAllocationScreen() {
         </View>
 
          {/* Assets List */}
-         {assets.map(asset => (
-          <Card key={asset.id} style={isDarkMode ? styles.darkCard : styles.card}>
-            <Card.Title
-              title={asset.assetName}
-              left={(props) => <Avatar.Icon {...props} icon="cash" style={styles.icon} />}
-              titleStyle={isDarkMode ? styles.darkCardTitle : styles.cardTitle}
-            />
-            <View style={styles.sliderContainer}>
-              <Text style={isDarkMode ? styles.darkText : styles.text}>
-                Asset Type: {translateType(asset.assetType) || "None"}
-              </Text>
-              <Text style={isDarkMode ? styles.darkText : styles.text}>
-                Value: ${formatValue(asset.value.toFixed(2))}
-              </Text>
-            </View>
-            <TouchableOpacity onPress={() => handleDeleteAsset(asset.id)}>
-              <Text style={styles.deleteText}>Delete</Text>
-            </TouchableOpacity>
-          </Card>
-        ))}
+         {assets
+          .sort((a, b) => (b.timestamp?.toDate() || 0) - (a.timestamp?.toDate() || 0)) // Sort by timestamp
+          .map(asset => (
+            <Card key={asset.id} style={isDarkMode ? styles.darkCard : styles.card}>
+              <Card.Title
+                title={asset.assetName}
+                left={(props) => <Avatar.Icon {...props} icon="cash" style={styles.icon} />}
+                titleStyle={isDarkMode ? styles.darkCardTitle : styles.cardTitle}
+              />
+              <View style={styles.sliderContainer}>
+                <Text style={isDarkMode ? styles.darkText : styles.text}>
+                  Asset Type: {translateType(asset.assetType) || "None"}
+                </Text>
+                <Text style={isDarkMode ? styles.darkText : styles.text}>
+                  Value: ${formatValue(asset.value.toFixed(2))}
+                </Text>
+              </View>
+              <TouchableOpacity onPress={() => handleDeleteAsset(asset.id)}>
+                <Text style={styles.deleteText}>Delete</Text>
+              </TouchableOpacity>
+            </Card>
+          ))}
       </ScrollView>
       <FAB
         style={isDarkMode ? styles.darkFab : styles.fab}

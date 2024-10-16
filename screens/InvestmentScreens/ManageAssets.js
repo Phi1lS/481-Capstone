@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity, TextInput, StyleSheet, useColorScheme, Sc
 import { Title, Card, Avatar } from 'react-native-paper';
 import RNPickerSelect from 'react-native-picker-select';
 import { Icon } from 'react-native-paper';
-import { doc, getDocs, getDoc, addDoc, collection, serverTimestamp, Timestamp } from 'firebase/firestore';
+import { doc, getDocs, getDoc, addDoc, collection, serverTimestamp, Timestamp, where, query } from 'firebase/firestore';
 import { auth, db } from '../../firebaseConfig';
 import { UserContext } from '../../UserContext';
 
@@ -88,6 +88,7 @@ export default function ManageAssets() {
     
             await addDoc(collection(db, 'assets'), newAsset);
             console.log('Asset added to Firestore');
+            Alert.alert('Asset added successfully.')
     
             // Clear inputs
             setAssetName('');
@@ -101,6 +102,16 @@ export default function ManageAssets() {
     const handleChangeAssetType = async (incomeId, newAssetType) => {
         const income = incomeSources.find((inc) => inc.id === incomeId);
         if (income && newAssetType !== "None") {
+            const assetRef = collection(db, 'assets');
+            const assetQuery = query(assetRef, where('assetName', '==', income.name), where('userId', '==', auth.currentUser.uid));
+            const assetSnapshot = await getDocs(assetQuery);
+    
+            // Check if the asset already exists
+            if (!assetSnapshot.empty) {
+                Alert.alert('Error', 'This income is already an asset.');
+                return;
+            }
+    
             const newAsset = {
                 userId: auth.currentUser.uid,
                 assetName: income.name,
@@ -111,6 +122,7 @@ export default function ManageAssets() {
     
             await addDoc(collection(db, 'assets'), newAsset);
             console.log('Asset duplicated successfully');
+            Alert.alert('Asset added successfully.')
         } else {
             Alert.alert('Error', 'Please select a valid asset type.');
         }
@@ -249,10 +261,22 @@ export default function ManageAssets() {
                                     { label: "Real Estate", value: "realEstate" },
                                     { label: "Cash", value: "cash" },
                                 ]}
+                                style={{
+                                    inputAndroid: {
+                                        ...isDarkMode ? styles.darkText : styles.text,
+                                        color: isDarkMode ? '#FFFFFF' : '#333',
+                                    },
+                                    inputIOS: {
+                                        ...isDarkMode ? styles.darkText : styles.text,
+                                        color: isDarkMode ? '#FFFFFF' : '#333',
+                                    },
+                                }}
                             />
-
-                            <TouchableOpacity onPress={() => handleChangeAssetType(income.id, assetType)}>
-                                <Text style={isDarkMode ? styles.changeText : styles.text}>Change Asset Type</Text>
+                            <TouchableOpacity 
+                                onPress={() => handleChangeAssetType(income.id, assetType)}
+                                style = {{ alignSelf: 'flex-end' }}
+                            >
+                                <Text style={isDarkMode ? styles.darkChangeText : styles.changeText}>Modify Asset Type</Text>
                             </TouchableOpacity>
                         </Card>
                     ))}
@@ -360,6 +384,12 @@ const styles = StyleSheet.create({
       fontSize: 16,
       color: '#555',
     },
+    changeText: {
+        alignSelf: 'flex-end', // Align to the right side of the card
+        color: '#00796B',
+        fontWeight: 'bold',
+        bottom: 5,
+    },
     // Dark mode styles
     darkSafeArea: {
       flex: 1,
@@ -436,5 +466,11 @@ const styles = StyleSheet.create({
     darkText: {
       fontSize: 16,
       color: '#AAAAAA',
+    },
+    darkChangeText: {
+        alignSelf: 'flex-end', // Align to the right side of the card
+        color: '#4CAF50',
+        fontWeight: 'bold',
+        bottom: 5,
     },
 });
