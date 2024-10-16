@@ -428,7 +428,7 @@ const styles = StyleSheet.create({
     margin: 16,
     right: 16,
     bottom: 16,
-    backgroundColor: 'rgba(76, 175, 80, 0.6)', // 60% opacity
+    backgroundColor: 'rgba(76, 175, 80, 0.4)', // 40% opacity
   },
   deleteText: {
     color: 'red',
