@@ -224,6 +224,7 @@ export default function ManageAssets() {
                         onChangeText={(text) => setValue(text.replace('$', ''))} // Remove dollar sign for submission
                         keyboardType="numeric"
                         style={isDarkMode ? styles.darkInput : styles.input}
+                        placeholderTextColor={isDarkMode ? '#AAAAAA' : '#888'}
                         selectionColor={isDarkMode ? '#4CAF50' : '#00796B'} // Green caret
                     />
                 </View>
