@@ -1,19 +1,42 @@
-import React, { useState } from 'react';
+import React, { useContext } from 'react';
 import { View, StyleSheet, ScrollView, Text, useColorScheme, Platform } from 'react-native';
 import { Title, Card, Avatar, Button } from 'react-native-paper';
+import { UserContext } from '../../UserContext'; // Import UserContext
 
 export default function RebalancingScreen() {
   const scheme = useColorScheme();
   const isDarkMode = scheme === 'dark';
-  const [isPressed, setIsPressed] = useState(false);
+  const { userProfile } = useContext(UserContext); // Get userProfile from context
 
-  const handlePressIn = () => {
-    setIsPressed(true);
+  // Calculate asset allocations
+  const calculateAllocations = () => {
+    const assets = userProfile.assets || [];
+
+    const totalValue = assets.reduce((total, asset) => total + (asset.value || 0), 0);
+    const allocations = {
+      stocks: 0,
+      bonds: 0,
+      realEstate: 0,
+      cash: 0,
+    };
+
+    assets.forEach((asset) => {
+      if (asset.assetType === 'stock') allocations.stocks += asset.value || 0;
+      if (asset.assetType === 'bond') allocations.bonds += asset.value || 0;
+      if (asset.assetType === 'realEstate') allocations.realEstate += asset.value || 0;
+      if (asset.assetType === 'cash') allocations.cash += asset.value || 0;
+    });
+
+    // Calculate percentages
+    return {
+      stocks: (allocations.stocks / totalValue) || 0,
+      bonds: (allocations.bonds / totalValue) || 0,
+      realEstate: (allocations.realEstate / totalValue) || 0,
+      cash: (allocations.cash / totalValue) || 0,
+    };
   };
 
-  const handlePressOut = () => {
-    setIsPressed(false);
-  };
+  const allocations = calculateAllocations();
 
   const renderProgressBar = (progress, color) => (
     <View style={styles.progressBarBackground}>
@@ -35,27 +58,27 @@ export default function RebalancingScreen() {
           <View style={styles.detailsContainer}>
             <View style={styles.progressBarContainer}>
               <Text style={isDarkMode ? styles.darkText : styles.text}>Stocks</Text>
-              <Text style={isDarkMode ? styles.darkText : styles.text}>60%</Text>
+              <Text style={isDarkMode ? styles.darkText : styles.text}>{(allocations.stocks * 100).toFixed(2)}%</Text>
             </View>
-            {renderProgressBar(0.6, '#00796B')}
+            {renderProgressBar(allocations.stocks, '#00796B')}
 
             <View style={[styles.progressBarContainer, styles.spacing]}>
               <Text style={isDarkMode ? styles.darkText : styles.text}>Bonds</Text>
-              <Text style={isDarkMode ? styles.darkText : styles.text}>20%</Text>
+              <Text style={isDarkMode ? styles.darkText : styles.text}>{(allocations.bonds * 100).toFixed(2)}%</Text>
             </View>
-            {renderProgressBar(0.2, '#004D40')}
+            {renderProgressBar(allocations.bonds, '#004D40')}
 
             <View style={[styles.progressBarContainer, styles.spacing]}>
               <Text style={isDarkMode ? styles.darkText : styles.text}>Real Estate</Text>
-              <Text style={isDarkMode ? styles.darkText : styles.text}>10%</Text>
+              <Text style={isDarkMode ? styles.darkText : styles.text}>{(allocations.realEstate * 100).toFixed(2)}%</Text>
             </View>
-            {renderProgressBar(0.1, '#B2DFDB')}
+            {renderProgressBar(allocations.realEstate, '#B2DFDB')}
 
             <View style={[styles.progressBarContainer, styles.spacing]}>
               <Text style={isDarkMode ? styles.darkText : styles.text}>Cash</Text>
-              <Text style={isDarkMode ? styles.darkText : styles.text}>10%</Text>
+              <Text style={isDarkMode ? styles.darkText : styles.text}>{(allocations.cash * 100).toFixed(2)}%</Text>
             </View>
-            {renderProgressBar(0.1, '#4CAF50')}
+            {renderProgressBar(allocations.cash, '#4CAF50')}
           </View>
         </Card>
 
@@ -72,13 +95,8 @@ export default function RebalancingScreen() {
 
             <Button
               mode="contained"
-              onPressIn={handlePressIn}
-              onPressOut={handlePressOut}
               onPress={() => console.log('Rebalance Action')}
-              style={[
-                styles.rebalanceButton,
-                isPressed && styles.rebalanceButtonPressed,
-              ]}
+              style={styles.rebalanceButton}
               labelStyle={styles.buttonLabel}
             >
               Rebalance Now

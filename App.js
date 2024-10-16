@@ -25,6 +25,7 @@ import ExpenseTracking from './screens/RealEstateScreens/ExpenseTracking';
 import LeaseManagement from './screens/RealEstateScreens/LeaseManagement';
 import TaxIntegration from './screens/RealEstateScreens/TaxIntegration';
 import NewExpense from './screens/RealEstateScreens/NewExpense';
+import ManageAssets from './screens/InvestmentScreens/ManageAssets';
 
 import AddIncomeScreen from './screens/RealEstateScreens/AddIncome';
 
@@ -106,6 +107,7 @@ function InvestmentStack() {
       <Stack.Screen name="MarketPredictions" component={MarketPredictions} />
       <Stack.Screen name="Rebalancing" component={Rebalancing} />
       <Stack.Screen name="InvestmentAnalytics" component={InvestmentAnalytics} />
+      <Stack.Screen name="ManageAssets" component={ManageAssets} />
     </Stack.Navigator>
   );
 }

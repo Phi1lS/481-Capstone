@@ -1,5 +1,5 @@
 import React, { useState, useContext } from 'react';
-import { View, Text, TouchableOpacity, TextInput, StyleSheet, useColorScheme } from 'react-native';
+import { View, Text, TouchableOpacity, TextInput, StyleSheet, useColorScheme, Alert } from 'react-native';
 import RNPickerSelect from 'react-native-picker-select';
 import { Icon } from 'react-native-paper';
 import { addDoc, collection, serverTimestamp, Timestamp } from 'firebase/firestore';
@@ -19,12 +19,18 @@ export default function AddIncomeScreen() {
   const handleAddIncome = async () => {
     try {
       const user = auth.currentUser;
-
+  
       if (!user) {
         console.error('User not logged in');
         return;
       }
-
+  
+      // Validate fields
+      if (!name || !category || !incomePerMonth) {
+        Alert.alert('Error', 'Please fill out all fields before submitting.');
+        return;
+      }
+  
       // Add income to Firestore with a timestamp
       const newIncome = {
         userId: user.uid,
@@ -33,16 +39,17 @@ export default function AddIncomeScreen() {
         incomePerMonth: parseFloat(incomePerMonth.replace('$', '')), // Remove dollar sign before submitting
         timestamp: serverTimestamp(),
       };
-
+  
       await addDoc(collection(db, 'incomes'), newIncome);
-      console.log('Income added to Firestore');
-
+      // console.log('Income added to Firestore');
+      Alert.alert('Income added successfully.')
+  
       // Update UserContext to reflect changes dynamically
       setUserProfile((prevProfile) => ({
         ...prevProfile,
         incomes: [...(prevProfile.incomes || []), newIncome],
       }));
-
+  
       setName('');
       setCategory(null);
       setIncomePerMonth('');
@@ -69,6 +76,7 @@ export default function AddIncomeScreen() {
   
       // Add income to Firestore without updating the local state
       await addDoc(collection(db, 'incomes'), newIncome);
+      Alert.alert('Test income added successfully.')
     } catch (error) {
       console.error('Error adding test income:', error);
     }
