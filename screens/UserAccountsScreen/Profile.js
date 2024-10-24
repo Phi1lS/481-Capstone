@@ -31,19 +31,23 @@ export default function ProfileScreen() {
         const userSnapshot = await getDoc(userRef);
         if (userSnapshot.exists()) {
           const userData = userSnapshot.data();
-          setUserProfile({
+          
+          // Preserve existing incomes and assets while updating other fields
+          setUserProfile((prevProfile) => ({
+            ...prevProfile,
             firstName: userData.firstName || '',
             lastName: userData.lastName || '',
             email: userData.email || '',
             phone: userData.phone || '',
             address: userData.address || '',
-            accountType: userData.accountType || 'Checking', 
+            accountType: userData.accountType || 'Checking',
             avatarPath: userData.avatarPath || null,
-          });          
+          }));          
+          
           setEditedFullName(`${userData.firstName} ${userData.lastName}`);
           setEditedPhone(userData.phone || '');
           setEditedAddress(userData.address || '');
-    
+  
           // Load avatar
           try {
             const avatarRef = userData.avatarPath ? ref(storage, userData.avatarPath) : ref(storage, 'default/avatar.png');
