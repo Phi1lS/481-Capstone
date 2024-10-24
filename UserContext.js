@@ -30,11 +30,12 @@ export const UserProvider = ({ children }) => {
         const incomeRef = collection(db, 'incomes');
         unsubscribeIncomeListener = onSnapshot(incomeRef, (snapshot) => {
           const incomes = snapshot.docs
-            .filter((doc) => doc.data().userId === user.uid)
-            .map((doc) => ({
-              id: doc.id,
-              ...doc.data(),
-            }));
+          .filter((doc) => doc.data().userId === user.uid)
+          .map((doc) => ({
+            id: doc.id,
+            ...doc.data(),
+            isSavings: doc.data().isSavings || false, // Ensure isSavings is included
+          }));
           setUserProfile((prevProfile) => ({
             ...prevProfile,
             incomes,
@@ -49,6 +50,7 @@ export const UserProvider = ({ children }) => {
             .map((doc) => ({
               id: doc.id,
               ...doc.data(),
+              isSavings: doc.data().isSavings || false, // Ensure isSavings is included
             }));
           setUserProfile((prevProfile) => ({
             ...prevProfile,

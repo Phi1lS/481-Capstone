@@ -6,7 +6,7 @@ import { FAB } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
 import { getMonth, getYear, subMonths } from 'date-fns';
 import { UserContext } from '../../UserContext';
-import { Timestamp, doc, deleteDoc, collection, getDocs, getDoc } from 'firebase/firestore';
+import { Timestamp, doc, deleteDoc, collection, getDocs, getDoc, updateDoc } from 'firebase/firestore';
 import { db, auth } from '../../firebaseConfig'
 
 export default function IncomeTrackingScreen() {
@@ -219,6 +219,38 @@ export default function IncomeTrackingScreen() {
     };
   };
 
+  const toggleIncomeSavingsStatus = async (incomeId) => {
+    try {
+      const incomeRef = doc(db, 'incomes', incomeId);
+      const incomeSnapshot = await getDoc(incomeRef);
+      const incomeData = incomeSnapshot.data();
+  
+      if (incomeData) {
+        const newStatus = !incomeData.isSavings; // Toggle the current status
+        await updateDoc(incomeRef, { isSavings: newStatus });
+  
+        // Update the UserContext
+        setUserProfile((prevProfile) => {
+          const updatedIncomes = prevProfile.incomes.map((income) => {
+            if (income.id === incomeId) {
+              return { ...income, isSavings: newStatus }; // Update the income's savings status
+            }
+            return income;
+          });
+  
+          return {
+            ...prevProfile,
+            incomes: updatedIncomes,
+          };
+        });
+  
+        console.log('Savings status updated successfully');
+      }
+    } catch (error) {
+      console.error('Error updating savings status:', error);
+    }
+  };
+
   return (
     <View style={isDarkMode ? styles.darkSafeArea : styles.safeArea}>
       <ScrollView contentContainerStyle={isDarkMode ? styles.darkContainer : styles.container}>
@@ -306,9 +338,21 @@ export default function IncomeTrackingScreen() {
                 Income Per Month: ${income.incomePerMonth.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </Text>
             </View>
+            
+            {/* Savings Toggle */}
             <TouchableOpacity 
-              onPress={() => handleDeleteIncome(income.id)}
-              style = {{ alignSelf: 'flex-end' }}
+              onPress={() => toggleIncomeSavingsStatus(income.id)} 
+              style={{ alignSelf: 'flex-end', marginBottom: 10 }} // Add some margin
+            >
+              <Text style={isDarkMode ? styles.savingsText : styles.savingsText}>
+                {income.isSavings ? "Savings" : "Income"}
+              </Text>
+            </TouchableOpacity>
+
+            {/* Delete Button */}
+            <TouchableOpacity 
+              onPress={() => handleDeleteIncome(income.id)} 
+              style={{ alignSelf: 'flex-end' }}
             >
               <Text style={isDarkMode ? styles.deleteText : styles.deleteText}>Delete</Text>
             </TouchableOpacity>
@@ -435,6 +479,13 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     textAlign: 'right',
     right: 15,
-    bottom: 125,
+    bottom: 155,
+  },
+  savingsText: {
+    color: 'green',
+    fontWeight: 'bold',
+    textAlign: 'right',
+    right: 15,
+    bottom: 100,
   },
 });
