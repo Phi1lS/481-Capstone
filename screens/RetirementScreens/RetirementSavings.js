@@ -25,11 +25,11 @@ export default function InvestmentAnalyticsScreen() {
   //values for calculator //has set values but use can change all but inflation rate 
   const [lifeExpectancy, setLifeExpectancy] = useState('75');
   const [retirementaAge, setRetirementaAge] = useState('');
-  const[replacementRate, setReplacementRate] = useState('70');
+  const [replacementRate, setReplacementRate] = useState('70');
   const [rateOfReturn, setRateOfReturn] = useState('5');
   const [annualContributions, setAnnualContributions] = useState('5');
   const [inflationRate, setInflationRate] = useState('3');
-  const [savingsNeeded, setSavingsNeeded]= useState(0);
+  const [savingsNeeded, setSavingsNeeded] = useState(0);
 
   //variables for goal update modal
   const [modalVisible, setModalVisible] = useState(false);
@@ -96,22 +96,21 @@ export default function InvestmentAnalyticsScreen() {
 
       const totalSavingsIncome = incomeSavings?.reduce((total, income) => total + income.incomePerMonth, 0);
       setTotalSavings(totalSavingsIncome || 0);
-      
+
     };
-    const updateRetirementGoal= async () => {
+    const updateRetirementGoal = async () => {
       try {
         const user = auth.currentUser;
         if (!user) return;
         const userRef = doc(db, 'users', user.uid);
         const incomeSnapshot = await getDoc(userRef);
         const userData = incomeSnapshot.data();
-    
-        if(userData){ 
-          setRetirementGoal(userData.retirementGoal || 0);
-          setRetirementaAge(userData.retirementAge || 0);
 
+        if (userData) {
+          setRetirementGoal(userData.retirementGoal || 0.0001);
+          setRetirementaAge(userData.retirementAge || 0.0001);
         }
-       
+
       } catch (error) {
         console.error('Error changing retirement goal:', error);
       }
@@ -121,25 +120,30 @@ export default function InvestmentAnalyticsScreen() {
     updateRetirementGoal();
   }, [userProfile]);
 
-//function for updating retirement goal in database
-  const handleRetirementChange= async (newRetirementGoal) => {
+  //function for updating retirement goal in database
+  const handleRetirementChange = async (newRetirementGoal) => {
     try {
-      const user = auth.currentUser;
-      if (!user) return;
-      const userRef = doc(db, 'users', user.uid);
-      const incomeSnapshot = await getDoc(userRef);
-      const userData = incomeSnapshot.data();
-  
-      if(userData){
-        await updateDoc(userRef, {retirementGoal: newRetirementGoal});
 
-        setRetirementGoal(newRetirementGoal);
+      if (newRetirementGoal != 0) {
+        const user = auth.currentUser;
+        if (!user) return;
+        const userRef = doc(db, 'users', user.uid);
+        const incomeSnapshot = await getDoc(userRef);
+        const userData = incomeSnapshot.data();
 
-        console.log('Retirement Goal updated successfully')
-        Alert.alert('Retirement Goal updated successfully.')
+        if (userData) {
+          await updateDoc(userRef, { retirementGoal: newRetirementGoal });
+
+          setRetirementGoal(newRetirementGoal);
+
+          console.log('Retirement Goal updated successfully')
+          Alert.alert('Retirement Goal updated successfully.')
+        }
+      } else {
+        console.log('retirement goal must be more than 0')
+        Alert.alert('retirement goal must be more than 0')
       }
-  
-      
+
     } catch (error) {
       console.error('Error updating retirement goal:', error);
     }
@@ -150,21 +154,21 @@ export default function InvestmentAnalyticsScreen() {
     try {
       const yearsInRetirement = lifeExpectancy - retirementaAge;
 
-    const incomeNum = parseFloat(annualContributions);
-    const replacementRateNum = parseFloat(replacementRate) / 100;
-    const yearsInRetirementNum = parseFloat(yearsInRetirement);
-    const annualReturnNum = parseFloat(rateOfReturn) / 100;
-    const inflationRateNum = parseFloat(inflationRate) / 100;
+      const incomeNum = parseFloat(annualContributions);
+      const replacementRateNum = parseFloat(replacementRate) / 100;
+      const yearsInRetirementNum = parseFloat(yearsInRetirement);
+      const annualReturnNum = parseFloat(rateOfReturn) / 100;
+      const inflationRateNum = parseFloat(inflationRate) / 100;
 
-    const requiredIncome = incomeNum * replacementRateNum;
-    const savingNeededAmount = requiredIncome * (1 - (1 / (1 + annualReturnNum) ** yearsInRetirementNum)) / (annualReturnNum - inflationRateNum);
+      const requiredIncome = incomeNum * replacementRateNum;
+      const savingNeededAmount = requiredIncome * (1 - (1 / (1 + annualReturnNum) ** yearsInRetirementNum)) / (annualReturnNum - inflationRateNum);
 
-    setSavingsNeeded(savingNeededAmount);
-    setCalcModalVisible(true);
+      setSavingsNeeded(savingNeededAmount);
+      setCalcModalVisible(true);
     } catch (error) {
       Alert.alert('Error calculating savings needed', error)
     }
-    
+
   }
   return (
     <View>
@@ -178,47 +182,47 @@ export default function InvestmentAnalyticsScreen() {
           onRequestClose={() => setModalVisible(false)}
           style={[{}]}
         >
-          <View style={[styles.detailsContainer, {flex: 1,justifyContent: 'center'}]}>
-          <Card style={[isDarkMode ? styles.darkCard : styles.card, {borderStyle: 'solid', borderWidth: 2}]}>
-            <Card.Title
-              title="Goal Change"
-              titleStyle={[isDarkMode ? styles.darkCardTitle : styles.cardTitle, { textAlign: 'center' }]}
-              left={(props) => <Avatar.Icon {...props} icon="cash" size={40} style={styles.icon} />}
-              right={(props) => <Avatar.Icon {...props} icon="cash" size={40} style={styles.icon} />}
-            />
+          <View style={[styles.detailsContainer, { flex: 1, justifyContent: 'center' }]}>
+            <Card style={[isDarkMode ? styles.darkCard : styles.card, { borderStyle: 'solid', borderWidth: 2 }]}>
+              <Card.Title
+                title="Goal Change"
+                titleStyle={[isDarkMode ? styles.darkCardTitle : styles.cardTitle, { textAlign: 'center' }]}
+                left={(props) => <Avatar.Icon {...props} icon="cash" size={40} style={styles.icon} />}
+                right={(props) => <Avatar.Icon {...props} icon="cash" size={40} style={styles.icon} />}
+              />
 
-            {/* total amount text */}
-            <Text style={[isDarkMode ? styles.darkText : styles.text, { textAlign: 'center' }]}>Enter a Number:</Text>
-            <TextInput
-              keyboardType="numeric"
-              value={inputValue}
-              onChangeText={(input) => handleInput(input, setInputValue)}
-              placeholder="00"
-              placeholderTextColor={isDarkMode ? '#AAAAAA' : '#555'}
-              style={[isDarkMode ? styles.darkText : styles.text,{ textAlign: 'center' }]}
-            />
+              {/* total amount text */}
+              <Text style={[isDarkMode ? styles.darkText : styles.text, { textAlign: 'center' }]}>Enter a Number:</Text>
+              <TextInput
+                keyboardType="numeric"
+                value={inputValue}
+                onChangeText={(input) => handleInput(input, setInputValue)}
+                placeholder="00"
+                placeholderTextColor={isDarkMode ? '#AAAAAA' : '#555'}
+                style={[isDarkMode ? styles.darkText : styles.text, { textAlign: 'center' }]}
+              />
 
-            <View style={[styles.detailsContainer, { flexDirection: 'row', justifyContent: 'space-evenly' }]}>
-              <TouchableOpacity
-                activeOpacity={0.8}
-                onPressIn={() => buttonPressIn(new Animated.Value(1))}
-                onPressOut={() => buttonPressOut(new Animated.Value(1))}
-                onPress={() => handleConfirm()}
-              >
-                <Text style={[isDarkMode ? styles.darkNeedHelpText : styles.needHelpText, { textAlign: 'left', paddingRight: 10, fontSize: 20, color: '#4CAF50' }]}>Update Goal</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                activeOpacity={0.8}
-                onPressIn={() => buttonPressIn(new Animated.Value(1))}
-                onPressOut={() => buttonPressOut(new Animated.Value(1))}
-                onPress={() => handleCancel(false)}
-              >
-                <Text style={[isDarkMode ? styles.darkNeedHelpText : styles.needHelpText, { textAlign: 'right', paddingRight: 10, fontSize: 20, color: 'red' }]}>Cancel</Text>
-              </TouchableOpacity>
-            </View>
+              <View style={[styles.detailsContainer, { flexDirection: 'row', justifyContent: 'space-evenly' }]}>
+                <TouchableOpacity
+                  activeOpacity={0.8}
+                  onPressIn={() => buttonPressIn(new Animated.Value(1))}
+                  onPressOut={() => buttonPressOut(new Animated.Value(1))}
+                  onPress={() => handleConfirm()}
+                >
+                  <Text style={[isDarkMode ? styles.darkNeedHelpText : styles.needHelpText, { textAlign: 'left', paddingRight: 10, fontSize: 20, color: '#4CAF50' }]}>Update Goal</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  activeOpacity={0.8}
+                  onPressIn={() => buttonPressIn(new Animated.Value(1))}
+                  onPressOut={() => buttonPressOut(new Animated.Value(1))}
+                  onPress={() => handleCancel(false)}
+                >
+                  <Text style={[isDarkMode ? styles.darkNeedHelpText : styles.needHelpText, { textAlign: 'right', paddingRight: 10, fontSize: 20, color: 'red' }]}>Cancel</Text>
+                </TouchableOpacity>
+              </View>
 
-          </Card>
-        </View>
+            </Card>
+          </View>
         </Modal>
 
         {/* Card for total amount*/}
@@ -312,7 +316,7 @@ export default function InvestmentAnalyticsScreen() {
               placeholderTextColor={isDarkMode ? '#FFFFFF' : '#333'}
             />
           </View>
-          
+
           <View style={[styles.detailsContainer, { flexDirection: 'row', justifyContent: 'space-between' }]}>
             <Text style={[isDarkMode ? styles.darkText : styles.text, { textAlign: 'left', fontSize: 18 }]}>Replacement Rate (%)</Text>
             <TextInput
@@ -339,48 +343,48 @@ export default function InvestmentAnalyticsScreen() {
           </Button>
 
           {/*Modal for calculator results*/}
-        <Modal
-          animationType="slide"
-          transparent={true}
-          visible={calcModalVisible}
-          onRequestClose={() => setCalcModalVisible(false)}
-          style={[{}]}
-        >
-          <View style={[styles.detailsContainer, {flex: 1,justifyContent: 'center'}]}>
-          <Card style={[isDarkMode ? styles.darkCard : styles.card, {borderStyle: 'solid', borderWidth: 2}]}>
-            <Card.Title
-              title="Savings Needed"
-              titleStyle={[isDarkMode ? styles.darkCardTitle : styles.cardTitle, { textAlign: 'center' }]}
-              left={(props) => <Avatar.Icon {...props} icon="cash" size={40} style={styles.icon} />}
-              right={(props) => <Avatar.Icon {...props} icon="cash" size={40} style={styles.icon} />}
-            />
+          <Modal
+            animationType="slide"
+            transparent={true}
+            visible={calcModalVisible}
+            onRequestClose={() => setCalcModalVisible(false)}
+            style={[{}]}
+          >
+            <View style={[styles.detailsContainer, { flex: 1, justifyContent: 'center' }]}>
+              <Card style={[isDarkMode ? styles.darkCard : styles.card, { borderStyle: 'solid', borderWidth: 2 }]}>
+                <Card.Title
+                  title="Savings Needed"
+                  titleStyle={[isDarkMode ? styles.darkCardTitle : styles.cardTitle, { textAlign: 'center' }]}
+                  left={(props) => <Avatar.Icon {...props} icon="cash" size={40} style={styles.icon} />}
+                  right={(props) => <Avatar.Icon {...props} icon="cash" size={40} style={styles.icon} />}
+                />
 
-            {/* total amount text */}
-            <Text style={isDarkMode ? styles.darkMoneyValue : styles.moneyValue}>$ {savingsNeeded.toLocaleString()}</Text>
+                {/* total amount text */}
+                <Text style={isDarkMode ? styles.darkMoneyValue : styles.moneyValue}>$ {savingsNeeded.toLocaleString()}</Text>
 
 
-            <View style={[styles.detailsContainer, { flexDirection: 'row', justifyContent: 'space-evenly' }]}>
-            <TouchableOpacity
-                activeOpacity={0.8}
-                onPressIn={() => buttonPressIn(new Animated.Value(1))}
-                onPressOut={() => buttonPressOut(new Animated.Value(1))}
-                onPress={() => {handleRetirementChange(savingsNeeded); handleCancel();} }
-              >
-                <Text style={[isDarkMode ? styles.darkNeedHelpText : styles.needHelpText, { textAlign: 'left', paddingRight: 10, fontSize: 20, color: '#4CAF50' }]}>Update Goal</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                activeOpacity={0.8}
-                onPressIn={() => buttonPressIn(new Animated.Value(1))}
-                onPressOut={() => buttonPressOut(new Animated.Value(1))}
-                onPress={() => handleCancel()}
-              >
-                <Text style={[isDarkMode ? styles.darkNeedHelpText : styles.needHelpText, { textAlign: 'right', paddingRight: 10, fontSize: 20, color: 'red' }]}>Close</Text>
-              </TouchableOpacity>
+                <View style={[styles.detailsContainer, { flexDirection: 'row', justifyContent: 'space-evenly' }]}>
+                  <TouchableOpacity
+                    activeOpacity={0.8}
+                    onPressIn={() => buttonPressIn(new Animated.Value(1))}
+                    onPressOut={() => buttonPressOut(new Animated.Value(1))}
+                    onPress={() => { handleRetirementChange(savingsNeeded); handleCancel(); }}
+                  >
+                    <Text style={[isDarkMode ? styles.darkNeedHelpText : styles.needHelpText, { textAlign: 'left', paddingRight: 10, fontSize: 20, color: '#4CAF50' }]}>Update Goal</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    activeOpacity={0.8}
+                    onPressIn={() => buttonPressIn(new Animated.Value(1))}
+                    onPressOut={() => buttonPressOut(new Animated.Value(1))}
+                    onPress={() => handleCancel()}
+                  >
+                    <Text style={[isDarkMode ? styles.darkNeedHelpText : styles.needHelpText, { textAlign: 'right', paddingRight: 10, fontSize: 20, color: 'red' }]}>Close</Text>
+                  </TouchableOpacity>
+                </View>
+
+              </Card>
             </View>
-
-          </Card>
-        </View>
-        </Modal>
+          </Modal>
 
         </Card>
       </ScrollView>

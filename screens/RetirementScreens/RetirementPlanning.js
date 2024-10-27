@@ -110,7 +110,7 @@ export default function InvestmentAnalyticsScreen() {
         const userData = incomeSnapshot.data();
     
         if(userData){ 
-          setRetirementGoal(userData.retirementGoal || 0);
+          setRetirementGoal(userData.retirementGoal || 0.0001);
 
         }
        
