@@ -1,4 +1,6 @@
-import React, { useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
+import { UserContext } from '../../UserContext';
+
 import {
   View,
   StyleSheet,
@@ -7,11 +9,14 @@ import {
   useColorScheme,
   Dimensions,
   TextInput,
+  Alert
 } from "react-native";
 import { Title, Card, Avatar, Button } from "react-native-paper";
 import { LineChart } from "react-native-chart-kit";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import * as Progress from "react-native-progress";
+import { Timestamp, doc, deleteDoc, collection, getDocs, getDoc, updateDoc, and } from 'firebase/firestore';
+import { db, auth } from '../../firebaseConfig'
 
 export default function InvestmentAnalyticsScreen() {
   const scheme = useColorScheme();
@@ -19,7 +24,7 @@ export default function InvestmentAnalyticsScreen() {
 
   // Get screen width to make the chart fit the screen properly
   const screenWidth = Dimensions.get("window").width;
-
+  const { userProfile, setUserProfile } = useContext(UserContext);
   //income values
   const [totalSavings, setTotalSavings] = useState(5000);
   const [retirementGoal, setRetirementGoal] = useState(10000);
@@ -72,8 +77,11 @@ export default function InvestmentAnalyticsScreen() {
     setIsEditing(true);
   };
   const saveAndExitEdit = () => {
-    setRetirementAge(newAge);
     setIsEditing(false);
+    if(newAge != retirementAge){
+      handleRetirementAgeChange(newAge);
+    }
+    
   };
   const checkNumInput = (newAgeToCheck) =>{
     if(newAgeToCheck > 120){
@@ -81,6 +89,80 @@ export default function InvestmentAnalyticsScreen() {
     }
     return newAgeToCheck;
   }
+
+   //function for inital updating values from database
+  useEffect(() => {
+    const calculateSavings = () => {
+      const incomeSavings = userProfile?.incomes?.filter((income) => {
+        return income.isSavings === true;
+      });
+
+      const totalSavingsIncome = incomeSavings?.reduce((total, income) => total + income.incomePerMonth, 0);
+      setTotalSavings(totalSavingsIncome || 0);
+      
+    };
+    const updateRetirementGoal= async () => {
+      try {
+        const user = auth.currentUser;
+        if (!user) return;
+        const userRef = doc(db, 'users', user.uid);
+        const incomeSnapshot = await getDoc(userRef);
+        const userData = incomeSnapshot.data();
+    
+        if(userData){ 
+          setRetirementGoal(userData.retirementGoal || 0);
+
+        }
+       
+      } catch (error) {
+        console.error('Error changing retirement goal:', error);
+      }
+    };
+    const updateRetirementAge= async () => {
+      try {
+        const user = auth.currentUser;
+        if (!user) return;
+        const userRef = doc(db, 'users', user.uid);
+        const incomeSnapshot = await getDoc(userRef);
+        const userData = incomeSnapshot.data();
+    
+        if(userData){ 
+          setRetirementAge(userData.retirementAge || 0);
+          setNewAge(userData.retirementAge || 0)
+        }
+       
+      } catch (error) {
+        console.error('Error changing retirement goal:', error);
+      }
+    };
+    calculateSavings();
+    updateRetirementGoal();
+    updateRetirementAge();
+  }, [userProfile]);
+
+  //function for updating retirement age in database
+  const handleRetirementAgeChange= async (newRetirementAge) => {
+    try {
+      const user = auth.currentUser;
+      if (!user) return;
+      const userRef = doc(db, 'users', user.uid);
+      const incomeSnapshot = await getDoc(userRef);
+      const userData = incomeSnapshot.data();
+  
+      if(userData){
+        await updateDoc(userRef, {retirementAge: newRetirementAge});
+
+        setRetirementAge(newRetirementAge);
+
+        console.log('Retirement Age updated successfully')
+        Alert.alert('Retirement Age updated successfully.')
+      }
+  
+      
+    } catch (error) {
+      console.error('Error updating retirement Age:', error);
+    }
+  };
 
   return (
     <View>
@@ -206,7 +288,7 @@ export default function InvestmentAnalyticsScreen() {
                     color: isDarkMode ? "#4CAF50": "#00796B",
                     alignSelf: 'center',
                     textAlign: 'center',
-                    fontSize: 50
+                    fontSize: 30
                   },
                 ]}
                 keyboardType="numeric"
@@ -261,23 +343,7 @@ export default function InvestmentAnalyticsScreen() {
           )}
         </Card>
 
-        <Card style={isDarkMode ? styles.darkCard : styles.card}>
-          <Card.Title
-            title="Monthly Progress"
-            left={(props) => (
-              <Avatar.Icon {...props} icon="trending-up" style={styles.icon} />
-            )}
-            titleStyle={isDarkMode ? styles.darkCardTitle : styles.cardTitle}
-          />
-          <LineChart
-            data={data}
-            width={320}
-            height={240}
-            chartConfig={chartConfig}
-            style={{ marginVertical: 30 }}
-            bezier
-          />
-        </Card>
+        
       </ScrollView>
     </View>
   );
