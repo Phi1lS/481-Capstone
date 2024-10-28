@@ -86,7 +86,7 @@ export default function RetirementScreen() {
         {renderCard('Portfolio Rebalancing', 'Adjust your portfolio for optimal retirement', 'scale-balance', 'Rebalancing')}
         {renderCard('Retirement Savings', 'Manage and grow your retirement savings', 'currency-usd', 'RetirementSavings')}
         {renderCard('Retirement Planning', 'Plan your retirement to ensure financial security', 'calendar-clock', 'RetirementPlanning')}
-        {renderCard('Pension Management', 'Manage and optimize your pension funds', 'account-cash', 'PensionManagement')}
+        {/*{renderCard('Pension Management', 'Manage and optimize your pension funds', 'account-cash', 'PensionManagement')}*/}
       </ScrollView>
     </View>
   );
