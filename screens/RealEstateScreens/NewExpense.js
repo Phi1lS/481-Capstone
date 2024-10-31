@@ -40,7 +40,7 @@ export default function NewExpense({navigation}) {
       // Update UserContext to reflect changes dynamically
       setUserProfile((prevProfile) => ({
         ...prevProfile,
-        incomes: [...(prevProfile.expenses || []), newIncome],
+        expenses: [...(prevProfile.expenses || []), newIncome],
       }));
 
       setExpenseName('');
