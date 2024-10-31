@@ -1,12 +1,5 @@
 import React, { useState, useEffect, useContext } from "react";
-import {
-  View,
-  StyleSheet,
-  ScrollView,
-  Text,
-  useColorScheme,
-  TouchableOpacity,
-} from "react-native";
+import { Alert, View, StyleSheet, ScrollView, Text, useColorScheme, TouchableOpacity } from "react-native";
 import { getMonth, getYear, subMonths } from 'date-fns';
 
 import { UserContext } from '../../UserContext';
@@ -60,7 +53,7 @@ export default function ExpenseTracking({navigation}) {
         
               // Update UserContext by removing the deleted expense
               setUserProfile((prevProfile) => {
-                const updatedexpenses = prevProfile.expenses.filter((expense) => expense.id !== expenseId);
+                const updatedExpenses = prevProfile.expenses.filter((expense) => expense.id !== expenseId);
         
                 return {
                   ...prevProfile,

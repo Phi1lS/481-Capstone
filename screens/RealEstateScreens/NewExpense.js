@@ -7,7 +7,7 @@ import { auth, db } from '../../firebaseConfig';
 import { UserContext } from '../../UserContext';
 
 
-export default function ExpenseTracking() {
+export default function NewExpense({navigation}) {
   const [selectedTab, setSelectedTab] = useState('addYourOwn');
   const [expenseName, setExpenseName] = useState("");
   const [category, setCategory] = useState(null);
@@ -46,6 +46,7 @@ export default function ExpenseTracking() {
       setExpenseName('');
       setCategory(null);
       setExpenseAmount('');
+      navigation.goBack();
     } catch (error) {
       console.error('Error adding income:', error);
     }
