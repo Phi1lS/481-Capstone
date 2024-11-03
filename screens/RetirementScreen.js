@@ -83,10 +83,10 @@ export default function RetirementScreen() {
         <Title style={isDarkMode ? styles.darkSectionTitle : styles.sectionTitle}>Retirement Tools</Title>
 
         {/* Cards for each feature of the Retirement screen */}
-        {renderCard('Portfolio Rebalancing', 'Adjust your portfolio for optimal retirement', 'scale-balance', 'PortfolioRebalancing')}
+        {renderCard('Portfolio Rebalancing', 'Adjust your portfolio for optimal retirement', 'scale-balance', 'Rebalancing')}
         {renderCard('Retirement Savings', 'Manage and grow your retirement savings', 'currency-usd', 'RetirementSavings')}
         {renderCard('Retirement Planning', 'Plan your retirement to ensure financial security', 'calendar-clock', 'RetirementPlanning')}
-        {renderCard('Pension Management', 'Manage and optimize your pension funds', 'account-cash', 'PensionManagement')}
+        {/*{renderCard('Pension Management', 'Manage and optimize your pension funds', 'account-cash', 'PensionManagement')}*/}
       </ScrollView>
     </View>
   );

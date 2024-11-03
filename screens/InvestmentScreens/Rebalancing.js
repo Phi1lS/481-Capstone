@@ -1,19 +1,55 @@
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { View, StyleSheet, ScrollView, Text, useColorScheme, Platform } from 'react-native';
 import { Title, Card, Avatar, Button } from 'react-native-paper';
+import { UserContext } from '../../UserContext'; // Import UserContext
+import Slider from '@react-native-community/slider';
 
 export default function RebalancingScreen() {
   const scheme = useColorScheme();
   const isDarkMode = scheme === 'dark';
-  const [isPressed, setIsPressed] = useState(false);
+  const { userProfile } = useContext(UserContext); // Get userProfile from context
 
-  const handlePressIn = () => {
-    setIsPressed(true);
+  // Calculate asset allocations
+  const calculateAllocations = () => {
+    const assets = userProfile.assets || [];
+
+    const totalValue = assets.reduce((total, asset) => total + (asset.value || 0), 0);
+    const allocations = {
+      stocks: 0,
+      bonds: 0,
+      realEstate: 0,
+      cash: 0,
+    };
+
+    assets.forEach((asset) => {
+      if (asset.assetType === 'stock') allocations.stocks += asset.value || 0;
+      if (asset.assetType === 'bond') allocations.bonds += asset.value || 0;
+      if (asset.assetType === 'realEstate') allocations.realEstate += asset.value || 0;
+      if (asset.assetType === 'cash') allocations.cash += asset.value || 0;
+    });
+
+    // Calculate percentages
+    return {
+      stocks: (allocations.stocks / totalValue) || 0,
+      bonds: (allocations.bonds / totalValue) || 0,
+      realEstate: (allocations.realEstate / totalValue) || 0,
+      cash: (allocations.cash / totalValue) || 0,
+    };
   };
 
-  const handlePressOut = () => {
-    setIsPressed(false);
-  };
+  const allocations = calculateAllocations();
+
+   // State for sliders
+   const [stockValueChange, setStockValueChange] = useState(allocations.stocks * 100);
+   const [bondValueChange, setBondValueChange] = useState(allocations.bonds * 100);
+   const [realEstateValueChange, setRealEstateValueChange] = useState(allocations.realEstate * 100);
+   const [cashValueChange, setCashValueChange] = useState(allocations.cash * 100);
+ 
+   const remainingPercent = (currentAllocation) => {
+     const total = 100 - currentAllocation;
+     return total < 0 ? 0 : total;
+   };
+ 
 
   const renderProgressBar = (progress, color) => (
     <View style={styles.progressBarBackground}>
@@ -35,27 +71,27 @@ export default function RebalancingScreen() {
           <View style={styles.detailsContainer}>
             <View style={styles.progressBarContainer}>
               <Text style={isDarkMode ? styles.darkText : styles.text}>Stocks</Text>
-              <Text style={isDarkMode ? styles.darkText : styles.text}>60%</Text>
+              <Text style={isDarkMode ? styles.darkText : styles.text}>{(allocations.stocks * 100).toFixed(2)}%</Text>
             </View>
-            {renderProgressBar(0.6, '#00796B')}
+            {renderProgressBar(allocations.stocks, '#00796B')}
 
             <View style={[styles.progressBarContainer, styles.spacing]}>
               <Text style={isDarkMode ? styles.darkText : styles.text}>Bonds</Text>
-              <Text style={isDarkMode ? styles.darkText : styles.text}>20%</Text>
+              <Text style={isDarkMode ? styles.darkText : styles.text}>{(allocations.bonds * 100).toFixed(2)}%</Text>
             </View>
-            {renderProgressBar(0.2, '#004D40')}
+            {renderProgressBar(allocations.bonds, '#004D40')}
 
             <View style={[styles.progressBarContainer, styles.spacing]}>
               <Text style={isDarkMode ? styles.darkText : styles.text}>Real Estate</Text>
-              <Text style={isDarkMode ? styles.darkText : styles.text}>10%</Text>
+              <Text style={isDarkMode ? styles.darkText : styles.text}>{(allocations.realEstate * 100).toFixed(2)}%</Text>
             </View>
-            {renderProgressBar(0.1, '#B2DFDB')}
+            {renderProgressBar(allocations.realEstate, '#B2DFDB')}
 
             <View style={[styles.progressBarContainer, styles.spacing]}>
               <Text style={isDarkMode ? styles.darkText : styles.text}>Cash</Text>
-              <Text style={isDarkMode ? styles.darkText : styles.text}>10%</Text>
+              <Text style={isDarkMode ? styles.darkText : styles.text}>{(allocations.cash * 100).toFixed(2)}%</Text>
             </View>
-            {renderProgressBar(0.1, '#4CAF50')}
+            {renderProgressBar(allocations.cash, '#4CAF50')}
           </View>
         </Card>
 
@@ -65,6 +101,67 @@ export default function RebalancingScreen() {
             left={(props) => <Avatar.Icon {...props} icon="swap-horizontal" style={styles.icon} />}
             titleStyle={isDarkMode ? styles.darkCardTitle : styles.cardTitle}
           />
+
+           {/* Stocks Slider */}
+           <View style={styles.sliderContainer}>
+            <Text style={isDarkMode ? styles.darkText : styles.text}>Stocks: {Math.floor(stockValueChange)}%</Text>
+            <Slider
+              style={styles.slider}
+              value={stockValueChange}
+              onValueChange={(value) => setStockValueChange(value)}
+              minimumValue={0}
+              maximumValue={remainingPercent(bondValueChange + realEstateValueChange + cashValueChange)}
+              step={1}
+              minimumTrackTintColor="#00796B"
+              maximumTrackTintColor="#000000"
+            />
+          </View>
+
+          {/* Bonds Slider */}
+          <View style={styles.sliderContainer}>
+            <Text style={isDarkMode ? styles.darkText : styles.text}>Bonds: {Math.floor(bondValueChange)}%</Text>
+            <Slider
+              style={styles.slider}
+              value={bondValueChange}
+              onValueChange={(value) => setBondValueChange(value)}
+              minimumValue={0}
+              maximumValue={remainingPercent(stockValueChange + realEstateValueChange + cashValueChange)}
+              step={1}
+              minimumTrackTintColor="#004D40"
+              maximumTrackTintColor="#000000"
+            />
+          </View>
+
+          {/* Real Estate Slider */}
+          <View style={styles.sliderContainer}>
+            <Text style={isDarkMode ? styles.darkText : styles.text}>Real Estate: {Math.floor(realEstateValueChange)}%</Text>
+            <Slider
+              style={styles.slider}
+              value={realEstateValueChange}
+              onValueChange={(value) => setRealEstateValueChange(value)}
+              minimumValue={0}
+              maximumValue={remainingPercent(stockValueChange + bondValueChange + cashValueChange)}
+              step={1}
+              minimumTrackTintColor="#B2DFDB"
+              maximumTrackTintColor="#000000"
+            />
+          </View>
+
+          {/* Cash Slider */}
+          <View style={styles.sliderContainer}>
+            <Text style={isDarkMode ? styles.darkText : styles.text}>Cash: {Math.floor(cashValueChange)}%</Text>
+            <Slider
+              style={styles.slider}
+              value={cashValueChange}
+              onValueChange={(value) => setCashValueChange(value)}
+              minimumValue={0}
+              maximumValue={remainingPercent(stockValueChange + bondValueChange + realEstateValueChange)}
+              step={1}
+              minimumTrackTintColor="#4CAF50"
+              maximumTrackTintColor="#000000"
+            />
+          </View>
+          
           <View style={styles.detailsContainer}>
             <Text style={isDarkMode ? styles.darkText : styles.text}>
               Adjust your investments to maintain your desired asset allocation.
@@ -72,13 +169,8 @@ export default function RebalancingScreen() {
 
             <Button
               mode="contained"
-              onPressIn={handlePressIn}
-              onPressOut={handlePressOut}
               onPress={() => console.log('Rebalance Action')}
-              style={[
-                styles.rebalanceButton,
-                isPressed && styles.rebalanceButtonPressed,
-              ]}
+              style={styles.rebalanceButton}
               labelStyle={styles.buttonLabel}
             >
               Rebalance Now

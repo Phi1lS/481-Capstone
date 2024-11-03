@@ -12,14 +12,15 @@ export const UserProvider = ({ children }) => {
     email: '',
     avatarPath: '',
     incomes: [],
+    assets: [], // Added assets to the profile
   });
 
   const [avatarUri, setAvatarUri] = useState(null);
   const [cachedAvatar, setCachedAvatar] = useState(null);
 
-  // Listen for authentication state changes
   useEffect(() => {
     let unsubscribeIncomeListener;  // Declare listener unsubscribe handler
+    let unsubscribeAssetListener;  // Declare listener for assets
 
     const unsubscribeAuth = auth.onAuthStateChanged((user) => {
       if (user) {
@@ -29,14 +30,31 @@ export const UserProvider = ({ children }) => {
         const incomeRef = collection(db, 'incomes');
         unsubscribeIncomeListener = onSnapshot(incomeRef, (snapshot) => {
           const incomes = snapshot.docs
+          .filter((doc) => doc.data().userId === user.uid)
+          .map((doc) => ({
+            id: doc.id,
+            ...doc.data(),
+            isSavings: doc.data().isSavings || false, // Ensure isSavings is included
+          }));
+          setUserProfile((prevProfile) => ({
+            ...prevProfile,
+            incomes,
+          }));
+        });
+
+        // Listen for asset updates
+        const assetRef = collection(db, 'assets');
+        unsubscribeAssetListener = onSnapshot(assetRef, (snapshot) => {
+          const assets = snapshot.docs
             .filter((doc) => doc.data().userId === user.uid)
             .map((doc) => ({
               id: doc.id,
               ...doc.data(),
+              isSavings: doc.data().isSavings || false, // Ensure isSavings is included
             }));
           setUserProfile((prevProfile) => ({
             ...prevProfile,
-            incomes,
+            assets,
           }));
         });
       } else {
@@ -47,12 +65,16 @@ export const UserProvider = ({ children }) => {
           email: '',
           avatarPath: '',
           incomes: [],
+          assets: [], // Reset assets on logout
         });
         setAvatarUri(null);
 
-        // Unsubscribe from income listener when user logs out
+        // Unsubscribe from listeners when user logs out
         if (unsubscribeIncomeListener) {
           unsubscribeIncomeListener();
+        }
+        if (unsubscribeAssetListener) {
+          unsubscribeAssetListener();
         }
       }
     });
@@ -60,12 +82,14 @@ export const UserProvider = ({ children }) => {
     return () => {
       unsubscribeAuth();  // Unsubscribe from auth listener
       if (unsubscribeIncomeListener) {
-        unsubscribeIncomeListener();  // Unsubscribe from Firestore listener
+        unsubscribeIncomeListener();  // Unsubscribe from income listener
+      }
+      if (unsubscribeAssetListener) {
+        unsubscribeAssetListener();  // Unsubscribe from asset listener
       }
     };
   }, []);
 
-  // Fetch user profile and avatar
   const fetchUserProfile = async (userId) => {
     const userRef = doc(db, 'users', userId);
     const userSnapshot = await getDoc(userRef);

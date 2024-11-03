@@ -5,28 +5,13 @@ import { UserContext } from '../UserContext';
 import { getDownloadURL, ref, Timestamp } from 'firebase/storage';
 import { storage } from '../firebaseConfig';
 import { getMonth, getYear, subMonths } from 'date-fns';
+import logo from '../assets/logo.png'
 
 export default function HomeScreen() {
   const { userProfile, avatarUri, setAvatarUri } = useContext(UserContext); 
-  const [logoUrl, setLogoUrl] = useState('');  
   const [realEstateIncome, setRealEstateIncome] = useState(0); // Add state for real estate income
   const scheme = useColorScheme();  
   const isDarkMode = scheme === 'dark';  
-
-  // Fetch logo once
-  useEffect(() => {
-    const fetchLogoUrl = async () => {
-      try {
-        const logoRef = ref(storage, 'logo.png');  
-        const url = await getDownloadURL(logoRef);
-        setLogoUrl(url);
-      } catch (error) {
-        console.error('Error fetching logo:', error);
-      }
-    };
-
-    fetchLogoUrl();
-  }, []);
 
   // Fetch avatar URL if not cached
   useEffect(() => {
@@ -84,12 +69,7 @@ export default function HomeScreen() {
       />
 
       <View style={isDarkMode ? styles.darkHeaderBackground : styles.headerBackground}>
-        {logoUrl ? (
-          <Image source={{ uri: logoUrl }} style={styles.logo} resizeMode="contain" />
-        ) : (
-          <Text>Logo not available</Text>  
-        )}
-
+      <Image source={logo} style={styles.logo} resizeMode="contain" /> 
         <View style={styles.header}>
           {avatarUri ? (
             <Avatar.Image size={50} source={{ uri: avatarUri }} style={styles.avatar} /> 

@@ -6,7 +6,7 @@ import { FAB } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
 import { getMonth, getYear, subMonths } from 'date-fns';
 import { UserContext } from '../../UserContext';
-import { Timestamp, doc, deleteDoc, collection, getDocs } from 'firebase/firestore';
+import { Timestamp, doc, deleteDoc, collection, getDocs, getDoc, updateDoc } from 'firebase/firestore';
 import { db, auth } from '../../firebaseConfig'
 
 export default function IncomeTrackingScreen() {
@@ -49,27 +49,46 @@ export default function IncomeTrackingScreen() {
           onPress: async () => {
             try {
               // Delete the income from Firestore
-              await deleteDoc(doc(db, 'incomes', incomeId));
-        
-              // Update UserContext by removing the deleted income
-              setUserProfile((prevProfile) => {
-                const updatedIncomes = prevProfile.incomes.filter((income) => income.id !== incomeId);
-        
-                return {
-                  ...prevProfile,
-                  incomes: updatedIncomes,
-                };
-              });
-        
-              // Also update the local incomeSources state
-              setIncomeSources((prevSources) => prevSources.filter((income) => income.id !== incomeId));
-        
-              console.log('Income deleted successfully');
+              const incomeRef = doc(db, 'incomes', incomeId);
+              const incomeSnapshot = await getDoc(incomeRef);
+              const incomeData = incomeSnapshot.data();
+  
+              if (incomeData) {
+                // Delete the income document
+                await deleteDoc(incomeRef);
+  
+                // Check if there's an associated asset
+                const assetsRef = collection(db, 'assets');
+                const assetsSnapshot = await getDocs(assetsRef);
+                const associatedAsset = assetsSnapshot.docs.find(assetDoc => {
+                  const assetData = assetDoc.data();
+                  return assetData.assetName === incomeData.name && assetData.timestamp.isEqual(incomeData.timestamp);
+                });
+  
+                // If an associated asset is found, delete it
+                if (associatedAsset) {
+                  await deleteDoc(doc(assetsRef, associatedAsset.id));
+                }
+  
+                // Update UserContext and local state
+                setUserProfile((prevProfile) => {
+                  const updatedIncomes = prevProfile.incomes.filter((income) => income.id !== incomeId);
+                  return {
+                    ...prevProfile,
+                    incomes: updatedIncomes,
+                  };
+                });
+  
+                // Also update the local incomeSources state
+                setIncomeSources((prevSources) => prevSources.filter((income) => income.id !== incomeId));
+  
+                // console.log('Income and associated asset deleted successfully');
+              }
             } catch (error) {
               console.error('Error deleting income:', error);
             }
           },
-          style: "destructive", // Makes the "Delete" button stand out
+          style: "destructive",
         },
       ],
       { cancelable: true }
@@ -200,6 +219,38 @@ export default function IncomeTrackingScreen() {
     };
   };
 
+  const toggleIncomeSavingsStatus = async (incomeId) => {
+    try {
+      const incomeRef = doc(db, 'incomes', incomeId);
+      const incomeSnapshot = await getDoc(incomeRef);
+      const incomeData = incomeSnapshot.data();
+  
+      if (incomeData) {
+        const newStatus = !incomeData.isSavings; // Toggle the current status
+        await updateDoc(incomeRef, { isSavings: newStatus });
+  
+        // Update the UserContext
+        setUserProfile((prevProfile) => {
+          const updatedIncomes = prevProfile.incomes.map((income) => {
+            if (income.id === incomeId) {
+              return { ...income, isSavings: newStatus }; // Update the income's savings status
+            }
+            return income;
+          });
+  
+          return {
+            ...prevProfile,
+            incomes: updatedIncomes,
+          };
+        });
+  
+        console.log('Savings status updated successfully');
+      }
+    } catch (error) {
+      console.error('Error updating savings status:', error);
+    }
+  };
+
   return (
     <View style={isDarkMode ? styles.darkSafeArea : styles.safeArea}>
       <ScrollView contentContainerStyle={isDarkMode ? styles.darkContainer : styles.container}>
@@ -214,7 +265,7 @@ export default function IncomeTrackingScreen() {
           />
           <View style={styles.sliderContainer}>
             <Text style={[isDarkMode ? styles.darkText : styles.text, getTextStyle(currentMonthIncome)]}>
-              ${currentMonthIncome.toFixed(2)}
+              ${currentMonthIncome.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </Text>
           </View>
         </Card>
@@ -228,7 +279,7 @@ export default function IncomeTrackingScreen() {
           />
           <View style={styles.sliderContainer}>
             <Text style={[isDarkMode ? styles.darkText : styles.text, getTextStyle(incomeChange)]}>
-              {incomeChange >= 0 ? `+$${incomeChange.toFixed(2)}` : `-$${Math.abs(incomeChange).toFixed(2)}`}
+              {incomeChange >= 0 ? `+$${incomeChange.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : `-$${Math.abs(incomeChange).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
             </Text>
           </View>
         </Card>
@@ -251,6 +302,10 @@ export default function IncomeTrackingScreen() {
                 backgroundGradientTo: isDarkMode ? '#1E1E1E' : '#FFFFFF',
                 color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
                 labelColor: isDarkMode ? '#FFFFFF' : '#333',
+                // Set label style
+                propsForLabels: {
+                  fontSize: 12,  // Adjust this size as needed
+                },
               }}
               accessor="population"
               backgroundColor="transparent"
@@ -280,10 +335,25 @@ export default function IncomeTrackingScreen() {
                 Category: {translateCategory(income.category)}
               </Text>
               <Text style={isDarkMode ? styles.darkText : styles.text}>
-                Income Per Month: ${income.incomePerMonth.toFixed(2)}
+                Income Per Month: ${income.incomePerMonth.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </Text>
             </View>
-            <TouchableOpacity onPress={() => handleDeleteIncome(income.id)}>
+            
+            {/* Savings Toggle */}
+            <TouchableOpacity 
+              onPress={() => toggleIncomeSavingsStatus(income.id)} 
+              style={{ alignSelf: 'flex-end', marginBottom: 10 }} // Add some margin
+            >
+              <Text style={isDarkMode ? styles.savingsText : styles.savingsText}>
+                {income.isSavings ? "Savings" : "Income"}
+              </Text>
+            </TouchableOpacity>
+
+            {/* Delete Button */}
+            <TouchableOpacity 
+              onPress={() => handleDeleteIncome(income.id)} 
+              style={{ alignSelf: 'flex-end' }}
+            >
               <Text style={isDarkMode ? styles.deleteText : styles.deleteText}>Delete</Text>
             </TouchableOpacity>
           </Card>
@@ -402,13 +472,20 @@ const styles = StyleSheet.create({
     margin: 16,
     right: 16,
     bottom: 16,
-    backgroundColor: 'rgba(76, 175, 80, 0.6)', // 60% opacity
+    backgroundColor: 'rgba(76, 175, 80, 0.4)', // 40% opacity
   },
   deleteText: {
     color: 'red',
     fontWeight: 'bold',
     textAlign: 'right',
     right: 15,
-    bottom: 125,
+    bottom: 155,
+  },
+  savingsText: {
+    color: 'green',
+    fontWeight: 'bold',
+    textAlign: 'right',
+    right: 15,
+    bottom: 100,
   },
 });

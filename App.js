@@ -28,6 +28,7 @@ import ExpenseTracking from './screens/RealEstateScreens/ExpenseTracking';
 import LeaseManagement from './screens/RealEstateScreens/LeaseManagement';
 import TaxIntegration from './screens/RealEstateScreens/TaxIntegration';
 import NewExpense from './screens/RealEstateScreens/NewExpense';
+import ManageAssets from './screens/InvestmentScreens/ManageAssets';
 
 import AddIncomeScreen from './screens/RealEstateScreens/AddIncome';
 
@@ -42,7 +43,7 @@ import Notifications from './screens/UserAccountsScreen/Notifications';
 import Preferences from './screens/UserAccountsScreen/Preferences';
 import Profile from './screens/UserAccountsScreen/Profile';
 import Security from './screens/UserAccountsScreen/Security';
-import PortfolioRebalancing from './screens/RetirementScreens/PortfolioRebalancing';
+// import PortfolioRebalancing from './screens/RetirementScreens/PortfolioRebalancing';
 import RetirementSavings from './screens/RetirementScreens/RetirementSavings';
 import RetirementPlanning from './screens/RetirementScreens/RetirementPlanning';
 import PensionManagement from './screens/RetirementScreens/PensionManagement';
@@ -109,6 +110,7 @@ function InvestmentStack() {
       <Stack.Screen name="MarketPredictions" component={MarketPredictions} />
       <Stack.Screen name="Rebalancing" component={Rebalancing} />
       <Stack.Screen name="InvestmentAnalytics" component={InvestmentAnalytics} />
+      <Stack.Screen name="ManageAssets" component={ManageAssets} />
     </Stack.Navigator>
   );
 }
@@ -124,7 +126,7 @@ function RetirementStack() {
       }}
     >
       <Stack.Screen name="Retirement" component={RetirementScreen} />
-      <Stack.Screen name="PortfolioRebalancing" component={PortfolioRebalancing} />
+      <Stack.Screen name="Rebalancing" component={Rebalancing} />
       <Stack.Screen name="RetirementSavings" component={RetirementSavings} />
       <Stack.Screen name="RetirementPlanning" component={RetirementPlanning} /> 
       <Stack.Screen name="PensionManagement" component={PensionManagement} />
