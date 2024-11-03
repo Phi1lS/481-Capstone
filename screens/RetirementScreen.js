@@ -179,7 +179,7 @@ const styles = StyleSheet.create({
     bottom: 422,
   },
   darkNeedHelpText: {
-    fontSize: 25,
+    fontSize: 16,
     color: '#4CAF50',
     textAlign: 'right',
     bottom: 422,
