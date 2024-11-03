@@ -12,6 +12,8 @@ import HomeScreen from './screens/HomeScreen';
 //HelpPage Screens
 import HelpPageScreen from './screens/HelpPage'
 import RealEstateHelp from './screens/HelpPageScreens/RealEstateHelp'
+import RetirementHelp from './screens/HelpPageScreens/RetirementHelp'
+import InvestmentHelp from './screens/HelpPageScreens/InvestmentHelp'
 // RealEstateScreen
 import RealEstateScreen from './screens/RealEstateScreen';
 
@@ -111,6 +113,7 @@ function InvestmentStack() {
       <Stack.Screen name="Rebalancing" component={Rebalancing} />
       <Stack.Screen name="InvestmentAnalytics" component={InvestmentAnalytics} />
       <Stack.Screen name="ManageAssets" component={ManageAssets} />
+      <Stack.Screen name="InvestmentHelp" component={InvestmentHelp} />
     </Stack.Navigator>
   );
 }
@@ -130,6 +133,7 @@ function RetirementStack() {
       <Stack.Screen name="RetirementSavings" component={RetirementSavings} />
       <Stack.Screen name="RetirementPlanning" component={RetirementPlanning} /> 
       <Stack.Screen name="PensionManagement" component={PensionManagement} />
+      <Stack.Screen name="RetirementHelp" component={RetirementHelp} />
     </Stack.Navigator>
   );
 }

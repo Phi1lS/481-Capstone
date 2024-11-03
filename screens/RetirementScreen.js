@@ -9,7 +9,7 @@ export default function RetirementScreen() {
   const navigation = useNavigation();
   const scheme = useColorScheme();
   const isDarkMode = scheme === 'dark';
-  
+
   const { avatarUri } = useContext(UserContext); // Accessing avatarUri from UserContext
 
   React.useLayoutEffect(() => {
@@ -87,6 +87,15 @@ export default function RetirementScreen() {
         {renderCard('Retirement Savings', 'Manage and grow your retirement savings', 'currency-usd', 'RetirementSavings')}
         {renderCard('Retirement Planning', 'Plan your retirement to ensure financial security', 'calendar-clock', 'RetirementPlanning')}
         {/*{renderCard('Pension Management', 'Manage and optimize your pension funds', 'account-cash', 'PensionManagement')}*/}
+
+        <TouchableOpacity
+          activeOpacity={0.8}
+          onPressIn={() => handlePressIn(new Animated.Value(1))}
+          onPressOut={() => handlePressOut(new Animated.Value(1))}
+          onPress={() => navigation.navigate('RetirementHelp')}
+        >
+          <Text style={isDarkMode ? styles.darkNeedHelpText : styles.needHelpText}>Need Help?</Text>
+        </TouchableOpacity>
       </ScrollView>
     </View>
   );
@@ -162,6 +171,18 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#555',
     flexWrap: 'wrap',
+  },
+  needHelpText: {
+    fontSize: 16,
+    color: '#00796B',
+    textAlign: 'right',
+    bottom: 422,
+  },
+  darkNeedHelpText: {
+    fontSize: 25,
+    color: '#4CAF50',
+    textAlign: 'right',
+    bottom: 422,
   },
   // Dark mode styles
   darkContainer: {
