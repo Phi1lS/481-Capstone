@@ -5,22 +5,24 @@ import { UserContext } from '../UserContext';
 import { getDownloadURL, ref, Timestamp } from 'firebase/storage';
 import { storage } from '../firebaseConfig';
 import { getMonth, getYear, subMonths } from 'date-fns';
+import { LineChart } from 'react-native-chart-kit';
 import logo from '../assets/logo.png'
 
 export default function HomeScreen() {
   const { userProfile, avatarUri, setAvatarUri } = useContext(UserContext); 
-  const [realEstateIncome, setRealEstateIncome] = useState(0); // Add state for real estate income
+  const [investmentBalance, setInvestmentBalance] = useState(0); 
+  const [realEstateIncome, setRealEstateIncome] = useState(0); 
+  const [monthlyInvestmentData, setMonthlyInvestmentData] = useState(Array(12).fill(0)); // Monthly balances
   const scheme = useColorScheme();  
   const isDarkMode = scheme === 'dark';  
 
-  // Fetch avatar URL if not cached
   useEffect(() => {
     const fetchAvatarUrl = async () => {
       try {
-        if (!avatarUri && userProfile.avatarPath) {  // Fetch only if no avatarUri in context
+        if (!avatarUri && userProfile.avatarPath) {
           const avatarRef = ref(storage, userProfile.avatarPath);
           const url = await getDownloadURL(avatarRef);
-          await Image.prefetch(url); // Prefetch for caching
+          await Image.prefetch(url);
           setAvatarUri(url);
         }
       } catch (error) {
@@ -29,11 +31,61 @@ export default function HomeScreen() {
         setAvatarUri(fallbackUrl);
       }
     };
-
     fetchAvatarUrl();
   }, [userProfile.avatarPath, avatarUri, setAvatarUri]);
 
-  // Calculate the real estate income for the current month
+  useEffect(() => {
+    const calculateInvestmentBalances = () => {
+      const monthlyData = Array(12).fill(0); // Start with zero for each month
+      const currentDate = new Date();
+      let cumulativeBalance = 0;
+  
+      // Step 1: Group incomes by month and year
+      const monthlyIncomes = {};
+      userProfile.incomes
+        .filter(income => income.category === 'investment')
+        .forEach(income => {
+          const incomeDate = income.timestamp.toDate();
+          const month = getMonth(incomeDate);
+          const year = getYear(incomeDate);
+          const key = `${year}-${month}`;
+  
+          if (!monthlyIncomes[key]) {
+            monthlyIncomes[key] = 0;
+          }
+          monthlyIncomes[key] += income.incomePerMonth;
+        });
+  
+      console.log("Grouped Monthly Incomes:", monthlyIncomes);
+  
+      // Step 2: Loop from the earliest month (11 months ago) to the current month
+      for (let i = 0; i < 12; i++) {
+        const date = subMonths(currentDate, 11 - i);
+        const month = getMonth(date);
+        const year = getYear(date);
+        const key = `${year}-${month}`;
+  
+        // If there's an income entry for this month, add it to the cumulative balance
+        if (monthlyIncomes[key] !== undefined) {
+          cumulativeBalance += monthlyIncomes[key];
+          console.log(`Adding ${monthlyIncomes[key]} for ${month + 1}-${year}`);
+        }
+  
+        // Store the cumulative balance for this month in monthlyData
+        monthlyData[i] = cumulativeBalance;
+        console.log(`Month: ${month + 1}-${year} -> Cumulative Balance: ${cumulativeBalance}`);
+      }
+  
+      setMonthlyInvestmentData(monthlyData); // Update the graph data
+      setInvestmentBalance(cumulativeBalance); // Final balance display
+  
+      console.log("Final cumulative balance:", cumulativeBalance);
+      console.log("Monthly Data for Graph:", monthlyData);
+    };
+  
+    calculateInvestmentBalances();
+  }, [userProfile]);
+
   useEffect(() => {
     const calculateRealEstateIncome = () => {
       const currentDate = new Date();
@@ -41,23 +93,18 @@ export default function HomeScreen() {
       const currentYear = getYear(currentDate);
   
       const realEstateIncomes = userProfile?.incomes?.filter((income) => {
-        // Check if timestamp exists and is of correct type
-        const incomeDate = income.timestamp && typeof income.timestamp === 'object' && income.timestamp.toDate 
-          ? income.timestamp.toDate() 
-          : null; 
-        
+        const incomeDate = income.timestamp && income.timestamp.toDate ? income.timestamp.toDate() : null; 
         if (incomeDate) {
           const incomeMonth = getMonth(incomeDate);
           const incomeYear = getYear(incomeDate);
           return income.category === 'realEstate' && incomeMonth === currentMonth && incomeYear === currentYear;
         }
-        return false; // Exclude if incomeDate is not valid
+        return false;
       });
   
       const totalRealEstateIncome = realEstateIncomes?.reduce((total, income) => total + income.incomePerMonth, 0);
       setRealEstateIncome(totalRealEstateIncome || 0);
     };
-  
     calculateRealEstateIncome();
   }, [userProfile]);
 
@@ -69,7 +116,7 @@ export default function HomeScreen() {
       />
 
       <View style={isDarkMode ? styles.darkHeaderBackground : styles.headerBackground}>
-      <Image source={logo} style={styles.logo} resizeMode="contain" /> 
+        <Image source={logo} style={styles.logo} resizeMode="contain" /> 
         <View style={styles.header}>
           {avatarUri ? (
             <Avatar.Image size={50} source={{ uri: avatarUri }} style={styles.avatar} /> 
@@ -87,12 +134,45 @@ export default function HomeScreen() {
         <Text style={isDarkMode ? styles.darkSectionTitle : styles.sectionTitle}>Your Dashboard</Text>
 
         <View style={styles.dashboard}>
+          {/* Investment Balance */}
           <View style={isDarkMode ? styles.darkDashboardItem : styles.dashboardItem}>
             <Text style={isDarkMode ? styles.darkSummaryLabel : styles.summaryLabel}>Investment Balance</Text>
-            <Text style={isDarkMode ? styles.darkSummaryValue : styles.summaryValue}>$XXX,XXX</Text>
-            <View style={isDarkMode ? styles.darkPlaceholderGraph : styles.placeholderGraph}>
-              <Text style={isDarkMode ? styles.darkPlaceholderText : styles.placeholderText}>Graph Placeholder</Text>
-            </View>
+            <Text style={isDarkMode ? styles.darkSummaryValue : styles.summaryValue}>
+              ${investmentBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            </Text>
+
+            {/* Line Chart for Monthly Investment Balance */}
+            <LineChart
+              data={{
+                labels: Array.from({ length: 12 }, (_, i) =>
+                  i % 2 === 0 ? subMonths(new Date(), i).toLocaleString('default', { month: 'short' }) : ''
+                ).reverse(),
+                datasets: [
+                  {
+                    data: monthlyInvestmentData,
+                  },
+                ],
+              }}
+              width={300} // Adjust width as needed
+              height={220} // Adjust height as needed
+              chartConfig={{
+                backgroundColor: isDarkMode ? '#1E1E1E' : '#FFFFFF',
+                backgroundGradientFrom: isDarkMode ? '#1E1E1E' : '#FFFFFF',
+                backgroundGradientTo: isDarkMode ? '#1E1E1E' : '#FFFFFF',
+                color: (opacity = 1) => isDarkMode ? `rgba(255, 255, 255, ${opacity})` : `rgba(0, 0, 0, ${opacity})`,
+                labelColor: () => (isDarkMode ? '#FFFFFF' : '#000000'),
+                propsForDots: {
+                  r: '4',
+                  strokeWidth: '2',
+                  stroke: isDarkMode ? '#00796B' : '#004D40',
+                },
+              }}
+              bezier
+              style={{
+                marginVertical: 8,
+                borderRadius: 16,
+              }}
+            />
           </View>
 
           <View style={isDarkMode ? styles.darkDashboardItem : styles.dashboardItem}>
