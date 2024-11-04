@@ -56,7 +56,7 @@ export default function HomeScreen() {
           monthlyIncomes[key] += income.incomePerMonth;
         });
   
-      console.log("Grouped Monthly Incomes:", monthlyIncomes);
+      //console.log("Grouped Monthly Incomes:", monthlyIncomes);
   
       // Step 2: Loop from the earliest month (11 months ago) to the current month
       for (let i = 0; i < 12; i++) {
@@ -68,19 +68,19 @@ export default function HomeScreen() {
         // If there's an income entry for this month, add it to the cumulative balance
         if (monthlyIncomes[key] !== undefined) {
           cumulativeBalance += monthlyIncomes[key];
-          console.log(`Adding ${monthlyIncomes[key]} for ${month + 1}-${year}`);
+          //(`Adding ${monthlyIncomes[key]} for ${month + 1}-${year}`);
         }
   
         // Store the cumulative balance for this month in monthlyData
         monthlyData[i] = cumulativeBalance;
-        console.log(`Month: ${month + 1}-${year} -> Cumulative Balance: ${cumulativeBalance}`);
+        //console.log(`Month: ${month + 1}-${year} -> Cumulative Balance: ${cumulativeBalance}`);
       }
   
       setMonthlyInvestmentData(monthlyData); // Update the graph data
       setInvestmentBalance(cumulativeBalance); // Final balance display
   
-      console.log("Final cumulative balance:", cumulativeBalance);
-      console.log("Monthly Data for Graph:", monthlyData);
+      //console.log("Final cumulative balance:", cumulativeBalance);
+      //console.log("Monthly Data for Graph:", monthlyData);
     };
   
     calculateInvestmentBalances();
