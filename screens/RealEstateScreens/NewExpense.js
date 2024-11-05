@@ -2,7 +2,7 @@ import React, { useState, useContext } from 'react';
 import { View, Text, TouchableOpacity, TextInput, StyleSheet, useColorScheme } from 'react-native';
 import RNPickerSelect from 'react-native-picker-select';
 import { Icon } from 'react-native-paper';
-import { addDoc, collection, serverTimestamp, Timestamp } from 'firebase/firestore';
+import { addDoc, getDoc, collection, serverTimestamp, Timestamp } from 'firebase/firestore';
 import { auth, db } from '../../firebaseConfig';
 import { UserContext } from '../../UserContext';
 
@@ -19,36 +19,40 @@ export default function NewExpense({navigation}) {
   const handleAddExpense = async () => {
     try {
       const user = auth.currentUser;
-
+  
       if (!user) {
         console.error('User not logged in');
         return;
       }
-
-      // Add income to Firestore with a timestamp
-      const newIncome = {
+  
+      // Add expense to Firestore with a timestamp
+      const newExpense = {
         userId: user.uid,
         name: expenseName,
         category: category,
         expenseAmount: parseFloat(expenseAmount), 
         timestamp: serverTimestamp(),
       };
-
-      await addDoc(collection(db, 'expenses'), newIncome);
-      console.log('Income added to Firestore');
-
-      // Update UserContext to reflect changes dynamically
+  
+      const docRef = await addDoc(collection(db, 'expenses'), newExpense);
+      console.log('Expense added to Firestore:', docRef.id);
+  
+      // Fetch the newly added expense to get the actual server timestamp
+      const addedExpenseSnapshot = await getDoc(docRef);
+      const addedExpense = { id: docRef.id, ...addedExpenseSnapshot.data() };
+  
+      // Update UserContext to reflect changes dynamically with accurate timestamp
       setUserProfile((prevProfile) => ({
         ...prevProfile,
-        expenses: [...(prevProfile.expenses || []), newIncome],
+        expenses: [...(prevProfile.expenses || []), addedExpense],
       }));
-
+  
       setExpenseName('');
       setCategory(null);
       setExpenseAmount('');
       navigation.goBack();
     } catch (error) {
-      console.error('Error adding income:', error);
+      console.error('Error adding expense:', error);
     }
   };
 
