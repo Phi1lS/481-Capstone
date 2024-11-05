@@ -36,12 +36,14 @@ export default function HomeScreen() {
 
   useEffect(() => {
     const calculateInvestmentBalances = () => {
-      const monthlyData = Array(12).fill(0); // Start with zero for each month
+      const monthlyData = Array(12).fill(0);
       const currentDate = new Date();
-      let cumulativeBalance = 0;
+      let cumulativeBalance = 0;  // Start from 0
   
-      // Step 1: Group incomes by month and year
+      // Step 1: Group incomes by month and year, filtering out duplicates based on timestamp
       const monthlyIncomes = {};
+      const incomeTimestamps = new Set();
+  
       userProfile.incomes
         .filter(income => income.category === 'investment')
         .forEach(income => {
@@ -49,41 +51,77 @@ export default function HomeScreen() {
           const month = getMonth(incomeDate);
           const year = getYear(incomeDate);
           const key = `${year}-${month}`;
+          const timestampString = income.timestamp.toMillis();
   
-          if (!monthlyIncomes[key]) {
-            monthlyIncomes[key] = 0;
+          if (!incomeTimestamps.has(timestampString)) {
+            incomeTimestamps.add(timestampString);
+  
+            if (!monthlyIncomes[key]) {
+              monthlyIncomes[key] = 0;
+            }
+            monthlyIncomes[key] += income.incomePerMonth;
           }
-          monthlyIncomes[key] += income.incomePerMonth;
         });
   
-      //console.log("Grouped Monthly Incomes:", monthlyIncomes);
+      //console.log("Monthly Incomes Grouped by Month-Year (Unique by Timestamp):", monthlyIncomes);
   
-      // Step 2: Loop from the earliest month (11 months ago) to the current month
+      // Step 2: Group assets for stock and bond by month, treating them as monthly additions
+      const monthlyAssets = {};
+      userProfile.assets
+        .filter(asset => asset.assetType === 'stock' || asset.assetType === 'bond')
+        .forEach(asset => {
+          const assetDate = asset.timestamp.toDate();
+          const month = getMonth(assetDate);
+          const year = getYear(assetDate);
+          const key = `${year}-${month}`;
+          const timestampString = asset.timestamp.toMillis();
+  
+          // Exclude assets with timestamps that match any income
+          if (!incomeTimestamps.has(timestampString)) {
+            if (!monthlyAssets[key]) {
+              monthlyAssets[key] = 0;
+            }
+            monthlyAssets[key] += asset.value;
+          }
+        });
+  
+      //console.log("Monthly Assets Grouped by Month-Year (Excluding Duplicates):", monthlyAssets);
+  
+      // Step 3: Calculate cumulative balance over 12 months
       for (let i = 0; i < 12; i++) {
         const date = subMonths(currentDate, 11 - i);
         const month = getMonth(date);
         const year = getYear(date);
         const key = `${year}-${month}`;
   
-        // If there's an income entry for this month, add it to the cumulative balance
+        // Add monthly income if available
         if (monthlyIncomes[key] !== undefined) {
           cumulativeBalance += monthlyIncomes[key];
-          //(`Adding ${monthlyIncomes[key]} for ${month + 1}-${year}`);
+          //console.log(`Adding income for ${key}:`, monthlyIncomes[key]);
         }
   
-        // Store the cumulative balance for this month in monthlyData
+        // Add monthly asset value if available
+        if (monthlyAssets[key] !== undefined) {
+          cumulativeBalance += monthlyAssets[key];
+          //console.log(`Adding asset value for ${key}:`, monthlyAssets[key]);
+        }
+  
+        // Store cumulative balance for the graph data
         monthlyData[i] = cumulativeBalance;
-        //console.log(`Month: ${month + 1}-${year} -> Cumulative Balance: ${cumulativeBalance}`);
+        //console.log(`Month ${i + 1} (${month + 1}-${year}) -> Cumulative Balance:`, cumulativeBalance);
       }
   
-      setMonthlyInvestmentData(monthlyData); // Update the graph data
-      setInvestmentBalance(cumulativeBalance); // Final balance display
+      // Set final data
+      setMonthlyInvestmentData(monthlyData);
+      setInvestmentBalance(cumulativeBalance);
   
-      //console.log("Final cumulative balance:", cumulativeBalance);
-      //console.log("Monthly Data for Graph:", monthlyData);
+      //console.log("Final Monthly Data for Graph:", monthlyData);
+      //console.log("Final Cumulative Balance:", cumulativeBalance);
     };
   
-    calculateInvestmentBalances();
+    if (userProfile.assets.length > 0 || userProfile.incomes.length > 0) {
+      calculateInvestmentBalances();
+    }
   }, [userProfile]);
 
   useEffect(() => {
@@ -166,6 +204,12 @@ export default function HomeScreen() {
                   strokeWidth: '2',
                   stroke: isDarkMode ? '#00796B' : '#004D40',
                 },
+                formatYLabel: (value) => {
+                  if (value >= 1e6) return `${(value / 1e6).toFixed(1)}M`;
+                  if (value >= 1e3) return `${(value / 1e3).toFixed(1)}K`;
+                  return value.toString();
+                },
+                decimalPlaces: 0, // Remove decimals if you prefer whole numbers
               }}
               bezier
               style={{
@@ -182,7 +226,7 @@ export default function HomeScreen() {
 
           <View style={isDarkMode ? styles.darkDashboardItem : styles.dashboardItem}>
             <Text style={isDarkMode ? styles.darkSummaryLabel : styles.summaryLabel}>
-              Real Estate Income
+              Real Estate Income for the Month
             </Text>
             {realEstateIncome !== null && (
               <Text style={isDarkMode ? styles.darkSummaryValue : styles.summaryValue}>
