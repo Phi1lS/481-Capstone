@@ -18,7 +18,7 @@ import * as Progress from "react-native-progress";
 import { Timestamp, doc, deleteDoc, collection, getDocs, getDoc, updateDoc, and } from 'firebase/firestore';
 import { db, auth } from '../../firebaseConfig'
 
-export default function InvestmentAnalyticsScreen() {
+export default function RetirementPlanningScreen() {
   const scheme = useColorScheme();
   const isDarkMode = scheme === "dark";
 
@@ -93,13 +93,8 @@ export default function InvestmentAnalyticsScreen() {
    //function for inital updating values from database
   useEffect(() => {
     const calculateSavings = () => {
-      const incomeSavings = userProfile?.incomes?.filter((income) => {
-        return income.isSavings === true;
-      });
-
-      const totalSavingsIncome = incomeSavings?.reduce((total, income) => total + income.incomePerMonth, 0);
-      setTotalSavings(totalSavingsIncome || 0);
-      
+      const incomeSavings = userProfile?.totalSavings;
+      setTotalSavings(incomeSavings || 0);
     };
     const updateRetirementGoal= async () => {
       try {

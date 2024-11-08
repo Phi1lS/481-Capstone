@@ -1,6 +1,6 @@
 import React, { createContext, useState, useEffect } from 'react';
 import { auth, db, storage } from './firebaseConfig';
-import { doc, getDoc, collection, onSnapshot } from 'firebase/firestore';
+import { doc, getDoc, collection, onSnapshot, and } from 'firebase/firestore';
 import { ref, getDownloadURL } from 'firebase/storage';
 
 export const UserContext = createContext();
@@ -21,6 +21,7 @@ export const UserProvider = ({ children }) => {
   useEffect(() => {
     let unsubscribeIncomeListener;  // Declare listener unsubscribe handler
     let unsubscribeAssetListener;  // Declare listener for assets
+    let unsubscribeSavingsListener;  // Declare listener for Savings
 
     const unsubscribeAuth = auth.onAuthStateChanged((user) => {
       if (user) {
@@ -41,6 +42,32 @@ export const UserProvider = ({ children }) => {
             incomes,
           }));
         });
+
+        // Listen for savings updates
+        const incomeRefForSavings = collection(db, 'incomes');
+        unsubscribeSavingsListener = onSnapshot(incomeRefForSavings, (snapshot) => {
+          const incomeSavings = snapshot.docs
+          .filter((doc) => doc.data().userId === user.uid)
+          .map((doc) => ({
+            id: doc.id,
+            ...doc.data(),
+            isSavings: doc.data().isSavings || false, // Ensure isSavings is included
+          }));
+
+          //grab only savings incomes
+         const allSavings = incomeSavings.filter((income) => {
+          return income.isSavings === true;
+        });
+        //total up all savings
+         const totalSavings = allSavings?.reduce((total, income) => total + income.incomePerMonth, 0);
+      
+                 
+         setUserProfile((prevProfile) => ({
+           ...prevProfile,
+           totalSavings,
+          }));
+        });
+
 
         // Listen for asset updates
         const assetRef = collection(db, 'assets');
@@ -66,6 +93,7 @@ export const UserProvider = ({ children }) => {
           avatarPath: '',
           incomes: [],
           assets: [], // Reset assets on logout
+          totalSavings: 0,
         });
         setAvatarUri(null);
 
@@ -75,6 +103,9 @@ export const UserProvider = ({ children }) => {
         }
         if (unsubscribeAssetListener) {
           unsubscribeAssetListener();
+        }
+        if (unsubscribeSavingsListener) {
+          unsubscribeSavingsListener();
         }
       }
     });
