@@ -221,7 +221,9 @@ export default function HomeScreen() {
 
           <View style={isDarkMode ? styles.darkDashboardItem : styles.dashboardItem}>
             <Text style={isDarkMode ? styles.darkSummaryLabel : styles.summaryLabel}>Retirement Account Balance</Text>
-            <Text style={isDarkMode ? styles.darkSummaryValue : styles.summaryValue}>$XXX,XXX</Text>
+            <Text style={isDarkMode ? styles.darkSummaryValue : styles.summaryValue}>
+              ${userProfile.totalSavings?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            </Text>
           </View>
 
           <View style={isDarkMode ? styles.darkDashboardItem : styles.dashboardItem}>
