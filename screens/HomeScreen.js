@@ -68,14 +68,16 @@ export default function HomeScreen() {
       // Step 2: Group assets for stock and bond by month, treating them as monthly additions
       const monthlyAssets = {};
       userProfile.assets
-        .filter(asset => asset.assetType === 'stock' || asset.assetType === 'bond')
-        .forEach(asset => {
+      .filter(asset => asset.assetType === 'stock' || asset.assetType === 'bond')
+      .forEach(asset => {
+        // Ensure asset.timestamp exists and is valid before calling toDate()
+        if (asset.timestamp && asset.timestamp.toDate) {
           const assetDate = asset.timestamp.toDate();
           const month = getMonth(assetDate);
           const year = getYear(assetDate);
           const key = `${year}-${month}`;
           const timestampString = asset.timestamp.toMillis();
-  
+
           // Exclude assets with timestamps that match any income
           if (!incomeTimestamps.has(timestampString)) {
             if (!monthlyAssets[key]) {
@@ -83,7 +85,10 @@ export default function HomeScreen() {
             }
             monthlyAssets[key] += asset.value;
           }
-        });
+        } else {
+          //console.warn("Asset is missing a valid timestamp:", asset);
+        }
+      });
   
       //console.log("Monthly Assets Grouped by Month-Year (Excluding Duplicates):", monthlyAssets);
   

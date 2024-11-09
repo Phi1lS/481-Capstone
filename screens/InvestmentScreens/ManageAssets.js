@@ -67,11 +67,6 @@ export default function ManageAssets() {
                 return;
             }
     
-            // Log current state values for debugging
-            // console.log('Asset Name:', assetName);
-            // console.log('Value:', value);
-            // console.log('Asset Type:', assetType);
-    
             // Validate fields
             if (!assetName.trim() || !value || assetType === "None") {
                 Alert.alert('Error', 'Please fill out all fields before submitting.');
@@ -81,14 +76,22 @@ export default function ManageAssets() {
             const newAsset = {
                 userId: user.uid,
                 assetName: assetName,
-                value: parseFloat(value.replace('$', '')), // Remove dollar sign before submitting
+                value: parseFloat(value.replace('$', '')),
                 assetType: assetType,
                 timestamp: serverTimestamp(),
             };
     
-            await addDoc(collection(db, 'assets'), newAsset);
-            // console.log('Asset added to Firestore');
-            Alert.alert('Asset added successfully.')
+            // Add asset and immediately retrieve the document
+            const docRef = await addDoc(collection(db, 'assets'), newAsset);
+            const docSnapshot = await getDoc(docRef);
+            const savedAsset = docSnapshot.data();
+    
+            if (savedAsset?.timestamp) {
+                console.log('Asset added with timestamp:', savedAsset.timestamp.toDate());
+                Alert.alert('Asset added successfully.');
+            } else {
+                //console.warn('Timestamp not set on asset:', savedAsset);
+            }
     
             // Clear inputs
             setAssetName('');
@@ -98,7 +101,7 @@ export default function ManageAssets() {
             console.error('Error adding asset:', error);
         }
     };
-
+    
     const handleChangeAssetType = async (incomeId, newAssetType) => {
         const income = incomeSources.find((inc) => inc.id === incomeId);
         if (income && newAssetType !== "None") {
