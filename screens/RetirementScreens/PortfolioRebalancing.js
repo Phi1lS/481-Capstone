@@ -7,7 +7,7 @@ import { LineChart } from 'react-native-chart-kit';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 
-export default function InvestmentAnalyticsScreen() {
+export default function PortfolioScreen() {
   const scheme = useColorScheme();
   const isDarkMode = scheme === 'dark';
 
