@@ -82,6 +82,12 @@ export default function AddIncomeScreen() {
     }
   };
 
+  const formatNumberWithCommas = (value) => {
+    if (!value) return '';
+    // Remove non-digit characters and add commas
+    return parseFloat(value.replace(/,/g, '')).toLocaleString('en-US');
+  };
+
   return (
     <View style={isDarkMode ? styles.darkSafeArea : styles.safeArea}>
       <Text style={isDarkMode ? styles.darkHeader : styles.header}>Add Income</Text>
@@ -165,15 +171,19 @@ export default function AddIncomeScreen() {
           </View>
 
           <View style={isDarkMode ? styles.darkInputCard : styles.inputCard}>
-            <TextInput
-              placeholder="Income Per Month"
-              value={incomePerMonth.length > 0 ? `$${incomePerMonth}` : incomePerMonth}
-              style={isDarkMode ? styles.darkInput : styles.input}
-              placeholderTextColor={isDarkMode ? '#AAAAAA' : '#888'}
-              onChangeText={(text) => setIncomePerMonth(text.replace('$', ''))}
-              keyboardType="numeric"
-              selectionColor={isDarkMode ? '#4CAF50' : '#00796B'} // Green caret
-            />
+          <TextInput
+            placeholder="Income Per Month"
+            value={incomePerMonth ? `$${formatNumberWithCommas(incomePerMonth)}` : ''}
+            style={isDarkMode ? styles.darkInput : styles.input}
+            placeholderTextColor={isDarkMode ? '#AAAAAA' : '#888'}
+            onChangeText={(text) => {
+              // Remove any non-numeric characters except decimal point
+              const numericValue = text.replace(/[^0-9.]/g, '');
+              setIncomePerMonth(numericValue);
+            }}
+            keyboardType="numeric"
+            selectionColor={isDarkMode ? '#4CAF50' : '#00796B'} // Green caret
+          />
           </View>
 
           <TouchableOpacity style={isDarkMode ? styles.darkButton : styles.button} onPress={handleAddIncome}>

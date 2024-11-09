@@ -131,6 +131,11 @@ export default function ManageAssets() {
         }
     };
 
+    const formatNumberWithCommas = (value) => {
+        if (!value) return '';
+        return parseFloat(value.replace(/,/g, '')).toLocaleString('en-US');
+      };
+
     return (
         <View style={isDarkMode ? styles.darkSafeArea : styles.safeArea}>
             <Text style={isDarkMode ? styles.darkHeader : styles.header}>Manage Assets</Text>
@@ -221,15 +226,19 @@ export default function ManageAssets() {
                 </View>
 
                 <View style={isDarkMode ? styles.darkInputCard : styles.inputCard}>
-                    <TextInput
-                        placeholder="Value"
-                        value={value.length > 0 ? `$${value}` : value} // Show dollar sign
-                        onChangeText={(text) => setValue(text.replace('$', ''))} // Remove dollar sign for submission
-                        keyboardType="numeric"
-                        style={isDarkMode ? styles.darkInput : styles.input}
-                        placeholderTextColor={isDarkMode ? '#AAAAAA' : '#888'}
-                        selectionColor={isDarkMode ? '#4CAF50' : '#00796B'} // Green caret
-                    />
+                <TextInput
+                    placeholder="Value"
+                    value={value ? `$${formatNumberWithCommas(value)}` : ''} // Show dollar sign with formatted value
+                    onChangeText={(text) => {
+                    // Remove dollar sign and non-numeric characters except for decimal points
+                    const numericValue = text.replace(/[^0-9.]/g, '');
+                    setValue(numericValue);
+                    }}
+                    keyboardType="numeric"
+                    style={isDarkMode ? styles.darkInput : styles.input}
+                    placeholderTextColor={isDarkMode ? '#AAAAAA' : '#888'}
+                    selectionColor={isDarkMode ? '#4CAF50' : '#00796B'} // Green caret
+                />
                 </View>
                     <TouchableOpacity style={isDarkMode ? styles.darkButton : styles.button} onPress={handleAddAsset}>
                         <Text style={styles.buttonText}>Add Asset</Text>
@@ -237,54 +246,54 @@ export default function ManageAssets() {
                 </View>
             ) : (
                 <ScrollView style={isDarkMode ? styles.darkContainer : styles.container}>
-                     {incomeSources.map((income) => (
+                    {incomeSources.map((income) => (
                         <Card key={income.id} style={isDarkMode ? styles.darkCard : styles.card}>
-                            <Card.Title
-                                title={income.name}
-                                left={(props) => <Avatar.Icon {...props} icon="cash" style={styles.icon} />}
-                                titleStyle={isDarkMode ? styles.darkCardTitle : styles.cardTitle}
-                            />
-                            <View style={styles.sliderContainer}>
-                                <Text style={isDarkMode ? styles.darkText : styles.text}>
-                                    Category: {translateCategory(income.category)}
-                                </Text>
-                                <Text style={isDarkMode ? styles.darkText : styles.text}>
-                                    Income Per Month: ${income.incomePerMonth.toFixed(2)}
-                                </Text>
-                            </View>
+                        <Card.Title
+                            title={income.name}
+                            left={(props) => <Avatar.Icon {...props} icon="cash" style={styles.icon} />}
+                            titleStyle={isDarkMode ? styles.darkCardTitle : styles.cardTitle}
+                        />
+                        <View style={styles.sliderContainer}>
+                            <Text style={isDarkMode ? styles.darkText : styles.text}>
+                            Category: {translateCategory(income.category)}
+                            </Text>
+                            <Text style={isDarkMode ? styles.darkText : styles.text}>
+                            Income Per Month: ${formatNumberWithCommas(income.incomePerMonth.toFixed(2))}
+                            </Text>
+                        </View>
 
-                            {/* Dropdown for Asset Type Selection */}
-                            <RNPickerSelect
-                                useNativeAndroidPickerStyle={false}
-                                placeholder={{ label: "Select Asset Type", value: null }}
-                                onValueChange={(value) => setAssetType(value)} // Set the selected asset type
-                                items={[
-                                    { label: "None", value: "None" },
-                                    { label: "Stock", value: "stock" },
-                                    { label: "Bond", value: "bond" },
-                                    { label: "Real Estate", value: "realEstate" },
-                                    { label: "Cash", value: "cash" },
-                                ]}
-                                style={{
-                                    inputAndroid: {
-                                        ...isDarkMode ? styles.darkText : styles.text,
-                                        color: isDarkMode ? '#FFFFFF' : '#333',
-                                    },
-                                    inputIOS: {
-                                        ...isDarkMode ? styles.darkText : styles.text,
-                                        color: isDarkMode ? '#FFFFFF' : '#333',
-                                    },
-                                }}
-                            />
-                            <TouchableOpacity 
-                                onPress={() => handleChangeAssetType(income.id, assetType)}
-                                style = {{ alignSelf: 'flex-end' }}
-                            >
-                                <Text style={isDarkMode ? styles.darkChangeText : styles.changeText}>Modify Asset Type</Text>
-                            </TouchableOpacity>
+                        {/* Dropdown for Asset Type Selection */}
+                        <RNPickerSelect
+                            useNativeAndroidPickerStyle={false}
+                            placeholder={{ label: "Select Asset Type", value: null }}
+                            onValueChange={(value) => setAssetType(value)} // Set the selected asset type
+                            items={[
+                            { label: "None", value: "None" },
+                            { label: "Stock", value: "stock" },
+                            { label: "Bond", value: "bond" },
+                            { label: "Real Estate", value: "realEstate" },
+                            { label: "Cash", value: "cash" },
+                            ]}
+                            style={{
+                            inputAndroid: {
+                                ...isDarkMode ? styles.darkText : styles.text,
+                                color: isDarkMode ? '#FFFFFF' : '#333',
+                            },
+                            inputIOS: {
+                                ...isDarkMode ? styles.darkText : styles.text,
+                                color: isDarkMode ? '#FFFFFF' : '#333',
+                            },
+                            }}
+                        />
+                        <TouchableOpacity 
+                            onPress={() => handleChangeAssetType(income.id, assetType)}
+                            style = {{ alignSelf: 'flex-end' }}
+                        >
+                            <Text style={isDarkMode ? styles.darkChangeText : styles.changeText}>Modify Asset Type</Text>
+                        </TouchableOpacity>
                         </Card>
                     ))}
-                </ScrollView>
+                    </ScrollView>
             )}
         </View>
     );
