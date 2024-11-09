@@ -176,13 +176,13 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#00796B',
     textAlign: 'right',
-    bottom: 422,
+    bottom: 425,
   },
   darkNeedHelpText: {
     fontSize: 16,
     color: '#4CAF50',
     textAlign: 'right',
-    bottom: 422,
+    bottom: 425,
   },
   // Dark mode styles
   darkContainer: {
