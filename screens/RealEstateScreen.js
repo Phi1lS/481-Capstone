@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { useState, useEffect, useContext } from 'react';
 import { View, StyleSheet, ScrollView, TouchableOpacity, Animated, StatusBar, Text, useColorScheme, Platform } from 'react-native';
-import { Title, Card, Avatar } from 'react-native-paper';
+import { Title, Card, Avatar, Button } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
 import { UserContext } from '../UserContext';
 
@@ -33,7 +33,7 @@ export default function RealEstateScreen() {
       useNativeDriver: true,
     }).start();
   };
-
+  
   const renderCard = (title, subtitle, icon, navigationTarget) => {
     const scaleValue = new Animated.Value(1);
 
@@ -87,6 +87,15 @@ export default function RealEstateScreen() {
         {renderCard('Expense Tracking', 'Monitor and manage expenses', 'bank', 'ExpenseTracking')}
         {renderCard('Lease Management', 'Manage and track lease agreements', 'file-document-edit-outline', 'LeaseManagement')}
         {renderCard('Tax Integration', 'Integrate with tax software', 'file-cabinet', 'TaxIntegration')}
+        
+        <TouchableOpacity
+        activeOpacity={0.8}
+        onPressIn={() => handlePressIn(new Animated.Value(1))}
+        onPressOut={() => handlePressOut(new Animated.Value(1))}
+        onPress={() => navigation.navigate('RealEstateHelp')}
+        >
+        <Text style={isDarkMode ? styles.darkNeedHelpText : styles.needHelpText}>Need Help?</Text>
+      </TouchableOpacity>
       </ScrollView>
     </View>
   );
@@ -162,6 +171,18 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#555',
     flexWrap: 'wrap',
+  },
+  needHelpText:{
+    fontSize: 16,
+    color: '#00796B',
+    textAlign: 'right',
+    bottom: 552,
+  },
+  darkNeedHelpText:{
+    fontSize: 16,
+    color: '#4CAF50',
+    textAlign: 'right',
+    bottom: 552,
   },
   // Dark mode styles
   darkContainer: {

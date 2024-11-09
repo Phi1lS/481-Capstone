@@ -28,7 +28,7 @@ export default function RetirementSavingsScreen() {
   const [replacementRate, setReplacementRate] = useState('70');
   const [rateOfReturn, setRateOfReturn] = useState('5');
   const [annualContributions, setAnnualContributions] = useState('5');
-  const [inflationRate, setInflationRate] = useState('3');
+  const [inflationRate, setInflationRate] = useState('2.4');
   const [savingsNeeded, setSavingsNeeded] = useState(0);
 
   //variables for goal update modal

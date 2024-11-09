@@ -89,6 +89,15 @@ export default function InvestmentScreen() {
         {renderCard('Market Predictions', 'Analyze and predict market trends', 'trending-up', 'MarketPredictions')}
         {renderCard('Rebalancing', 'Adjust your portfolio to maintain desired allocation', 'swap-horizontal-bold', 'Rebalancing')}
         {renderCard('Investment Analytics', 'Review detailed analytics and performance', 'chart-bar', 'InvestmentAnalytics')}
+      
+        <TouchableOpacity
+          activeOpacity={0.8}
+          onPressIn={() => handlePressIn(new Animated.Value(1))}
+          onPressOut={() => handlePressOut(new Animated.Value(1))}
+          onPress={() => navigation.navigate('InvestmentHelp')}
+        >
+          <Text style={isDarkMode ? styles.darkNeedHelpText : styles.needHelpText}>Need Help?</Text>
+        </TouchableOpacity>
       </ScrollView>
     </View>
   );
@@ -162,6 +171,18 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#555',
     flexWrap: 'wrap',
+  },
+  needHelpText:{
+    fontSize: 16,
+    color: '#00796B',
+    textAlign: 'right',
+    bottom: 552,
+  },
+  darkNeedHelpText:{
+    fontSize: 16,
+    color: '#4CAF50',
+    textAlign: 'right',
+    bottom: 552,
   },
   // Dark mode styles
   darkContainer: {

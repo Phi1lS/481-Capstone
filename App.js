@@ -9,6 +9,11 @@ import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth } from './firebaseConfig';
 import HomeScreen from './screens/HomeScreen';
 
+//HelpPage Screens
+import HelpPageScreen from './screens/HelpPage'
+import RealEstateHelp from './screens/HelpPageScreens/RealEstateHelp'
+import RetirementHelp from './screens/HelpPageScreens/RetirementHelp'
+import InvestmentHelp from './screens/HelpPageScreens/InvestmentHelp'
 // RealEstateScreen
 import RealEstateScreen from './screens/RealEstateScreen';
 
@@ -108,6 +113,7 @@ function InvestmentStack() {
       <Stack.Screen name="Rebalancing" component={Rebalancing} />
       <Stack.Screen name="InvestmentAnalytics" component={InvestmentAnalytics} />
       <Stack.Screen name="ManageAssets" component={ManageAssets} />
+      <Stack.Screen name="InvestmentHelp" component={InvestmentHelp} />
     </Stack.Navigator>
   );
 }
@@ -127,6 +133,7 @@ function RetirementStack() {
       <Stack.Screen name="RetirementSavings" component={RetirementSavings} />
       <Stack.Screen name="RetirementPlanning" component={RetirementPlanning} /> 
       <Stack.Screen name="PensionManagement" component={PensionManagement} />
+      <Stack.Screen name="RetirementHelp" component={RetirementHelp} />
     </Stack.Navigator>
   );
 }
@@ -148,6 +155,7 @@ function RealEstateStack() {
       <Stack.Screen name="TaxIntegration" component={TaxIntegration} />
       <Stack.Screen name="NewExpense" component={NewExpense} />
       <Stack.Screen name="AddIncome" component={AddIncomeScreen} />
+      <Stack.Screen name="RealEstateHelp" component={RealEstateHelp} />
     </Stack.Navigator>
   );
 }
@@ -169,6 +177,22 @@ function UserAccountStack() {
       <Stack.Screen name="Preferences" component={Preferences} />
       <Stack.Screen name="IncomeTracking" component={IncomeTracking} />
       <Stack.Screen name="AddIncome" component={AddIncomeScreen} />
+    </Stack.Navigator>
+  );
+}
+
+// Help Stack in case there should be a general help page
+function HelpStack() {
+  return (
+    <Stack.Navigator
+      screenOptions={{
+        headerTitle: '',
+        headerBackTitleVisible: false,
+        headerTintColor: '#00796B',
+      }}
+    >
+      <Stack.Screen name="Help" component={HelpPageScreen} />
+      <Stack.Screen name="RealEstateHelp" component={RealEstateHelp} />
     </Stack.Navigator>
   );
 }
