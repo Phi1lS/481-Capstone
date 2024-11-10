@@ -170,7 +170,7 @@ export default function ExpenseTracking({ navigation }) {
   const expenseChange = currentMonthExpenses - previousMonthExpenses;
 
   const getTextStyle = (amount) => ({
-    color: amount >= 0 ? 'green' : 'red',
+    color: amount > 0 ? 'red' : 'green',
     fontWeight: 'bold',
   });
 

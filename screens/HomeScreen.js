@@ -14,6 +14,7 @@ export default function HomeScreen() {
   const [realEstateIncome, setRealEstateIncome] = useState(0); 
   const [monthlyInvestmentData, setMonthlyInvestmentData] = useState(Array(12).fill(0)); // Monthly balances
   const [monthlyExpenses, setMonthlyExpenses] = useState(0);  // New state for monthly expenses
+  const [monthlyIncome, setMonthlyIncome] = useState(0);  // Monthly income
   const scheme = useColorScheme();  
   const isDarkMode = scheme === 'dark';  
 
@@ -156,6 +157,31 @@ export default function HomeScreen() {
     calculateRealEstateIncome();
   }, [userProfile]);
 
+  // Calculate monthly income
+  useEffect(() => {
+    const calculateMonthlyIncome = () => {
+      const currentDate = new Date();
+      const currentMonth = getMonth(currentDate);
+      const currentYear = getYear(currentDate);
+      
+      const incomeForCurrentMonth = userProfile.incomes
+        .filter(income => {
+          const incomeDate = income.timestamp?.toDate();
+          return (
+            incomeDate &&
+            getMonth(incomeDate) === currentMonth &&
+            getYear(incomeDate) === currentYear
+          );
+        })
+        .reduce((total, income) => total + (income.incomePerMonth || 0), 0);
+
+      setMonthlyIncome(incomeForCurrentMonth);
+    };
+
+    calculateMonthlyIncome();
+  }, [userProfile]);
+
+  // Calculate monthly expenses
   useEffect(() => {
     const calculateMonthlyExpenses = () => {
       const currentDate = new Date();
@@ -178,6 +204,15 @@ export default function HomeScreen() {
 
     calculateMonthlyExpenses();
   }, [userProfile]);
+
+   // Calculate Net Income
+  const netIncome = monthlyIncome - monthlyExpenses;
+  const netIncomeStyle = netIncome >= 0 ? (isDarkMode ? styles.darkSummaryValue : styles.summaryValue) : styles.expensesText;
+
+  // Format Net Income display with a minus sign if it's negative
+  const formattedNetIncome = netIncome < 0 
+    ? `-$${Math.abs(netIncome).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+    : `$${netIncome.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
   return (
     <View style={isDarkMode ? styles.darkContainer : styles.container}>
@@ -256,6 +291,14 @@ export default function HomeScreen() {
             <Text style={isDarkMode ? styles.darkSummaryLabel : styles.summaryLabel}>Retirement Account Balance</Text>
             <Text style={isDarkMode ? styles.darkSummaryValue : styles.summaryValue}>
               ${userProfile.totalSavings?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            </Text>
+          </View>
+
+          {/* Net Income for the Month */}
+          <View style={isDarkMode ? styles.darkDashboardItem : styles.dashboardItem}>
+            <Text style={isDarkMode ? styles.darkSummaryLabel : styles.summaryLabel}>Net Income for the Month</Text>
+            <Text style={netIncomeStyle}>
+              {formattedNetIncome}
             </Text>
           </View>
 
