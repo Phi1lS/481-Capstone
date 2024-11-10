@@ -1,6 +1,6 @@
 import React, { createContext, useState, useEffect } from 'react';
 import { auth, db, storage } from './firebaseConfig';
-import { doc, getDoc, collection, onSnapshot, and } from 'firebase/firestore';
+import { doc, getDoc, collection, onSnapshot } from 'firebase/firestore';
 import { ref, getDownloadURL } from 'firebase/storage';
 
 export const UserContext = createContext();
@@ -12,31 +12,34 @@ export const UserProvider = ({ children }) => {
     email: '',
     avatarPath: '',
     incomes: [],
-    assets: [], // Added assets to the profile
+    assets: [],
+    expenses: [],  // Added expenses to the profile
+    totalSavings: 0,
   });
 
   const [avatarUri, setAvatarUri] = useState(null);
   const [cachedAvatar, setCachedAvatar] = useState(null);
 
   useEffect(() => {
-    let unsubscribeIncomeListener;  // Declare listener unsubscribe handler
-    let unsubscribeAssetListener;  // Declare listener for assets
-    let unsubscribeSavingsListener;  // Declare listener for Savings
+    let unsubscribeIncomeListener;
+    let unsubscribeAssetListener;
+    let unsubscribeSavingsListener;
+    let unsubscribeExpenseListener;  // Declare listener for expenses
 
     const unsubscribeAuth = auth.onAuthStateChanged((user) => {
       if (user) {
         fetchUserProfile(user.uid);
 
-        // Listen for income updates only if the user is authenticated
+        // Listen for income updates
         const incomeRef = collection(db, 'incomes');
         unsubscribeIncomeListener = onSnapshot(incomeRef, (snapshot) => {
           const incomes = snapshot.docs
-          .filter((doc) => doc.data().userId === user.uid)
-          .map((doc) => ({
-            id: doc.id,
-            ...doc.data(),
-            isSavings: doc.data().isSavings || false, // Ensure isSavings is included
-          }));
+            .filter((doc) => doc.data().userId === user.uid)
+            .map((doc) => ({
+              id: doc.id,
+              ...doc.data(),
+              isSavings: doc.data().isSavings || false,
+            }));
           setUserProfile((prevProfile) => ({
             ...prevProfile,
             incomes,
@@ -44,30 +47,18 @@ export const UserProvider = ({ children }) => {
         });
 
         // Listen for savings updates
-        const incomeRefForSavings = collection(db, 'incomes');
-        unsubscribeSavingsListener = onSnapshot(incomeRefForSavings, (snapshot) => {
+        unsubscribeSavingsListener = onSnapshot(incomeRef, (snapshot) => {
           const incomeSavings = snapshot.docs
-          .filter((doc) => doc.data().userId === user.uid)
-          .map((doc) => ({
-            id: doc.id,
-            ...doc.data(),
-            isSavings: doc.data().isSavings || false, // Ensure isSavings is included
-          }));
+            .filter((doc) => doc.data().userId === user.uid && doc.data().isSavings)
+            .map((doc) => doc.data());
 
-          //grab only savings incomes
-         const allSavings = incomeSavings.filter((income) => {
-          return income.isSavings === true;
-        });
-        //total up all savings
-         const totalSavings = allSavings?.reduce((total, income) => total + income.incomePerMonth, 0);
-      
-                 
-         setUserProfile((prevProfile) => ({
-           ...prevProfile,
-           totalSavings,
+          const totalSavings = incomeSavings.reduce((total, income) => total + income.incomePerMonth, 0);
+
+          setUserProfile((prevProfile) => ({
+            ...prevProfile,
+            totalSavings,
           }));
         });
-
 
         // Listen for asset updates
         const assetRef = collection(db, 'assets');
@@ -77,47 +68,55 @@ export const UserProvider = ({ children }) => {
             .map((doc) => ({
               id: doc.id,
               ...doc.data(),
-              isSavings: doc.data().isSavings || false, // Ensure isSavings is included
             }));
           setUserProfile((prevProfile) => ({
             ...prevProfile,
             assets,
           }));
         });
+
+        // Listen for expense updates
+        const expenseRef = collection(db, 'expenses');
+        unsubscribeExpenseListener = onSnapshot(expenseRef, (snapshot) => {
+          const expenses = snapshot.docs
+            .filter((doc) => doc.data().userId === user.uid)
+            .map((doc) => ({
+              id: doc.id,
+              ...doc.data(),
+            }));
+          setUserProfile((prevProfile) => ({
+            ...prevProfile,
+            expenses,
+          }));
+        });
       } else {
-        // If the user logs out, reset user profile and avatar
+        // Reset user profile and avatar on logout
         setUserProfile({
           firstName: '',
           lastName: '',
           email: '',
           avatarPath: '',
           incomes: [],
-          assets: [], // Reset assets on logout
+          assets: [],
+          expenses: [],
           totalSavings: 0,
         });
         setAvatarUri(null);
 
-        // Unsubscribe from listeners when user logs out
-        if (unsubscribeIncomeListener) {
-          unsubscribeIncomeListener();
-        }
-        if (unsubscribeAssetListener) {
-          unsubscribeAssetListener();
-        }
-        if (unsubscribeSavingsListener) {
-          unsubscribeSavingsListener();
-        }
+        // Unsubscribe from all listeners
+        if (unsubscribeIncomeListener) unsubscribeIncomeListener();
+        if (unsubscribeAssetListener) unsubscribeAssetListener();
+        if (unsubscribeSavingsListener) unsubscribeSavingsListener();
+        if (unsubscribeExpenseListener) unsubscribeExpenseListener();
       }
     });
 
     return () => {
-      unsubscribeAuth();  // Unsubscribe from auth listener
-      if (unsubscribeIncomeListener) {
-        unsubscribeIncomeListener();  // Unsubscribe from income listener
-      }
-      if (unsubscribeAssetListener) {
-        unsubscribeAssetListener();  // Unsubscribe from asset listener
-      }
+      unsubscribeAuth();
+      if (unsubscribeIncomeListener) unsubscribeIncomeListener();
+      if (unsubscribeAssetListener) unsubscribeAssetListener();
+      if (unsubscribeSavingsListener) unsubscribeSavingsListener();
+      if (unsubscribeExpenseListener) unsubscribeExpenseListener();
     };
   }, []);
 
@@ -134,12 +133,10 @@ export const UserProvider = ({ children }) => {
         avatarPath: userData.avatarPath || '',
       }));
 
-      // Cache the avatar URL to avoid re-fetching
+      // Cache avatar URL to avoid re-fetching
       if (!cachedAvatar) {
         try {
-          const avatarRef = userData.avatarPath
-            ? ref(storage, userData.avatarPath)
-            : ref(storage, 'default/avatar.png');
+          const avatarRef = userData.avatarPath ? ref(storage, userData.avatarPath) : ref(storage, 'default/avatar.png');
           const url = await getDownloadURL(avatarRef);
           setCachedAvatar(url);
           setAvatarUri(url);

@@ -7,7 +7,7 @@ import { auth, db } from '../../firebaseConfig';
 import { UserContext } from '../../UserContext';
 import { subMonths } from 'date-fns';
 
-export default function AddIncomeScreen() {
+export default function AddIncomeScreen({ navigation }) {
   const [selectedTab, setSelectedTab] = useState('addYourOwn');
   const [name, setName] = useState("");
   const [category, setCategory] = useState(null);
@@ -54,6 +54,7 @@ export default function AddIncomeScreen() {
       setName('');
       setCategory(null);
       setIncomePerMonth('');
+      navigation.goBack();
     } catch (error) {
       console.error('Error adding income:', error);
     }
@@ -78,6 +79,7 @@ export default function AddIncomeScreen() {
       // Add income to Firestore without updating the local state
       await addDoc(collection(db, 'incomes'), newIncome);
       Alert.alert('Test income added successfully.')
+      navigation.goBack();
     } catch (error) {
       console.error('Error adding test income:', error);
     }

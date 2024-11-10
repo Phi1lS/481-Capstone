@@ -13,6 +13,7 @@ export default function HomeScreen() {
   const [investmentBalance, setInvestmentBalance] = useState(0); 
   const [realEstateIncome, setRealEstateIncome] = useState(0); 
   const [monthlyInvestmentData, setMonthlyInvestmentData] = useState(Array(12).fill(0)); // Monthly balances
+  const [monthlyExpenses, setMonthlyExpenses] = useState(0);  // New state for monthly expenses
   const scheme = useColorScheme();  
   const isDarkMode = scheme === 'dark';  
 
@@ -45,23 +46,27 @@ export default function HomeScreen() {
       const incomeTimestamps = new Set();
   
       userProfile.incomes
-        .filter(income => income.category === 'investment')
-        .forEach(income => {
+      .filter(income => income.category === 'investment')
+      .forEach(income => {
+        if (income.timestamp && income.timestamp.toDate) {  // Check if timestamp exists and is valid
           const incomeDate = income.timestamp.toDate();
           const month = getMonth(incomeDate);
           const year = getYear(incomeDate);
           const key = `${year}-${month}`;
           const timestampString = income.timestamp.toMillis();
-  
+
           if (!incomeTimestamps.has(timestampString)) {
             incomeTimestamps.add(timestampString);
-  
+
             if (!monthlyIncomes[key]) {
               monthlyIncomes[key] = 0;
             }
             monthlyIncomes[key] += income.incomePerMonth;
           }
-        });
+        } else {
+          //console.warn("Income is missing a valid timestamp:", income);
+        }
+      });
   
       //console.log("Monthly Incomes Grouped by Month-Year (Unique by Timestamp):", monthlyIncomes);
   
@@ -149,6 +154,29 @@ export default function HomeScreen() {
       setRealEstateIncome(totalRealEstateIncome || 0);
     };
     calculateRealEstateIncome();
+  }, [userProfile]);
+
+  useEffect(() => {
+    const calculateMonthlyExpenses = () => {
+      const currentDate = new Date();
+      const currentMonth = getMonth(currentDate);
+      const currentYear = getYear(currentDate);
+
+      const currentMonthExpenses = userProfile?.expenses?.filter((expense) => {
+        const expenseDate = expense.timestamp && expense.timestamp.toDate ? expense.timestamp.toDate() : null;
+        if (expenseDate) {
+          const expenseMonth = getMonth(expenseDate);
+          const expenseYear = getYear(expenseDate);
+          return expenseMonth === currentMonth && expenseYear === currentYear;
+        }
+        return false;
+      });
+
+      const totalExpenses = currentMonthExpenses?.reduce((total, expense) => total + expense.expenseAmount, 0);
+      setMonthlyExpenses(totalExpenses || 0);
+    };
+
+    calculateMonthlyExpenses();
   }, [userProfile]);
 
   return (
@@ -242,9 +270,12 @@ export default function HomeScreen() {
             )}
           </View>
 
+          {/* Expenses for the Month */}
           <View style={isDarkMode ? styles.darkDashboardItem : styles.dashboardItem}>
             <Text style={isDarkMode ? styles.darkSummaryLabel : styles.summaryLabel}>Expenses for the Month</Text>
-            <Text style={isDarkMode ? styles.darkSummaryValue : styles.summaryValue}>$X,XXX</Text>
+            <Text style={[styles.expensesText]}>
+              ${monthlyExpenses.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            </Text>
           </View>
         </View>
       </ScrollView>
@@ -323,6 +354,11 @@ const styles = StyleSheet.create({
   summaryValue: {
     fontSize: 18,
     color: '#00796B',
+    marginTop: 5,
+  },
+  expensesText: {
+    fontSize: 18,
+    color: 'red',
     marginTop: 5,
   },
   placeholderGraph: {
