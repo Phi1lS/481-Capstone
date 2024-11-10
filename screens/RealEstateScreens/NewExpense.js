@@ -1,13 +1,12 @@
 import React, { useState, useContext } from 'react';
-import { View, Text, TouchableOpacity, TextInput, StyleSheet, useColorScheme } from 'react-native';
+import { View, Text, TouchableOpacity, TextInput, StyleSheet, useColorScheme, Alert } from 'react-native';
 import RNPickerSelect from 'react-native-picker-select';
 import { Icon } from 'react-native-paper';
-import { addDoc, getDoc, collection, serverTimestamp, Timestamp } from 'firebase/firestore';
+import { addDoc, getDoc, collection, serverTimestamp } from 'firebase/firestore';
 import { auth, db } from '../../firebaseConfig';
 import { UserContext } from '../../UserContext';
 
-
-export default function NewExpense({navigation}) {
+export default function NewExpense({ navigation }) {
   const [selectedTab, setSelectedTab] = useState('addYourOwn');
   const [expenseName, setExpenseName] = useState("");
   const [category, setCategory] = useState(null);
@@ -16,37 +15,50 @@ export default function NewExpense({navigation}) {
   const scheme = useColorScheme();
   const isDarkMode = scheme === 'dark';
 
+  // Format number with commas
+  const formatNumberWithCommas = (value) => {
+    if (!value) return '';
+    return parseFloat(value.toString().replace(/,/g, '')).toLocaleString('en-US');
+  };
+
   const handleAddExpense = async () => {
     try {
       const user = auth.currentUser;
-  
+
       if (!user) {
         console.error('User not logged in');
         return;
       }
-  
+
+      // Validate fields
+      if (!expenseName || !category || !expenseAmount) {
+        Alert.alert('Error', 'Please fill out all fields before submitting.');
+        return;
+      }
+
       // Add expense to Firestore with a timestamp
       const newExpense = {
         userId: user.uid,
         name: expenseName,
         category: category,
-        expenseAmount: parseFloat(expenseAmount), 
+        expenseAmount: parseFloat(expenseAmount.replace(/,/g, '')), // Remove commas before submission
         timestamp: serverTimestamp(),
       };
-  
+
       const docRef = await addDoc(collection(db, 'expenses'), newExpense);
       console.log('Expense added to Firestore:', docRef.id);
-  
+      Alert.alert('Expense added successfully.');
+
       // Fetch the newly added expense to get the actual server timestamp
       const addedExpenseSnapshot = await getDoc(docRef);
       const addedExpense = { id: docRef.id, ...addedExpenseSnapshot.data() };
-  
+
       // Update UserContext to reflect changes dynamically with accurate timestamp
       setUserProfile((prevProfile) => ({
         ...prevProfile,
         expenses: [...(prevProfile.expenses || []), addedExpense],
       }));
-  
+
       setExpenseName('');
       setCategory(null);
       setExpenseAmount('');
@@ -117,7 +129,7 @@ export default function NewExpense({navigation}) {
               style={isDarkMode ? styles.darkInput : styles.input}
               placeholderTextColor={isDarkMode ? '#AAAAAA' : '#888'}
               onChangeText={setExpenseName}
-              selectionColor={isDarkMode ? '#4CAF50' : '#00796B'} // Green caret
+              selectionColor={isDarkMode ? '#4CAF50' : '#00796B'}
             />
           </View>
 
@@ -142,12 +154,12 @@ export default function NewExpense({navigation}) {
           <View style={isDarkMode ? styles.darkInputCard : styles.inputCard}>
             <TextInput
               placeholder="Expense Amount"
-              value={expenseAmount}
+              value={expenseAmount.length > 0 ? `$${formatNumberWithCommas(expenseAmount)}` : expenseAmount}
               style={isDarkMode ? styles.darkInput : styles.input}
               placeholderTextColor={isDarkMode ? '#AAAAAA' : '#888'}
-              onChangeText={setExpenseAmount}
+              onChangeText={(text) => setExpenseAmount(text.replace(/[^0-9]/g, ''))}
               keyboardType="numeric"
-              selectionColor={isDarkMode ? '#4CAF50' : '#00796B'} // Green caret
+              selectionColor={isDarkMode ? '#4CAF50' : '#00796B'}
             />
           </View>
 
