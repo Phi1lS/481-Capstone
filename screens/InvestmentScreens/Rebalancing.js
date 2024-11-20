@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import { View, StyleSheet, ScrollView, Text, useColorScheme, Platform } from 'react-native';
 import { Title, Card, Avatar, Button } from 'react-native-paper';
 import { UserContext } from '../../UserContext'; // Import UserContext
@@ -9,7 +9,7 @@ export default function RebalancingScreen() {
   const isDarkMode = scheme === 'dark';
   const { userProfile } = useContext(UserContext); // Get userProfile from context
 
-  // Calculate asset allocations
+  // Initial allocation calculations based on current assets
   const calculateAllocations = () => {
     const assets = userProfile.assets || [];
 
@@ -28,7 +28,7 @@ export default function RebalancingScreen() {
       if (asset.assetType === 'cash') allocations.cash += asset.value || 0;
     });
 
-    // Calculate percentages
+    // Calculate percentages based on total value
     return {
       stocks: (allocations.stocks / totalValue) || 0,
       bonds: (allocations.bonds / totalValue) || 0,
@@ -37,19 +37,35 @@ export default function RebalancingScreen() {
     };
   };
 
-  const allocations = calculateAllocations();
+  const [allocations, setAllocations] = useState(calculateAllocations());
 
-   // State for sliders
-   const [stockValueChange, setStockValueChange] = useState(allocations.stocks * 100);
-   const [bondValueChange, setBondValueChange] = useState(allocations.bonds * 100);
-   const [realEstateValueChange, setRealEstateValueChange] = useState(allocations.realEstate * 100);
-   const [cashValueChange, setCashValueChange] = useState(allocations.cash * 100);
- 
-   const remainingPercent = (currentAllocation) => {
-     const total = 100 - currentAllocation;
-     return total < 0 ? 0 : total;
-   };
- 
+  // State for sliders
+  const [stockValueChange, setStockValueChange] = useState(allocations.stocks * 100);
+  const [bondValueChange, setBondValueChange] = useState(allocations.bonds * 100);
+  const [realEstateValueChange, setRealEstateValueChange] = useState(allocations.realEstate * 100);
+  const [cashValueChange, setCashValueChange] = useState(allocations.cash * 100);
+
+  // Ensure the sum of all allocations doesn't exceed 100%
+  const remainingPercent = (currentAllocation) => {
+    const total = 100 - currentAllocation;
+    return total < 0 ? 0 : total;
+  };
+
+  // Calculate and update the allocations based on slider values
+  const updateAllocations = () => {
+    const totalPercent = stockValueChange + bondValueChange + realEstateValueChange + cashValueChange;
+    if (totalPercent > 100) {
+      alert("Total allocation cannot exceed 100%");
+      return;
+    }
+    
+    setAllocations({
+      stocks: stockValueChange / 100,
+      bonds: bondValueChange / 100,
+      realEstate: realEstateValueChange / 100,
+      cash: cashValueChange / 100,
+    });
+  };
 
   const renderProgressBar = (progress, color) => (
     <View style={styles.progressBarBackground}>
@@ -101,9 +117,9 @@ export default function RebalancingScreen() {
             left={(props) => <Avatar.Icon {...props} icon="swap-horizontal" style={styles.icon} />}
             titleStyle={isDarkMode ? styles.darkCardTitle : styles.cardTitle}
           />
-
-           {/* Stocks Slider */}
-           <View style={styles.sliderContainer}>
+          
+          {/* Stocks Slider */}
+          <View style={styles.sliderContainer}>
             <Text style={isDarkMode ? styles.darkText : styles.text}>Stocks: {Math.floor(stockValueChange)}%</Text>
             <Slider
               style={styles.slider}
@@ -169,7 +185,7 @@ export default function RebalancingScreen() {
 
             <Button
               mode="contained"
-              onPress={() => console.log('Rebalance Action')}
+              onPress={updateAllocations}
               style={styles.rebalanceButton}
               labelStyle={styles.buttonLabel}
             >
@@ -183,46 +199,71 @@ export default function RebalancingScreen() {
 }
 
 const styles = StyleSheet.create({
-  // Light mode styles
   container: {
-    flexGrow: 1,
-    padding: 20,
-    backgroundColor: '#f7f9fc',
+    flex: 1,
+    backgroundColor: '#F5F5F5',
+    paddingTop: Platform.OS === 'ios' ? 60 : 0,
+  },
+  darkContainer: {
+    flex: 1,
+    backgroundColor: '#121212',
+    paddingTop: Platform.OS === 'ios' ? 60 : 0,
   },
   title: {
     fontSize: 24,
-    fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 20,
+    fontWeight: '700',
+    color: '#004D40',
+    margin: 15,
+  },
+  darkTitle: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: '#B2DFDB',
+    margin: 15,
   },
   card: {
-    marginBottom: 25,
+    marginBottom: 20,
     backgroundColor: '#ffffff',
     borderRadius: 15,
-    ...Platform.select({
-      web: {
-        boxShadow: '0px 4px 6px rgba(0, 0, 0, 0.1)',
-      },
-      default: {
-        shadowColor: '#000',
-        shadowOpacity: 0.3,
-        shadowOffset: { width: 0, height: 8 },
-        shadowRadius: 15,
-        elevation: 10,
-      }
-    }),
-    padding: 25,
+    elevation: 10,
+  },
+  darkCard: {
+    marginBottom: 20,
+    backgroundColor: '#1E1E1E',
+    borderRadius: 15,
+    elevation: 10,
+  },
+  progressBarBackground: {
+    height: 10,
+    backgroundColor: '#e0e0e0',
+    borderRadius: 5,
+    marginBottom: 10,
+  },
+  progressBarFill: {
+    height: 10,
+    borderRadius: 5,
   },
   icon: {
-    backgroundColor: '#E8F5E9',
+    backgroundColor: '#004D40',
   },
-  cardTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#333',
+  text: {
+    fontSize: 16,
+    color: '#000',
+  },
+  darkText: {
+    fontSize: 16,
+    color: '#FFFFFF',
+  },
+  sliderContainer: {
+    marginBottom: 15,
+  },
+  slider: {
+    width: '100%',
+    height: 40,
   },
   detailsContainer: {
-    marginTop: 15,
+    marginLeft: 20,
+    marginRight: 20,
   },
   progressBarContainer: {
     flexDirection: 'row',
@@ -230,75 +271,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   spacing: {
-    marginTop: 20, // Added margin to increase space between progress bars
-  },
-  progressBarBackground: {
-    height: 14,
-    backgroundColor: '#E0E0E0',
-    borderRadius: 7,
-    overflow: 'hidden',
-    width: '65%',
-  },
-  progressBarFill: {
-    height: '100%',
-    borderRadius: 7,
-  },
-  text: {
-    fontSize: 19,
-    color: '#555',
+    marginTop: 10,
   },
   rebalanceButton: {
+    marginTop: 15,
+    borderRadius: 10,
+    paddingVertical: 8,
     backgroundColor: '#00796B',
-    padding: 14,
-    borderRadius: 8,
-    marginTop: 25,
-  },
-  rebalanceButtonPressed: {
-    backgroundColor: '#005D4F',
   },
   buttonLabel: {
-    color: '#FFFFFF',
-    fontWeight: 'bold',
     fontSize: 16,
   },
-  // Dark mode styles
-  darkContainer: {
-    flexGrow: 1,
-    padding: 20,
-    backgroundColor: '#121212',
-  },
-  darkTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#FFFFFF',
-    marginBottom: 20,
-  },
-  darkCard: {
-    marginBottom: 25,
-    backgroundColor: '#1E1E1E',
-    borderRadius: 15,
-    ...Platform.select({
-      web: {
-        boxShadow: '0px 4px 6px rgba(0, 0, 0, 0.1)',
-      },
-      default: {
-        shadowColor: '#000',
-        shadowOpacity: 0.3,
-        shadowOffset: { width: 0, height: 8 },
-        shadowRadius: 15,
-        elevation: 10,
-      }
-    }),
-    padding: 25,
-  },
-  darkCardTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#FFFFFF',
-  },
-  darkText: {
-    fontSize: 19,
-    color: '#AAAAAA',
-  },
 });
-
