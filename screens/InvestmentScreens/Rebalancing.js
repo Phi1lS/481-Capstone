@@ -199,71 +199,46 @@ export default function RebalancingScreen() {
 }
 
 const styles = StyleSheet.create({
+  // Light mode styles
   container: {
-    flex: 1,
-    backgroundColor: '#F5F5F5',
-    paddingTop: Platform.OS === 'ios' ? 60 : 0,
-  },
-  darkContainer: {
-    flex: 1,
-    backgroundColor: '#121212',
-    paddingTop: Platform.OS === 'ios' ? 60 : 0,
+    flexGrow: 1,
+    padding: 20,
+    backgroundColor: '#f7f9fc',
   },
   title: {
     fontSize: 24,
-    fontWeight: '700',
-    color: '#004D40',
-    margin: 15,
-  },
-  darkTitle: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: '#B2DFDB',
-    margin: 15,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 20,
   },
   card: {
-    marginBottom: 20,
+    marginBottom: 25,
     backgroundColor: '#ffffff',
     borderRadius: 15,
-    elevation: 10,
-  },
-  darkCard: {
-    marginBottom: 20,
-    backgroundColor: '#1E1E1E',
-    borderRadius: 15,
-    elevation: 10,
-  },
-  progressBarBackground: {
-    height: 10,
-    backgroundColor: '#e0e0e0',
-    borderRadius: 5,
-    marginBottom: 10,
-  },
-  progressBarFill: {
-    height: 10,
-    borderRadius: 5,
+    ...Platform.select({
+      web: {
+        boxShadow: '0px 4px 6px rgba(0, 0, 0, 0.1)',
+      },
+      default: {
+        shadowColor: '#000',
+        shadowOpacity: 0.3,
+        shadowOffset: { width: 0, height: 8 },
+        shadowRadius: 15,
+        elevation: 10,
+      }
+    }),
+    padding: 25,
   },
   icon: {
-    backgroundColor: '#004D40',
+    backgroundColor: '#E8F5E9',
   },
-  text: {
-    fontSize: 16,
-    color: '#000',
-  },
-  darkText: {
-    fontSize: 16,
-    color: '#FFFFFF',
-  },
-  sliderContainer: {
-    marginBottom: 15,
-  },
-  slider: {
-    width: '100%',
-    height: 40,
+  cardTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#333',
   },
   detailsContainer: {
-    marginLeft: 20,
-    marginRight: 20,
+    marginTop: 15,
   },
   progressBarContainer: {
     flexDirection: 'row',
@@ -271,15 +246,74 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   spacing: {
-    marginTop: 10,
+    marginTop: 20, // Added margin to increase space between progress bars
+  },
+  progressBarBackground: {
+    height: 14,
+    backgroundColor: '#E0E0E0',
+    borderRadius: 7,
+    overflow: 'hidden',
+    width: '65%',
+  },
+  progressBarFill: {
+    height: '100%',
+    borderRadius: 7,
+  },
+  text: {
+    fontSize: 19,
+    color: '#555',
   },
   rebalanceButton: {
-    marginTop: 15,
-    borderRadius: 10,
-    paddingVertical: 8,
     backgroundColor: '#00796B',
+    padding: 14,
+    borderRadius: 8,
+    marginTop: 25,
+  },
+  rebalanceButtonPressed: {
+    backgroundColor: '#005D4F',
   },
   buttonLabel: {
+    color: '#FFFFFF',
+    fontWeight: 'bold',
     fontSize: 16,
+  },
+  // Dark mode styles
+  darkContainer: {
+    flexGrow: 1,
+    padding: 20,
+    backgroundColor: '#121212',
+  },
+  darkTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+    marginBottom: 20,
+  },
+  darkCard: {
+    marginBottom: 25,
+    backgroundColor: '#1E1E1E',
+    borderRadius: 15,
+    ...Platform.select({
+      web: {
+        boxShadow: '0px 4px 6px rgba(0, 0, 0, 0.1)',
+      },
+      default: {
+        shadowColor: '#000',
+        shadowOpacity: 0.3,
+        shadowOffset: { width: 0, height: 8 },
+        shadowRadius: 15,
+        elevation: 10,
+      }
+    }),
+    padding: 25,
+  },
+  darkCardTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+  },
+  darkText: {
+    fontSize: 19,
+    color: '#AAAAAA',
   },
 });
