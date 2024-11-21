@@ -13,8 +13,9 @@ export const UserProvider = ({ children }) => {
     avatarPath: '',
     incomes: [],
     assets: [],
-    expenses: [],  // Added expenses to the profile
+    expenses: [],
     totalSavings: 0,
+    isAdmin: false, // Added isAdmin to the profile
   });
 
   const [avatarUri, setAvatarUri] = useState(null);
@@ -24,7 +25,7 @@ export const UserProvider = ({ children }) => {
     let unsubscribeIncomeListener;
     let unsubscribeAssetListener;
     let unsubscribeSavingsListener;
-    let unsubscribeExpenseListener;  // Declare listener for expenses
+    let unsubscribeExpenseListener;
 
     const unsubscribeAuth = auth.onAuthStateChanged((user) => {
       if (user) {
@@ -100,6 +101,7 @@ export const UserProvider = ({ children }) => {
           assets: [],
           expenses: [],
           totalSavings: 0,
+          isAdmin: false, // Reset isAdmin
         });
         setAvatarUri(null);
 
@@ -131,6 +133,7 @@ export const UserProvider = ({ children }) => {
         lastName: userData.lastName || '',
         email: userData.email || '',
         avatarPath: userData.avatarPath || '',
+        isAdmin: userData.isAdmin || false, // Retrieve isAdmin from Firestore
       }));
 
       // Cache avatar URL to avoid re-fetching

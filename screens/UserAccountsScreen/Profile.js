@@ -42,6 +42,7 @@ export default function ProfileScreen() {
             address: userData.address || '',
             accountType: userData.accountType || 'Checking',
             avatarPath: userData.avatarPath || null,
+            isAdmin: userData.isAdmin || false, // Fetch and set isAdmin
           }));          
           
           setEditedFullName(`${userData.firstName} ${userData.lastName}`);
@@ -432,6 +433,25 @@ export default function ProfileScreen() {
             {/* Placeholder for current employment details or "No details added yet" */}
           </Text>
         </Card>
+
+         {/* Admin Controls Card */}
+         {userProfile.isAdmin && (
+          <Card style={isDarkMode ? styles.darkCard : styles.card}>
+            <Card.Title title="Admin Controls" titleStyle={isDarkMode ? styles.darkCardTitle : styles.cardTitle} />
+            <View style={styles.divider} />
+            <View style={styles.detailsContainer}>
+              <Text style={isDarkMode ? styles.darkText : styles.text}>
+                Manage user accounts, system settings, and more.
+              </Text>
+              <TouchableOpacity
+                onPress={() => navigation.navigate('AdminDashboard')}
+                style={isDarkMode ? styles.darkEdit : styles.edit}
+              >
+                <Text style={isDarkMode ? styles.darkEdit : styles.edit}>Go to Admin Dashboard</Text>
+              </TouchableOpacity>
+            </View>
+          </Card>
+        )}
       </ScrollView>
     </View>
   );
