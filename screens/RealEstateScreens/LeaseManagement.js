@@ -31,17 +31,6 @@ export default function LeaseManagementScreen() {
           </Card.Actions>
         </Card>
 
-        {/* Notifications Card */}
-        <Card style={isDarkMode ? styles.darkCard : styles.card}>
-          <Card.Title
-            title="Notifications"
-            left={(props) => <Avatar.Icon {...props} icon="bell" style={styles.icon} />}
-            titleStyle={isDarkMode ? styles.darkCardTitle : styles.cardTitle}
-          />
-          <View style={styles.sliderContainer}>
-            <Text style={isDarkMode ? styles.darkText : styles.text}>You have no new notifications</Text>
-          </View>
-        </Card>
 
         {/* Expense Card */}
         <Card style={isDarkMode ? styles.darkCard : styles.card}>
@@ -66,43 +55,7 @@ export default function LeaseManagementScreen() {
             <Text style={isDarkMode ? styles.darkText : styles.text}>Lease tracking details</Text>
           </View>
         </Card>
-
-        {/* Tax Software Connection Card */}
-        <Card style={isDarkMode ? styles.darkCard : styles.card}>
-          <Card.Title
-            title="Connect to Tax Software"
-            left={(props) => <Avatar.Icon {...props} icon="account-cash" style={styles.icon} />}
-            titleStyle={isDarkMode ? styles.darkCardTitle : styles.cardTitle}
-          />
-          <View style={styles.sliderContainer}>
-            <Text style={isDarkMode ? styles.darkText : styles.text}>Connect your account</Text>
-          </View>
-        </Card>
-
-        {/* Asset Allocation Sliders */}
-        <View style={styles.sliderContainer}>
-          <Text style={isDarkMode ? styles.darkText : styles.text}>Stocks: 60%</Text>
-          <Slider
-            style={styles.slider}
-            minimumValue={0}
-            maximumValue={100}
-            value={60}
-            minimumTrackTintColor="#00796B"
-            maximumTrackTintColor="#000000"
-          />
-        </View>
-
-        <View style={styles.sliderContainer}>
-          <Text style={isDarkMode ? styles.darkText : styles.text}>Bonds: 20%</Text>
-          <Slider
-            style={styles.slider}
-            minimumValue={0}
-            maximumValue={100}
-            value={20}
-            minimumTrackTintColor="#004D40"
-            maximumTrackTintColor="#000000"
-          />
-        </View>
+        
 
         {/* Add more sliders for other asset classes as needed */}
       </ScrollView>
