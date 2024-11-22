@@ -1,18 +1,19 @@
 import React, { useContext, useState } from 'react';
-import { View, StyleSheet, ScrollView, Text, useColorScheme, Platform } from 'react-native';
+import { View, StyleSheet, Alert, ScrollView, Text, useColorScheme, Platform } from 'react-native';
 import { Title, Card, Avatar, Button } from 'react-native-paper';
+import { useNavigation } from '@react-navigation/native';
 import { UserContext } from '../../UserContext'; // Import UserContext
 import Slider from '@react-native-community/slider';
 
 export default function RebalancingScreen() {
+  const navigation = useNavigation();
   const scheme = useColorScheme();
   const isDarkMode = scheme === 'dark';
-  const { userProfile } = useContext(UserContext); // Get userProfile from context
+  const { userProfile } = useContext(UserContext);
 
   // Calculate asset allocations
   const calculateAllocations = () => {
     const assets = userProfile.assets || [];
-
     const totalValue = assets.reduce((total, asset) => total + (asset.value || 0), 0);
     const allocations = {
       stocks: 0,
@@ -28,7 +29,6 @@ export default function RebalancingScreen() {
       if (asset.assetType === 'cash') allocations.cash += asset.value || 0;
     });
 
-    // Calculate percentages
     return {
       stocks: (allocations.stocks / totalValue) || 0,
       bonds: (allocations.bonds / totalValue) || 0,
@@ -39,17 +39,43 @@ export default function RebalancingScreen() {
 
   const allocations = calculateAllocations();
 
-   // State for sliders
-   const [stockValueChange, setStockValueChange] = useState(allocations.stocks * 100);
-   const [bondValueChange, setBondValueChange] = useState(allocations.bonds * 100);
-   const [realEstateValueChange, setRealEstateValueChange] = useState(allocations.realEstate * 100);
-   const [cashValueChange, setCashValueChange] = useState(allocations.cash * 100);
- 
-   const remainingPercent = (currentAllocation) => {
-     const total = 100 - currentAllocation;
-     return total < 0 ? 0 : total;
-   };
- 
+  // State for sliders
+  const [stockValueChange, setStockValueChange] = useState(allocations.stocks * 100);
+  const [bondValueChange, setBondValueChange] = useState(allocations.bonds * 100);
+  const [realEstateValueChange, setRealEstateValueChange] = useState(allocations.realEstate * 100);
+  const [cashValueChange, setCashValueChange] = useState(allocations.cash * 100);
+
+  const validateAllocation = () => {
+    const total =
+      Math.round(stockValueChange) +
+      Math.round(bondValueChange) +
+      Math.round(realEstateValueChange) +
+      Math.round(cashValueChange);
+
+    return total === 100;
+  };
+
+  const handleRebalance = () => {
+    if (validateAllocation()) {
+      navigation.navigate('RebalanceDetails', {
+        stockValue: stockValueChange,
+        bondValue: bondValueChange,
+        realEstateValue: realEstateValueChange,
+        cashValue: cashValueChange,
+        assets: userProfile.assets,
+      });
+    } else {
+      Alert.alert(
+        'Invalid Allocation',
+        'The total allocation must equal 100%. Please adjust the sliders.'
+      );
+    }
+  };
+
+  const remainingPercent = (currentAllocation) => {
+    const total = 100 - currentAllocation;
+    return total < 0 ? 0 : total;
+  };
 
   const renderProgressBar = (progress, color) => (
     <View style={styles.progressBarBackground}>
@@ -102,8 +128,8 @@ export default function RebalancingScreen() {
             titleStyle={isDarkMode ? styles.darkCardTitle : styles.cardTitle}
           />
 
-           {/* Stocks Slider */}
-           <View style={styles.sliderContainer}>
+          {/* Stocks Slider */}
+          <View style={styles.sliderContainer}>
             <Text style={isDarkMode ? styles.darkText : styles.text}>Stocks: {Math.floor(stockValueChange)}%</Text>
             <Slider
               style={styles.slider}
@@ -161,15 +187,16 @@ export default function RebalancingScreen() {
               maximumTrackTintColor="#000000"
             />
           </View>
-          
+
           <View style={styles.detailsContainer}>
             <Text style={isDarkMode ? styles.darkText : styles.text}>
               Adjust your investments to maintain your desired asset allocation.
             </Text>
 
+            {/* Rebalance Button */}
             <Button
               mode="contained"
-              onPress={() => console.log('Rebalance Action')}
+              onPress={handleRebalance}
               style={styles.rebalanceButton}
               labelStyle={styles.buttonLabel}
             >

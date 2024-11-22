@@ -25,6 +25,8 @@ import InvestmentScreen from './screens/InvestmentScreen';
 import AssetAllocation from './screens/InvestmentScreens/AssetAllocation';
 import MarketPredictions from './screens/InvestmentScreens/MarketPredictions';
 import Rebalancing from './screens/InvestmentScreens/Rebalancing';
+import RebalanceDetailsScreen from './screens/InvestmentScreens/RebalanceDetailsScreen';
+
 import IncomeTracking from './screens/RealEstateScreens/IncomeTracking';
 import ExpenseTracking from './screens/RealEstateScreens/ExpenseTracking';
 import LeaseManagement from './screens/RealEstateScreens/LeaseManagement';
@@ -113,6 +115,7 @@ function InvestmentStack() {
       <Stack.Screen name="AssetAllocation" component={AssetAllocation} />
       <Stack.Screen name="MarketPredictions" component={MarketPredictions} />
       <Stack.Screen name="Rebalancing" component={Rebalancing} />
+      <Stack.Screen name="RebalanceDetails" component={RebalanceDetailsScreen} />
       <Stack.Screen name="InvestmentAnalytics" component={InvestmentAnalytics} />
       <Stack.Screen name="ManageAssets" component={ManageAssets} />
       <Stack.Screen name="InvestmentHelp" component={InvestmentHelp} />
@@ -132,6 +135,7 @@ function RetirementStack() {
     >
       <Stack.Screen name="Retirement" component={RetirementScreen} />
       <Stack.Screen name="Rebalancing" component={Rebalancing} />
+      <Stack.Screen name="RebalanceDetails" component={RebalanceDetailsScreen} />
       <Stack.Screen name="RetirementSavings" component={RetirementSavings} />
       <Stack.Screen name="RetirementPlanning" component={RetirementPlanning} /> 
       <Stack.Screen name="PensionManagement" component={PensionManagement} />
