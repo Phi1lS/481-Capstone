@@ -46,6 +46,7 @@ import Preferences from './screens/UserAccountsScreen/Preferences';
 import Profile from './screens/UserAccountsScreen/Profile';
 import Security from './screens/UserAccountsScreen/Security';
 import AdminDashboard from './screens/UserAccountsScreen/AdminDashboard';
+import NotificationsPage from './screens/UserAccountsScreen/NotificationsPage';
 // import PortfolioRebalancing from './screens/RetirementScreens/PortfolioRebalancing';
 import RetirementSavings from './screens/RetirementScreens/RetirementSavings';
 import RetirementPlanning from './screens/RetirementScreens/RetirementPlanning';
@@ -179,6 +180,7 @@ function UserAccountStack() {
       <Stack.Screen name="IncomeTracking" component={IncomeTracking} />
       <Stack.Screen name="AddIncome" component={AddIncomeScreen} />
       <Stack.Screen name="AdminDashboard" component={AdminDashboard} />
+      <Stack.Screen name="NotificationsPage" component={NotificationsPage} />
     </Stack.Navigator>
   );
 }

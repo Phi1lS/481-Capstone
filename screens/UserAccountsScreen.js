@@ -4,19 +4,37 @@ import { View, StyleSheet, ScrollView, TouchableOpacity, Animated, StatusBar, Te
 import { Title, Card, Avatar } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
 import { UserContext } from '../UserContext';
+import { collection, onSnapshot } from 'firebase/firestore';
+import { db } from '../firebaseConfig';
 
 export default function UserAccountsScreen() {
   const navigation = useNavigation();
   const scheme = useColorScheme();
   const isDarkMode = scheme === 'dark';
 
-  const { avatarUri } = useContext(UserContext); // Accessing avatarUri from UserContext
+  const { avatarUri, userProfile } = useContext(UserContext); // Accessing avatarUri and userProfile from UserContext
+  const [hasUnreadNotifications, setHasUnreadNotifications] = useState(false);
 
   React.useLayoutEffect(() => {
     navigation.setOptions({
       headerShown: false,
     });
   }, [navigation]);
+
+  useEffect(() => {
+    //console.log('userProfile.id:', userProfile.id); // Check if ID is set
+    if (userProfile.id) {
+      const notificationsRef = collection(db, 'users', userProfile.id, 'notifications');
+      //console.log('Notifications collection path:', `users/${userProfile.id}/notifications`);
+      const unsubscribe = onSnapshot(notificationsRef, (snapshot) => {
+        //console.log('Snapshot received:', snapshot.docs); // Log snapshot data
+        const unreadExists = snapshot.docs.some((doc) => doc.data().status === 'unread');
+        setHasUnreadNotifications(unreadExists);
+      });
+  
+      return () => unsubscribe();
+    }
+  }, [userProfile.id]);
 
   const handlePressIn = (animatedValue) => {
     Animated.timing(animatedValue, {
@@ -75,6 +93,13 @@ export default function UserAccountsScreen() {
           <View style={styles.headerText}>
             <Text style={styles.greeting}>User Account</Text>
             <Text style={styles.subGreeting}>Manage your account settings</Text>
+          </View>
+          {/* Notification Bell */}
+          <View style={styles.notificationBellContainer}>
+            <TouchableOpacity onPress={() => navigation.navigate('NotificationsPage')}>
+              <Avatar.Icon size={40} icon="bell-outline" style={styles.bellIcon} />
+            </TouchableOpacity>
+            {hasUnreadNotifications && <View style={styles.redDot} />}
           </View>
         </View>
       </View>
@@ -209,5 +234,21 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#AAAAAA',
     flexWrap: 'wrap',
+  },
+  notificationBellContainer: {
+    marginLeft: 'auto',
+    justifyContent: 'center',
+  },
+  bellIcon: {
+    backgroundColor: '#E8F5E9',
+  },
+  redDot: {
+    position: 'absolute',
+    top: 5,
+    right: 5,
+    width: 10,
+    height: 10,
+    backgroundColor: 'red',
+    borderRadius: 5,
   },
 });

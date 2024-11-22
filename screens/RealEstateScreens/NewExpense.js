@@ -11,7 +11,7 @@ export default function NewExpense({ navigation }) {
   const [expenseName, setExpenseName] = useState("");
   const [category, setCategory] = useState(null);
   const [expenseAmount, setExpenseAmount] = useState("");
-  const { userProfile, setUserProfile } = useContext(UserContext); 
+  const { userProfile, setUserProfile, sendNotification } = useContext(UserContext); 
   const scheme = useColorScheme();
   const isDarkMode = scheme === 'dark';
 
@@ -24,47 +24,45 @@ export default function NewExpense({ navigation }) {
   const handleAddExpense = async () => {
     try {
       const user = auth.currentUser;
-
+  
       if (!user) {
         console.error('User not logged in');
         return;
       }
-
+  
       // Validate fields
       if (!expenseName || !category || !expenseAmount) {
         Alert.alert('Error', 'Please fill out all fields before submitting.');
         return;
       }
-
+  
       // Add expense to Firestore with a timestamp
       const newExpense = {
         userId: user.uid,
         name: expenseName,
         category: category,
-        expenseAmount: parseFloat(expenseAmount.replace(/,/g, '')), // Remove commas before submission
+        expenseAmount: parseFloat(expenseAmount.replace(/,/g, '')), // Remove commas
         timestamp: serverTimestamp(),
       };
-
+  
       const docRef = await addDoc(collection(db, 'expenses'), newExpense);
-      console.log('Expense added to Firestore:', docRef.id);
       Alert.alert('Expense added successfully.');
-
-      // Fetch the newly added expense to get the actual server timestamp
-      const addedExpenseSnapshot = await getDoc(docRef);
-      const addedExpense = { id: docRef.id, ...addedExpenseSnapshot.data() };
-
-      // Update UserContext to reflect changes dynamically with accurate timestamp
-      setUserProfile((prevProfile) => ({
-        ...prevProfile,
-        expenses: [...(prevProfile.expenses || []), addedExpense],
-      }));
-
+  
+      // Use sendNotification from UserContext
+      await sendNotification(
+        user.uid,
+        `Expense "${expenseName}" was added successfully.`,
+        'expense'
+      );
+  
+      // Reset the form inputs
       setExpenseName('');
       setCategory(null);
       setExpenseAmount('');
       navigation.goBack();
     } catch (error) {
       console.error('Error adding expense:', error);
+      Alert.alert('Error', 'Failed to add expense. Please try again.');
     }
   };
 

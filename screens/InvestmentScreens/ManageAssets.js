@@ -7,13 +7,13 @@ import { doc, getDocs, getDoc, addDoc, collection, serverTimestamp, Timestamp, w
 import { auth, db } from '../../firebaseConfig';
 import { UserContext } from '../../UserContext';
 
-export default function ManageAssets() {
+export default function ManageAssets({ navigation }) {
     const [selectedTab, setSelectedTab] = useState('addYourOwn');
     const [assetName, setAssetName] = useState("");
     const [category, setCategory] = useState(null);
     const [value, setValue] = useState("");
     const [incomeSources, setIncomeSources] = useState([]);
-    const { userProfile, setUserProfile } = useContext(UserContext); 
+    const { userProfile, setUserProfile, sendNotification } = useContext(UserContext);
     const scheme = useColorScheme();
     const isDarkMode = scheme === 'dark';
     const [assetType, setAssetType] = useState("None");
@@ -60,76 +60,103 @@ export default function ManageAssets() {
 
     const handleAddAsset = async () => {
         try {
-            const user = auth.currentUser;
+          const user = auth.currentUser;
     
-            if (!user) {
-                console.error('User not logged in');
-                return;
-            }
+          if (!user) {
+            console.error('User not logged in');
+            return;
+          }
     
-            // Validate fields
-            if (!assetName.trim() || !value || assetType === "None") {
-                Alert.alert('Error', 'Please fill out all fields before submitting.');
-                return;
-            }
+          // Validate fields
+          if (!assetName.trim() || !value || assetType === "None") {
+            Alert.alert('Error', 'Please fill out all fields before submitting.');
+            return;
+          }
     
-            const newAsset = {
-                userId: user.uid,
-                assetName: assetName,
-                value: parseFloat(value.replace('$', '')),
-                assetType: assetType,
-                timestamp: serverTimestamp(),
-            };
+          const newAsset = {
+            userId: user.uid,
+            assetName: assetName,
+            value: parseFloat(value.replace('$', '')),
+            assetType: assetType,
+            timestamp: serverTimestamp(),
+          };
     
-            // Add asset and immediately retrieve the document
-            const docRef = await addDoc(collection(db, 'assets'), newAsset);
-            const docSnapshot = await getDoc(docRef);
-            const savedAsset = docSnapshot.data();
+          // Add asset and immediately retrieve the document
+          const docRef = await addDoc(collection(db, 'assets'), newAsset);
+          const docSnapshot = await getDoc(docRef);
+          const savedAsset = docSnapshot.data();
     
-            if (savedAsset?.timestamp) {
-                console.log('Asset added with timestamp:', savedAsset.timestamp.toDate());
-                Alert.alert('Asset added successfully.');
-            } else {
-                //console.warn('Timestamp not set on asset:', savedAsset);
-            }
+          if (savedAsset?.timestamp) {
+            console.log('Asset added with timestamp:', savedAsset.timestamp.toDate());
+            Alert.alert('Asset added successfully.');
+          } else {
+            console.warn('Timestamp not set on asset:', savedAsset);
+          }
     
-            // Clear inputs
-            setAssetName('');
-            setValue('');
-            setAssetType("None");
+          // Send a notification to the user
+          await sendNotification(
+            user.uid,
+            `Asset "${assetName}" was added successfully.`,
+            'asset'
+          );
+    
+          // Clear inputs
+          setAssetName('');
+          setValue('');
+          setAssetType("None");
+          navigation.goBack();
         } catch (error) {
-            console.error('Error adding asset:', error);
+          console.error('Error adding asset:', error);
+          Alert.alert('Error', 'Failed to add asset. Please try again.');
         }
-    };
+      };
     
-    const handleChangeAssetType = async (incomeId, newAssetType) => {
-        const income = incomeSources.find((inc) => inc.id === incomeId);
-        if (income && newAssetType !== "None") {
+      const handleChangeAssetType = async (incomeId, newAssetType) => {
+        try {
+          const user = auth.currentUser;
+    
+          if (!user) {
+            console.error('User not logged in');
+            return;
+          }
+    
+          const income = incomeSources.find((inc) => inc.id === incomeId);
+          if (income && newAssetType !== "None") {
             const assetRef = collection(db, 'assets');
-            const assetQuery = query(assetRef, where('assetName', '==', income.name), where('userId', '==', auth.currentUser.uid));
+            const assetQuery = query(assetRef, where('assetName', '==', income.name), where('userId', '==', user.uid));
             const assetSnapshot = await getDocs(assetQuery);
     
             // Check if the asset already exists
             if (!assetSnapshot.empty) {
-                Alert.alert('Error', 'This income is already an asset.');
-                return;
+              Alert.alert('Error', 'This income is already an asset.');
+              return;
             }
     
             const newAsset = {
-                userId: auth.currentUser.uid,
-                assetName: income.name,
-                value: income.incomePerMonth,
-                assetType: newAssetType,
-                timestamp: income.timestamp,
+              userId: user.uid,
+              assetName: income.name,
+              value: income.incomePerMonth,
+              assetType: newAssetType,
+              timestamp: income.timestamp,
             };
     
             await addDoc(collection(db, 'assets'), newAsset);
-            // console.log('Asset duplicated successfully');
-            Alert.alert('Asset added successfully.')
-        } else {
+            Alert.alert('Asset added successfully.');
+    
+            // Send a notification to the user
+            await sendNotification(
+              user.uid,
+              `Income "${income.name}" was converted to an asset of type "${newAssetType}".`,
+              'asset'
+            );
+          } else {
             Alert.alert('Error', 'Please select a valid asset type.');
+          }
+        } catch (error) {
+          console.error('Error changing asset type:', error);
+          Alert.alert('Error', 'Failed to change asset type. Please try again.');
         }
-    };
+      };
 
     const formatNumberWithCommas = (value) => {
         if (!value) return '';
