@@ -1,12 +1,13 @@
 import React, { createContext, useState, useEffect } from 'react';
 import { auth, db, storage } from './firebaseConfig';
-import { doc, getDoc, collection, onSnapshot } from 'firebase/firestore';
+import { doc, getDoc, collection, onSnapshot, addDoc, serverTimestamp } from 'firebase/firestore';
 import { ref, getDownloadURL } from 'firebase/storage';
 
 export const UserContext = createContext();
 
 export const UserProvider = ({ children }) => {
   const [userProfile, setUserProfile] = useState({
+    id: '',
     firstName: '',
     lastName: '',
     email: '',
@@ -123,23 +124,27 @@ export const UserProvider = ({ children }) => {
   }, []);
 
   const fetchUserProfile = async (userId) => {
+    //('Fetching user profile for ID:', userId); // Debug log
     const userRef = doc(db, 'users', userId);
     const userSnapshot = await getDoc(userRef);
     if (userSnapshot.exists()) {
       const userData = userSnapshot.data();
       setUserProfile((prevProfile) => ({
         ...prevProfile,
+        id: userId, // Include the user ID in the profile
         firstName: userData.firstName || '',
         lastName: userData.lastName || '',
         email: userData.email || '',
         avatarPath: userData.avatarPath || '',
         isAdmin: userData.isAdmin || false, // Retrieve isAdmin from Firestore
       }));
-
+  
       // Cache avatar URL to avoid re-fetching
       if (!cachedAvatar) {
         try {
-          const avatarRef = userData.avatarPath ? ref(storage, userData.avatarPath) : ref(storage, 'default/avatar.png');
+          const avatarRef = userData.avatarPath
+            ? ref(storage, userData.avatarPath)
+            : ref(storage, 'default/avatar.png');
           const url = await getDownloadURL(avatarRef);
           setCachedAvatar(url);
           setAvatarUri(url);
@@ -149,11 +154,37 @@ export const UserProvider = ({ children }) => {
           setAvatarUri(fallbackUrl);
         }
       }
+    } else {
+      console.error('User document does not exist for ID:', userId);
+    }
+  };
+
+  const sendNotification = async (userId, message, type) => {
+    try {
+      const notificationRef = collection(db, 'users', userId, 'notifications');
+      await addDoc(notificationRef, {
+        message,
+        type,
+        timestamp: serverTimestamp(),
+        status: 'unread',
+      });
+      //console.log('Notification sent:', { message, type });
+    } catch (error) {
+      console.error('Error sending notification:', error);
     }
   };
 
   return (
-    <UserContext.Provider value={{ userProfile, setUserProfile, avatarUri, setAvatarUri, cachedAvatar }}>
+    <UserContext.Provider
+      value={{
+        userProfile,
+        setUserProfile,
+        avatarUri,
+        setAvatarUri,
+        cachedAvatar,
+        sendNotification,
+      }}
+    >
       {children}
     </UserContext.Provider>
   );

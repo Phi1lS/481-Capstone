@@ -2,7 +2,7 @@ import React, { useState, useContext } from 'react';
 import { View, Text, TouchableOpacity, TextInput, StyleSheet, useColorScheme, Alert } from 'react-native';
 import RNPickerSelect from 'react-native-picker-select';
 import { Icon } from 'react-native-paper';
-import { addDoc, collection, serverTimestamp, Timestamp } from 'firebase/firestore';
+import { addDoc, collection, serverTimestamp, Timestamp, getDoc } from 'firebase/firestore';
 import { auth, db } from '../../firebaseConfig';
 import { UserContext } from '../../UserContext';
 import { subMonths } from 'date-fns';
@@ -12,7 +12,7 @@ export default function AddIncomeScreen({ navigation }) {
   const [name, setName] = useState("");
   const [category, setCategory] = useState(null);
   const [incomePerMonth, setIncomePerMonth] = useState("");
-  const { userProfile, setUserProfile } = useContext(UserContext); 
+  const { userProfile, setUserProfile, sendNotification } = useContext(UserContext); 
   const scheme = useColorScheme();
   const isDarkMode = scheme === 'dark';
 
@@ -32,25 +32,26 @@ export default function AddIncomeScreen({ navigation }) {
         return;
       }
   
-      // Add income to Firestore with a timestamp
+      // Add income to Firestore
       const newIncome = {
         userId: user.uid,
-        name: name,
-        category: category,
-        incomePerMonth: parseFloat(incomePerMonth.replace('$', '')), // Remove dollar sign before submitting
+        name,
+        category,
+        incomePerMonth: parseFloat(incomePerMonth.replace('$', '')), // Remove dollar sign
         timestamp: serverTimestamp(),
       };
   
-      await addDoc(collection(db, 'incomes'), newIncome);
-      // console.log('Income added to Firestore');
-      Alert.alert('Income added successfully.')
+      const docRef = await addDoc(collection(db, 'incomes'), newIncome);
+      Alert.alert('Income added successfully.');
   
-      // Update UserContext to reflect changes dynamically
-      setUserProfile((prevProfile) => ({
-        ...prevProfile,
-        incomes: [...(prevProfile.incomes || []), newIncome],
-      }));
+      // Use sendNotification from UserContext
+      await sendNotification(
+        user.uid,
+        `New income source "${name}" added successfully.`,
+        'income'
+      );
   
+      // Clear the form inputs
       setName('');
       setCategory(null);
       setIncomePerMonth('');
