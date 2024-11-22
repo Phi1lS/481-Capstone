@@ -1,11 +1,14 @@
 import React from 'react';
-import { View, StyleSheet, ScrollView, Text, useColorScheme } from 'react-native';
+import { View, StyleSheet, ScrollView, Text, useColorScheme, TouchableOpacity } from 'react-native';
 import { Title, Card, Avatar, Button } from 'react-native-paper';
-import Slider from '@react-native-community/slider';
 
 export default function LeaseManagementScreen() {
   const scheme = useColorScheme();
   const isDarkMode = scheme === 'dark';
+
+  const handleManageLeaseInfo = () => {
+    console.log("manage button clicked");
+  };
 
   return (
     <View>
@@ -17,6 +20,13 @@ export default function LeaseManagementScreen() {
           <Card.Title
             title="Lease Information"
             left={(props) => <Avatar.Icon {...props} icon="tune" style={styles.icon} />}
+            right={(props) => 
+              <TouchableOpacity 
+              onPress={() => handleManageLeaseInfo()} 
+              style={{/* alignSelf: 'flex-end'*/ }}>
+              <Text style={isDarkMode ? styles.manageLeasesText : styles.manageLeasesText}>Manage</Text>
+            </TouchableOpacity>
+            }
             titleStyle={isDarkMode ? styles.darkCardTitle : styles.cardTitle}
           />
           <View style={styles.sliderContainer}>
@@ -76,6 +86,12 @@ const styles = StyleSheet.create({
     color: '#333',
     marginBottom: 20,
   },
+  manageLeasesText: {
+    color: 'green',
+    fontWeight: 'bold',
+    marginBottom: 10,
+    marginRight: 15,
+  },
   card: {
     marginBottom: 25,
     backgroundColor: '#ffffff',
@@ -107,6 +123,8 @@ const styles = StyleSheet.create({
     color: '#555',
     marginBottom: 10,
   },
+
+
   // Dark mode styles
   darkContainer: {
     flexGrow: 1,
@@ -140,4 +158,5 @@ const styles = StyleSheet.create({
     color: '#AAAAAA',
     marginBottom: 10,
   },
+  
 });
