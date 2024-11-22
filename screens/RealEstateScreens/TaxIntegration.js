@@ -1,136 +1,75 @@
-import React from 'react';
-import { View, StyleSheet, ScrollView, Text, useColorScheme } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import React, { useState } from 'react';
+import { View, StyleSheet, ScrollView, Text, TextInput, Button, useColorScheme } from 'react-native';
 import { Title, Card, Avatar } from 'react-native-paper';
-import { PieChart } from 'react-native-chart-kit';
-import Slider from '@react-native-community/slider';
+import axios from 'axios';
 
 export default function TaxIntegrationScreen() {
   const scheme = useColorScheme();
   const isDarkMode = scheme === 'dark';
 
-  const data = [
-    { name: 'Stocks', population: 60, color: '#00796B', legendFontColor: '#00796B', legendFontSize: 15 },
-    { name: 'Bonds', population: 20, color: '#004D40', legendFontColor: '#004D40', legendFontSize: 15 },
-    { name: 'Real Estate', population: 10, color: '#B2DFDB', legendFontColor: '#B2DFDB', legendFontSize: 15 },
-    { name: 'Cash', population: 10, color: '#4CAF50', legendFontColor: '#4CAF50', legendFontSize: 15 },
-  ];
+  const [income, setIncome] = useState('');
+  const [tax, setTax] = useState(null);
+  const [error, setError] = useState('');
+
+  const fetchIncomeTax = async () => {
+    setError('');
+    setTax(null); // Reset tax before fetching
+    try {
+      const response = await axios.post('https://api.taxee.io/v2/calculate', {
+        income: parseFloat(income),
+        filing_status: 'single', // Change to 'married' or other options as needed
+        year: 2024,
+      }, {
+        headers: {
+          Authorization: `ed08a73cb6msh10b40dcc37782e4p15ac3djsnc47aab70f0dd`, // Replace with your Taxee API key
+        },
+      });
+      setTax(response.data.total_tax); // Update state with total tax
+    } catch (err) {
+      console.error(err);
+      setError('Failed to calculate income tax. Please check the income entered.');
+    }
+  };
 
   return (
     <View>
       <ScrollView contentContainerStyle={isDarkMode ? styles.darkContainer : styles.container}>
-        <Title style={isDarkMode ? styles.darkTitle : styles.title}>Tax Integration</Title>
-        {/*<Card style={isDarkMode ? styles.darkCard : styles.card}>
-          <Card.Title
-            title="Current Allocation"
-            left={(props) => <Avatar.Icon {...props} icon="chart-pie" style={styles.icon} />}
-            titleStyle={isDarkMode ? styles.darkCardTitle : styles.cardTitle}
-          />
-          <PieChart
-            data={data}
-            width={300}
-            height={220}
-            chartConfig={{
-              backgroundColor: isDarkMode ? '#1E1E1E' : '#FFFFFF',
-              backgroundGradientFrom: isDarkMode ? '#1E1E1E' : '#FFFFFF',
-              backgroundGradientTo: isDarkMode ? '#1E1E1E' : '#FFFFFF',
-              color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
-              labelColor: isDarkMode ? '#FFFFFF' : '#333',
-            }}
-            accessor="population"
-            backgroundColor="transparent"
-            paddingLeft="15"
-            absolute
-          />
-        </Card>*/}
-        
+        <Title style={isDarkMode ? styles.darkTitle : styles.title}>Income Tax Calculator</Title>
+
         <Card style={isDarkMode ? styles.darkCard : styles.card}>
           <Card.Title
-            title="Income"
-            left={(props) => <Avatar.Icon {...props} icon="tune" style={styles.icon} />}
+            title="Enter Total Income"
+            left={(props) => <Avatar.Icon {...props} icon="cash" style={styles.icon} />}
             titleStyle={isDarkMode ? styles.darkCardTitle : styles.cardTitle}
           />
-          <View style={styles.sliderContainer}>
-         <Text style={isDarkMode ? styles.darkText : styles.text}>$XXX,XXX</Text>
-            </View> 
-
-            </Card>
-            <Card style={isDarkMode ? styles.darkCard : styles.card}>
-          <Card.Title
-            title="Notifications"
-            left={(props) => <Avatar.Icon {...props} icon="tune" style={styles.icon} />}
-            titleStyle={isDarkMode ? styles.darkCardTitle : styles.cardTitle}
-          />
-          <View style={styles.sliderContainer}>
-         <Text style={isDarkMode ? styles.darkText : styles.text}>XXXXXX</Text>
-            </View> 
-            </Card>
-
-    
-          
-            <Card style={isDarkMode ? styles.darkCard : styles.card}>
-          <Card.Title
-            title="Expence"
-            left={(props) => <Avatar.Icon {...props} icon="tune" style={styles.icon} />}
-            titleStyle={isDarkMode ? styles.darkCardTitle : styles.cardTitle}
-          />
-          <View style={styles.sliderContainer}>
-         <Text style={isDarkMode ? styles.darkText : styles.text}>$XXX,XXX</Text>
-            </View> 
-            </Card>
-
-
-         
-            <Card style={isDarkMode ? styles.darkCard : styles.card}>
-          <Card.Title
-            title="Lease Tracking"
-            left={(props) => <Avatar.Icon {...props} icon="tune" style={styles.icon} />}
-            titleStyle={isDarkMode ? styles.darkCardTitle : styles.cardTitle}
-          />
-          <View style={styles.sliderContainer}>
-         <Text style={isDarkMode ? styles.darkText : styles.text}>XXXXXX</Text>
-            </View> 
-            </Card>
-
-          
-            <Card style={isDarkMode ? styles.darkCard : styles.card}>
-          <Card.Title
-            title="Connect to tax software"
-            left={(props) => <Avatar.Icon {...props} icon="tune" style={styles.icon} />}
-            titleStyle={isDarkMode ? styles.darkCardTitle : styles.cardTitle}
-          />
-          <View style={styles.sliderContainer}>
-         <Text style={isDarkMode ? styles.darkText : styles.text}>XXXXXX</Text>
-            </View> 
-            </Card>
-          {/*<View style={styles.sliderContainer}>
-            <Text style={isDarkMode ? styles.darkText : styles.text}>Stocks: 60%</Text>
-            <Slider
-              style={styles.slider}
-              minimumValue={0}
-              maximumValue={100}
-              value={60}
-              minimumTrackTintColor="#00796B"
-              maximumTrackTintColor="#000000"
+          <View style={styles.inputContainer}>
+            <TextInput
+              style={isDarkMode ? styles.darkInput : styles.input}
+              placeholder="Enter Total Income"
+              placeholderTextColor={isDarkMode ? '#AAAAAA' : '#555'}
+              keyboardType="numeric"
+              value={income}
+              onChangeText={(text) => setIncome(text)}
             />
+            <Button title="Calculate Tax" onPress={fetchIncomeTax} />
           </View>
-          <View style={styles.sliderContainer}>
-            <Text style={isDarkMode ? styles.darkText : styles.text}>Bonds: 20%</Text>
-            <Slider
-              style={styles.slider}
-              minimumValue={0}
-              maximumValue={100}
-              value={20}
-              minimumTrackTintColor="#004D40"
-              maximumTrackTintColor="#000000"
-            />
-          </View> */}
-          {/* Add more sliders for other asset classes */}
-        
+
+          {tax && (
+            <Text style={isDarkMode ? styles.darkText : styles.text}>
+              Estimated Tax: ${tax.toFixed(2)}
+            </Text>
+          )}
+          {error && (
+            <Text style={isDarkMode ? [styles.darkText, styles.error] : [styles.text, styles.error]}>
+              {error}
+            </Text>
+          )}
+        </Card>
       </ScrollView>
     </View>
   );
 }
+
 
 const styles = StyleSheet.create({
   // Light mode styles
@@ -208,5 +147,29 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#AAAAAA',
     marginBottom: 10,
+  },
+  inputContainer: {
+    marginTop: 10,
+  },
+  input: {
+    height: 40,
+    borderColor: '#ccc',
+    borderWidth: 1,
+    borderRadius: 5,
+    paddingHorizontal: 10,
+    marginBottom: 10,
+  },
+  darkInput: {
+    height: 40,
+    borderColor: '#555',
+    borderWidth: 1,
+    borderRadius: 5,
+    paddingHorizontal: 10,
+    marginBottom: 10,
+    color: '#FFFFFF',
+  },
+  error: {
+    color: 'red',
+    marginTop: 10,
   },
 });
