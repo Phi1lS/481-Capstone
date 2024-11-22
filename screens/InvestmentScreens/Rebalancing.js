@@ -1,6 +1,6 @@
 import React, { useContext, useState, useEffect } from 'react';
 import { View, StyleSheet, ScrollView, Text, useColorScheme, Platform } from 'react-native';
-import { Title, Card, Avatar, Button } from 'react-native-paper';
+import { Title, Card, Avatar, Button, Modal } from 'react-native-paper';
 import { UserContext } from '../../UserContext'; // Import UserContext
 import Slider from '@react-native-community/slider';
 
@@ -45,6 +45,10 @@ export default function RebalancingScreen() {
   const [realEstateValueChange, setRealEstateValueChange] = useState(allocations.realEstate * 100);
   const [cashValueChange, setCashValueChange] = useState(allocations.cash * 100);
 
+  // Modal state
+  const [isModalVisible, setModalVisible] = useState(false);
+  const [liquidationList, setLiquidationList] = useState([]);
+
   // Ensure the sum of all allocations doesn't exceed 100%
   const remainingPercent = (currentAllocation) => {
     const total = 100 - currentAllocation;
@@ -58,13 +62,84 @@ export default function RebalancingScreen() {
       alert("Total allocation cannot exceed 100%");
       return;
     }
+
+      // Calculate liquidation details
+    const liquidationNeeded = calculateLiquidation();
+    const liquidationItems = generateLiquidationList(liquidationNeeded);
     
+    setLiquidationList(liquidationItems);
+
+    setModalVisible(true);  // Show modal for confirmation
+  };
+
+  const handleConfirmRebalance = () => {
+    console.log("Confirm rebalance");
     setAllocations({
       stocks: stockValueChange / 100,
       bonds: bondValueChange / 100,
       realEstate: realEstateValueChange / 100,
       cash: cashValueChange / 100,
     });
+    setModalVisible(false);  // Close the modal after confirming
+  };
+
+  const handleCancelRebalance = () => {
+    console.log("Cancel rebalance");
+    setModalVisible(false);  // Close modal if canceled
+  };
+
+  const calculateLiquidation = () => {
+    const assets = userProfile.assets || [];
+    const totalValue = assets.reduce((total, asset) => total + (asset.value || 0), 0);
+
+    // Calculate the target value for each asset category based on the new allocations
+    const targetValues = {
+      stocks: (stockValueChange / 100) * totalValue,
+      bonds: (bondValueChange / 100) * totalValue,
+      realEstate: (realEstateValueChange / 100) * totalValue,
+      cash: (cashValueChange / 100) * totalValue,
+    };
+
+    // Determine how much needs to be liquidated for each category
+    const liquidationNeeded = {
+      stocks: targetValues.stocks - (allocations.stocks * totalValue),
+      bonds: targetValues.bonds - (allocations.bonds * totalValue),
+      realEstate: targetValues.realEstate - (allocations.realEstate * totalValue),
+      cash: targetValues.cash - (allocations.cash * totalValue),
+    };
+
+    return liquidationNeeded;
+  };
+
+  const generateLiquidationList = (liquidationNeeded) => {
+    const liquidationItems = [];
+
+    if (liquidationNeeded.stocks < 0) {
+      liquidationItems.push({
+        type: 'Stocks',
+        amount: Math.abs(liquidationNeeded.stocks),
+      });
+    }
+    if (liquidationNeeded.bonds < 0) {
+      liquidationItems.push({
+        type: 'Bonds',
+        amount: Math.abs(liquidationNeeded.bonds),
+      });
+    }
+    if (liquidationNeeded.realEstate < 0) {
+      liquidationItems.push({
+        type: 'Real Estate',
+        amount: Math.abs(liquidationNeeded.realEstate),
+      });
+    }
+    if (liquidationNeeded.cash < 0) {
+      liquidationItems.push({
+        type: 'Cash',
+        amount: Math.abs(liquidationNeeded.cash),
+      });
+    }
+
+    return liquidationItems;
   };
 
   const renderProgressBar = (progress, color) => (
@@ -74,8 +149,8 @@ export default function RebalancingScreen() {
   );
 
   return (
-    <View>
-      <ScrollView contentContainerStyle={isDarkMode ? styles.darkContainer : styles.container}>
+    <View style={styles.container}>
+      <ScrollView>
         <Title style={isDarkMode ? styles.darkTitle : styles.title}>Rebalancing</Title>
 
         <Card style={isDarkMode ? styles.darkCard : styles.card}>
@@ -129,7 +204,8 @@ export default function RebalancingScreen() {
               maximumValue={remainingPercent(bondValueChange + realEstateValueChange + cashValueChange)}
               step={1}
               minimumTrackTintColor="#00796B"
-              maximumTrackTintColor="#000000"
+              maximumTrackTintColor="#B0BEC5"
+              thumbTintColor="#004D40"
             />
           </View>
 
@@ -144,7 +220,8 @@ export default function RebalancingScreen() {
               maximumValue={remainingPercent(stockValueChange + realEstateValueChange + cashValueChange)}
               step={1}
               minimumTrackTintColor="#004D40"
-              maximumTrackTintColor="#000000"
+              maximumTrackTintColor="#B0BEC5"
+              thumbTintColor="#00796B"
             />
           </View>
 
@@ -159,7 +236,8 @@ export default function RebalancingScreen() {
               maximumValue={remainingPercent(stockValueChange + bondValueChange + cashValueChange)}
               step={1}
               minimumTrackTintColor="#B2DFDB"
-              maximumTrackTintColor="#000000"
+              maximumTrackTintColor="#B0BEC5"
+              thumbTintColor="#004D40"
             />
           </View>
 
@@ -174,146 +252,107 @@ export default function RebalancingScreen() {
               maximumValue={remainingPercent(stockValueChange + bondValueChange + realEstateValueChange)}
               step={1}
               minimumTrackTintColor="#4CAF50"
-              maximumTrackTintColor="#000000"
+              maximumTrackTintColor="#B0BEC5"
+              thumbTintColor="#00796B"
             />
           </View>
-          
-          <View style={styles.detailsContainer}>
-            <Text style={isDarkMode ? styles.darkText : styles.text}>
-              Adjust your investments to maintain your desired asset allocation.
-            </Text>
 
-            <Button
-              mode="contained"
-              onPress={updateAllocations}
-              style={styles.rebalanceButton}
-              labelStyle={styles.buttonLabel}
-            >
-              Rebalance Now
-            </Button>
-          </View>
+          {/* Rebalance Button */}
+          <Button mode="contained" onPress={updateAllocations} style={styles.rebalanceButton}>
+            Rebalance Now
+          </Button>
         </Card>
+
+        {/* Modal for confirmation */}
+        <Modal visible={isModalVisible} onDismiss={handleCancelRebalance}>
+          <Card style={isDarkMode ? styles.darkCard : styles.card}>
+            <Card.Title title="Confirm Rebalance" />
+            <Card.Content>
+              <Text>Are you sure you want to apply these new allocations?</Text>
+              {liquidationList.length > 0 && (
+                <View>
+                  <Text style={isDarkMode ? styles.darkText : styles.text}>Assets to Liquidate:</Text>
+                  {liquidationList.map((item, index) => (
+                    <Text key={index} style={isDarkMode ? styles.darkText : styles.text}>
+                      {item.type}: ${item.amount.toFixed(2)}
+                    </Text>
+                  ))}
+                </View>
+              )}
+            </Card.Content>
+            <Card.Actions>
+              <Button onPress={handleCancelRebalance}>Cancel</Button>
+              <Button onPress={handleConfirmRebalance}>Confirm</Button>
+            </Card.Actions>
+          </Card>
+        </Modal>
       </ScrollView>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  // Light mode styles
   container: {
-    flexGrow: 1,
-    padding: 20,
-    backgroundColor: '#f7f9fc',
+    flex: 1,
+    padding: 16,
+    backgroundColor: '#fff',
+  },
+  darkContainer: {
+    backgroundColor: '#1A1A1A',
   },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 20,
+    marginBottom: 16,
+  },
+  darkTitle: {
+    color: '#fff',
   },
   card: {
-    marginBottom: 25,
-    backgroundColor: '#ffffff',
-    borderRadius: 15,
-    ...Platform.select({
-      web: {
-        boxShadow: '0px 4px 6px rgba(0, 0, 0, 0.1)',
-      },
-      default: {
-        shadowColor: '#000',
-        shadowOpacity: 0.3,
-        shadowOffset: { width: 0, height: 8 },
-        shadowRadius: 15,
-        elevation: 10,
-      }
-    }),
-    padding: 25,
+    marginBottom: 16,
+    backgroundColor: '#fff',
   },
-  icon: {
-    backgroundColor: '#E8F5E9',
+  darkCard: {
+    backgroundColor: '#2C2C2C',
   },
   cardTitle: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: 'bold',
-    color: '#333',
   },
-  detailsContainer: {
-    marginTop: 15,
+  darkCardTitle: {
+    color: '#fff',
   },
   progressBarContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
   },
-  spacing: {
-    marginTop: 20, // Added margin to increase space between progress bars
+  sliderContainer: {
+    marginBottom: 16,
   },
-  progressBarBackground: {
-    height: 14,
-    backgroundColor: '#E0E0E0',
-    borderRadius: 7,
-    overflow: 'hidden',
-    width: '65%',
+  slider: {
+    width: '100%',
   },
-  progressBarFill: {
-    height: '100%',
-    borderRadius: 7,
+  liquidationItem: {
+    marginVertical: 8,
   },
   text: {
-    fontSize: 19,
-    color: '#555',
-  },
-  rebalanceButton: {
-    backgroundColor: '#00796B',
-    padding: 14,
-    borderRadius: 8,
-    marginTop: 25,
-  },
-  rebalanceButtonPressed: {
-    backgroundColor: '#005D4F',
-  },
-  buttonLabel: {
-    color: '#FFFFFF',
-    fontWeight: 'bold',
     fontSize: 16,
-  },
-  // Dark mode styles
-  darkContainer: {
-    flexGrow: 1,
-    padding: 20,
-    backgroundColor: '#121212',
-  },
-  darkTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#FFFFFF',
-    marginBottom: 20,
-  },
-  darkCard: {
-    marginBottom: 25,
-    backgroundColor: '#1E1E1E',
-    borderRadius: 15,
-    ...Platform.select({
-      web: {
-        boxShadow: '0px 4px 6px rgba(0, 0, 0, 0.1)',
-      },
-      default: {
-        shadowColor: '#000',
-        shadowOpacity: 0.3,
-        shadowOffset: { width: 0, height: 8 },
-        shadowRadius: 15,
-        elevation: 10,
-      }
-    }),
-    padding: 25,
-  },
-  darkCardTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#FFFFFF',
+    color: '#000',
   },
   darkText: {
-    fontSize: 19,
-    color: '#AAAAAA',
+    color: '#fff',
+  },
+  button: {
+    marginVertical: 8,
+  },
+  rebalanceButton: {
+    marginTop: 16,
+  },
+  spacing: {
+    marginTop: 8,
+  },
+  icon: {
+    backgroundColor: '#00796B',
   },
 });
