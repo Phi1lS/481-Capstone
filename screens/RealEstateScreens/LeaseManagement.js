@@ -1,13 +1,16 @@
 import React from 'react';
 import { View, StyleSheet, ScrollView, Text, useColorScheme, TouchableOpacity } from 'react-native';
 import { Title, Card, Avatar, Button } from 'react-native-paper';
+import { useNavigation } from '@react-navigation/native';
+
 
 export default function LeaseManagementScreen() {
+  const navigation = useNavigation();
   const scheme = useColorScheme();
   const isDarkMode = scheme === 'dark';
 
-  const handleManageLeaseInfo = () => {
-    console.log("manage button clicked");
+  const handleManageTenants = () => {
+    navigation.navigate("TenantManagement");
   };
 
   return (
@@ -18,11 +21,11 @@ export default function LeaseManagementScreen() {
         {/* Lease Information Card */}
         <Card style={isDarkMode ? styles.darkCard : styles.card}>
           <Card.Title
-            title="Lease Information"
+            title="Tenants"
             left={(props) => <Avatar.Icon {...props} icon="tune" style={styles.icon} />}
             right={(props) => 
               <TouchableOpacity 
-              onPress={() => handleManageLeaseInfo()} 
+              onPress={() => handleManageTenants()} 
               style={{/* alignSelf: 'flex-end'*/ }}>
               <Text style={isDarkMode ? styles.manageLeasesText : styles.manageLeasesText}>Manage</Text>
             </TouchableOpacity>
