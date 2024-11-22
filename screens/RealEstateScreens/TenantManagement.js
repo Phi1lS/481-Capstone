@@ -17,10 +17,10 @@ export default function TenantManagement({ navigation }) {
 
 
 
-  const handleDeleteExpense = async (expenseId) => {
+  const handleDeleteExpense = async (tenantId) => {
     Alert.alert(
       "Confirm Deletion",
-      "Are you sure you want to delete this expense?",
+      "Are you sure you want to delete this tenant?",
       [
         {
           text: "Cancel",
@@ -30,15 +30,15 @@ export default function TenantManagement({ navigation }) {
           text: "Delete",
           onPress: async () => {
             try {
-              await deleteDoc(doc(db, 'expenses', expenseId));
+              await deleteDoc(doc(db, 'tenants', tenantId));
               setUserProfile((prevProfile) => ({
                 ...prevProfile,
-                expenses: prevProfile.expenses.filter((expense) => expense.id !== expenseId),
+                expenses: prevProfile.expenses.filter((tenant) => tenant.id !== tenantId),
               }));
-              setTenants((prev) => prev.filter((expense) => expense.id !== expenseId));
+              setTenants((prev) => prev.filter((tenant) => tenant.id !== tenantId));
               console.log('Expense deleted successfully');
             } catch (error) {
-              console.error('Error deleting expense:', error);
+              console.error('Error deleting tenant:', error);
             }
           },
           style: "destructive",
@@ -49,32 +49,32 @@ export default function TenantManagement({ navigation }) {
   };
 
   useEffect(() => {
-    const fetchExpenses = async () => {
+    const fetchTenants = async () => {
       const user = auth.currentUser;
       if (user) {
         try {
-          const expenseRef = collection(db, 'expenses');
-          const querySnapshot = await getDocs(expenseRef);
-          const fetchedExpenses = querySnapshot.docs
+          const tenantRef = collection(db, 'tenants');
+          const querySnapshot = await getDocs(tenantRef);
+          const fetchedTenants = querySnapshot.docs
             .filter(doc => doc.data().userId === user.uid)
             .map(doc => ({ id: doc.id, ...doc.data() }));
           setUserProfile((prevProfile) => ({
             ...prevProfile,
-            expenses: fetchedExpenses,
+            tenants: fetchedTenants,
           }));
         } catch (error) {
-          console.error("Error fetching expenses:", error);
+          console.error("Error fetching tenants:", error);
         }
       }
     };
 
-    if (!userProfile?.expenses || userProfile.expenses.length === 0) {
-      fetchExpenses();
+    if (!userProfile?.tenants || userProfile.tenants.length === 0) {
+      fetchTenants();
     }
   }, [userProfile, setUserProfile]);
 
-  useEffect(() => {
-    const processExpenseData = () => {
+  /*useEffect(() => {
+    /*const processTenantData = () => {
       const currentDate = new Date();
       const currentMonth = getMonth(currentDate);
       const previousMonthDate = subMonths(currentDate, 1);
@@ -108,7 +108,7 @@ export default function TenantManagement({ navigation }) {
       return { monthlyExpenses, allExpenses };
     };
 
-    const { monthlyExpenses, allExpenses } = processExpenseData();
+    const { monthlyExpenses, allExpenses } = processTenantData();
 
     setTimeout(() => {
       setTenants(
@@ -117,7 +117,7 @@ export default function TenantManagement({ navigation }) {
         )
       );
     }, 100);
-  }, [userProfile, showAll]);
+  }, [userProfile, showAll]);*/
 
 
   const getTextStyle = (amount) => ({
@@ -127,55 +127,10 @@ export default function TenantManagement({ navigation }) {
 
   return (
     <View style={isDarkMode ? styles.darkSafeArea : styles.safeArea}>
-      <ScrollView contentContainerStyle={isDarkMode ? styles.darkContainer : styles.container}>
-        <Title style={isDarkMode ? styles.darkTitle : styles.title}>Expense Tracking</Title>
-
-        {/*<Card style={isDarkMode ? styles.darkCard : styles.card}>
-          <Card.Title
-            title="Expenses for Month"
-            left={(props) => <Avatar.Icon {...props} icon="tune" style={styles.icon} />}
-            titleStyle={isDarkMode ? styles.darkCardTitle : styles.cardTitle}
-          />
-          <View style={styles.sliderContainer}>
-            <Text style={[isDarkMode ? styles.darkText : styles.text, getTextStyle(currentMonthExpenses)]}>
-              ${currentMonthExpenses.toFixed(2)}
-            </Text>
-          </View>
-        </Card>*/}
-
-        
-
-        {/*<Card style={isDarkMode ? styles.darkCard : styles.card}>
-          <Card.Title
-            title="Expense Chart"
-            left={(props) => <Avatar.Icon {...props} icon="chart-pie" style={styles.icon} />}
-            titleStyle={isDarkMode ? styles.darkCardTitle : styles.cardTitle}
-          />
-          <View style={styles.sliderContainer}>
-            <PieChart
-              data={chartData}
-              width={300}
-              height={220}
-              chartConfig={{
-                backgroundColor: isDarkMode ? "#1E1E1E" : "#FFFFFF",
-                backgroundGradientFrom: isDarkMode ? "#1E1E1E" : "#FFFFFF",
-                backgroundGradientTo: isDarkMode ? "#1E1E1E" : "#FFFFFF",
-                color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
-                labelColor: isDarkMode ? "#FFFFFF" : "#333",
-              }}
-              accessor="population"
-              backgroundColor="transparent"
-              paddingLeft="15"
-              absolute
-            />
-          </View>
-        </Card>*/}
+      <ScrollView contentContainerStyle={isDarkMode ? styles.darkContainer : styles.container}>    
 
         <View style={styles.titleRow}>
           <Title style={isDarkMode ? styles.darkTitle : styles.title}>Tenants</Title>
-          <TouchableOpacity onPress={() => setShowAll(!showAll)}>
-            <Text style={styles.showAllButton}>Show {showAll ? "Less" : "All"}</Text>
-          </TouchableOpacity>
         </View>
 
         {tenants.map((tenant, index) => (
