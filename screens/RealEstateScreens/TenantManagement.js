@@ -10,25 +10,12 @@ import { db, auth } from '../../firebaseConfig';
 export default function TenantManagement({ navigation }) {
   const scheme = useColorScheme();
   const isDarkMode = scheme === "dark";
-  const [currentMonthExpenses, setCurrentMonthExpenses] = useState(0);
-  const [previousMonthExpenses, setPreviousMonthExpenses] = useState(0);
-  const [expenses, setExpenses] = useState([]);
-  const [chartData, setChartData] = useState([]);
+  const [tenants, setTenants] = useState([]);
+  //const [chartData, setChartData] = useState([]);
   const [showAll, setShowAll] = useState(false);
   const { userProfile, setUserProfile } = useContext(UserContext);
 
-  const translateCategory = (category) => {
-    switch (category) {
-      case 'investment':
-        return 'Investment';
-      case 'realEstate':
-        return 'Real Estate';
-      case 'retirement':
-        return 'Retirement';
-      default:
-        return 'Unknown';
-    }
-  };
+
 
   const handleDeleteExpense = async (expenseId) => {
     Alert.alert(
@@ -48,7 +35,7 @@ export default function TenantManagement({ navigation }) {
                 ...prevProfile,
                 expenses: prevProfile.expenses.filter((expense) => expense.id !== expenseId),
               }));
-              setExpenses((prev) => prev.filter((expense) => expense.id !== expenseId));
+              setTenants((prev) => prev.filter((expense) => expense.id !== expenseId));
               console.log('Expense deleted successfully');
             } catch (error) {
               console.error('Error deleting expense:', error);
@@ -115,8 +102,8 @@ export default function TenantManagement({ navigation }) {
         }
       });
 
-      setCurrentMonthExpenses(currentExpenseTotal);
-      setPreviousMonthExpenses(previousExpenseTotal);
+      //setCurrentMonthExpenses(currentExpenseTotal);
+      //setPreviousMonthExpenses(previousExpenseTotal);
 
       return { monthlyExpenses, allExpenses };
     };
@@ -124,7 +111,7 @@ export default function TenantManagement({ navigation }) {
     const { monthlyExpenses, allExpenses } = processExpenseData();
 
     setTimeout(() => {
-      setExpenses(
+      setTenants(
         (showAll ? allExpenses : monthlyExpenses).sort(
           (a, b) => (b?.timestamp?.toDate() || 0) - (a?.timestamp?.toDate() || 0)
         )
@@ -132,42 +119,6 @@ export default function TenantManagement({ navigation }) {
     }, 100);
   }, [userProfile, showAll]);
 
-  useEffect(() => {
-    const currentDate = new Date();
-    const currentMonth = getMonth(currentDate);
-    const currentYear = getYear(currentDate);
-
-    if (userProfile?.expenses) {
-      const currentMonthExpenses = userProfile.expenses.filter((expense) => {
-        if (expense.timestamp instanceof Timestamp) {
-          const expenseDate = expense.timestamp.toDate();
-          const expenseMonth = getMonth(expenseDate);
-          const expenseYear = getYear(expenseDate);
-          return expenseMonth === currentMonth && expenseYear === currentYear;
-        }
-        return false;
-      });
-
-      const categoryTotals = currentMonthExpenses.reduce((totals, expense) => {
-        if (expense.category && !isNaN(expense.expenseAmount)) {
-          totals[expense.category] = (totals[expense.category] || 0) + expense.expenseAmount;
-        }
-        return totals;
-      }, {});
-
-      const chartData = Object.entries(categoryTotals).map(([category, total]) => ({
-        name: translateCategory(category),
-        population: total,
-        color: category === 'investment' ? '#00796B' : category === 'realEstate' ? '#004D40' : '#B2DFDB',
-        legendFontColor: isDarkMode ? '#FFFFFF' : '#000000',
-        legendFontSize: 11,
-      }));
-
-      setChartData(chartData);
-    }
-  }, [userProfile, isDarkMode]);
-
-  const expenseChange = currentMonthExpenses - previousMonthExpenses;
 
   const getTextStyle = (amount) => ({
     color: amount > 0 ? 'red' : 'green',
@@ -179,7 +130,7 @@ export default function TenantManagement({ navigation }) {
       <ScrollView contentContainerStyle={isDarkMode ? styles.darkContainer : styles.container}>
         <Title style={isDarkMode ? styles.darkTitle : styles.title}>Expense Tracking</Title>
 
-        <Card style={isDarkMode ? styles.darkCard : styles.card}>
+        {/*<Card style={isDarkMode ? styles.darkCard : styles.card}>
           <Card.Title
             title="Expenses for Month"
             left={(props) => <Avatar.Icon {...props} icon="tune" style={styles.icon} />}
@@ -190,22 +141,11 @@ export default function TenantManagement({ navigation }) {
               ${currentMonthExpenses.toFixed(2)}
             </Text>
           </View>
-        </Card>
+        </Card>*/}
 
-        <Card style={isDarkMode ? styles.darkCard : styles.card}>
-          <Card.Title
-            title="Change from Last Month"
-            left={(props) => <Avatar.Icon {...props} icon="tune" style={styles.icon} />}
-            titleStyle={isDarkMode ? styles.darkCardTitle : styles.cardTitle}
-          />
-          <View style={styles.sliderContainer}>
-            <Text style={[isDarkMode ? styles.darkText : styles.text, getTextStyle(expenseChange)]}>
-              {expenseChange >= 0 ? `+$${expenseChange.toFixed(2)}` : `-$${Math.abs(expenseChange).toFixed(2)}`}
-            </Text>
-          </View>
-        </Card>
+        
 
-        <Card style={isDarkMode ? styles.darkCard : styles.card}>
+        {/*<Card style={isDarkMode ? styles.darkCard : styles.card}>
           <Card.Title
             title="Expense Chart"
             left={(props) => <Avatar.Icon {...props} icon="chart-pie" style={styles.icon} />}
@@ -229,31 +169,35 @@ export default function TenantManagement({ navigation }) {
               absolute
             />
           </View>
-        </Card>
+        </Card>*/}
 
         <View style={styles.titleRow}>
-          <Title style={isDarkMode ? styles.darkTitle : styles.title}>Expense Sources</Title>
+          <Title style={isDarkMode ? styles.darkTitle : styles.title}>Tenants</Title>
           <TouchableOpacity onPress={() => setShowAll(!showAll)}>
             <Text style={styles.showAllButton}>Show {showAll ? "Less" : "All"}</Text>
           </TouchableOpacity>
         </View>
 
-        {expenses.map((expense, index) => (
+        {tenants.map((tenant, index) => (
           <Card key={index} style={isDarkMode ? styles.darkCard : styles.card}>
             <Card.Title
-              title={expense.name}
+              title={tenant.name}
               left={(props) => <Avatar.Icon {...props} icon="cash" style={styles.icon} />}
               titleStyle={isDarkMode ? styles.darkCardTitle : styles.cardTitle}
             />
             <View style={styles.sliderContainer}>
               <Text style={isDarkMode ? styles.darkText : styles.text}>
-                Category: {translateCategory(expense.category)}
+                Lease start date: {tenant.leaseStartDate}
               </Text>
               <Text style={isDarkMode ? styles.darkText : styles.text}>
-                Expense Amount: ${expense.expenseAmount.toFixed(2)}
+                Lease end date: {tenant.leaseEndDate}
               </Text>
+              <Text style={isDarkMode ? styles.darkText : styles.text}>
+                Property: {tenant.apartmentNumber} {tenant.building}
+              </Text>
+              
             </View>
-            <TouchableOpacity onPress={() => handleDeleteExpense(expense.id)}>
+            <TouchableOpacity onPress={() => handleDeleteExpense(tenant.id)}>
               <Text style={isDarkMode ? styles.deleteText : styles.deleteText}>Delete</Text>
             </TouchableOpacity>
           </Card>
@@ -380,5 +324,5 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginBottom: 10,
   },
-  
+
 });
