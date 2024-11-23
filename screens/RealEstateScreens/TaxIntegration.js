@@ -51,8 +51,10 @@ export default function TaxIntegrationScreen() {
       const url = `${BASE_URL}/${maritalStatus}/${income}/`;
       const response = await axios.get(url);
   
+      const dependentsValue = parseInt(dependents);
+      const dependentDeduction = dependentsValue * 2000;
 
-      setTotalTax(response.data);
+      setTotalTax(response.data - dependentDeduction);
       return response.data; // Returns the estimated tax data
       
     } catch (error) {
@@ -154,7 +156,7 @@ export default function TaxIntegrationScreen() {
             <TouchableOpacity style={isDarkMode ? styles.darkButton : styles.button} onPress={() => setMaritalStatusModalVisible(true)}>
               <Text style={styles.buttonText}>Marital Status: {maritalStatus}</Text>
             </TouchableOpacity>
-            {/* Dependents Button 
+            {/* Dependents Button */}
             <TouchableOpacity
               style={isDarkMode ? styles.darkButton : styles.button}
               onPress={() => {
@@ -164,7 +166,7 @@ export default function TaxIntegrationScreen() {
             >
               <Text style={styles.buttonText}>Dependents: {dependents}</Text>
             </TouchableOpacity>
-            */}
+            
             <Button color={isDarkMode ? '#00796B' : '#4CAF50'} title="Calculate Tax" onPress={calculateTax} />
           </View>
 
