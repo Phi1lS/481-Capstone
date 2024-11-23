@@ -12,6 +12,9 @@ import {
   useColorScheme,
 } from 'react-native';
 import { Title, Card, Avatar } from 'react-native-paper';
+import axios from 'axios';
+
+const BASE_URL = "https://api.taxapi.net/income" //base url for the tax API
 
 export default function TaxIntegrationScreen() {
   const scheme = useColorScheme();
@@ -43,6 +46,21 @@ export default function TaxIntegrationScreen() {
   const [dependentsModalVisible, setDependentsModalVisible] = useState(false);
   const [tempDependents, setTempDependents] = useState(dependents);
 
+  const calculateTax = async () => {
+    try {
+      const url = `${BASE_URL}/${maritalStatus}/${income}/`;
+      const response = await axios.get(url);
+  
+
+      setTotalTax(response.data);
+      return response.data; // Returns the estimated tax data
+      
+    } catch (error) {
+      console.error("Error fetching tax data:", error.message);
+      throw error;
+    }
+  }
+  /*
   const calculateTax = () => {
     setError('');
     setStateTax(null);
@@ -109,7 +127,7 @@ export default function TaxIntegrationScreen() {
     setFederalTax(federalTaxAmount);
     setTotalTax(totalTaxAmount);
   };
-
+*/
   return (
     <View>
       <ScrollView contentContainerStyle={isDarkMode ? styles.darkContainer : styles.container}>
@@ -136,7 +154,7 @@ export default function TaxIntegrationScreen() {
             <TouchableOpacity style={isDarkMode ? styles.darkButton : styles.button} onPress={() => setMaritalStatusModalVisible(true)}>
               <Text style={styles.buttonText}>Marital Status: {maritalStatus}</Text>
             </TouchableOpacity>
-            {/* Dependents Button */}
+            {/* Dependents Button 
             <TouchableOpacity
               style={isDarkMode ? styles.darkButton : styles.button}
               onPress={() => {
@@ -146,6 +164,7 @@ export default function TaxIntegrationScreen() {
             >
               <Text style={styles.buttonText}>Dependents: {dependents}</Text>
             </TouchableOpacity>
+            */}
             <Button color={isDarkMode ? '#00796B' : '#4CAF50'} title="Calculate Tax" onPress={calculateTax} />
           </View>
 
@@ -198,6 +217,15 @@ export default function TaxIntegrationScreen() {
                 }}
               >
                 <Text style={styles.modalButtonText}>Married</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={isDarkMode ? styles.darkModalButton : styles.modalButton}
+                onPress={() => {
+                  setMaritalStatus('hoh');
+                  setMaritalStatusModalVisible(false);
+                }}
+              >
+                <Text style={styles.modalButtonText}>Head of HouseHold</Text>
               </TouchableOpacity>
               <Button color={isDarkMode ? '#00796B' : '#4CAF50'} title="Close" onPress={() => setMaritalStatusModalVisible(false)} />
             </View>
