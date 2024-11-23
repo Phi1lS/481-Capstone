@@ -1,45 +1,108 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, ScrollView, Text, TextInput, Button, useColorScheme } from 'react-native';
+import {
+  View,
+  StyleSheet,
+  ScrollView,
+  Text,
+  TextInput,
+  Button,
+  Modal,
+  TouchableOpacity,
+  useColorScheme,
+} from 'react-native';
 import { Title, Card, Avatar } from 'react-native-paper';
-import axios from 'axios';
 
 export default function TaxIntegrationScreen() {
   const scheme = useColorScheme();
   const isDarkMode = scheme === 'dark';
 
   const [income, setIncome] = useState('');
-  const [tax, setTax] = useState(null);
+  const [maritalStatus, setMaritalStatus] = useState('single'); // Default to 'single'
+  const [dependents, setDependents] = useState(0);
+  const [stateTax, setStateTax] = useState(null);
+  const [federalTax, setFederalTax] = useState(null);
+  const [totalTax, setTotalTax] = useState(null);
   const [error, setError] = useState('');
+  const [maritalStatusModalVisible, setMaritalStatusModalVisible] = useState(false);
+  const [dependentsModalVisible, setDependentsModalVisible] = useState(false);
+  const [tempDependents, setTempDependents] = useState(dependents);
 
-  const fetchIncomeTax = async () => {
+  const calculateTax = () => {
     setError('');
-    setTax(null); // Reset tax before fetching
-    try {
-      const response = await axios.post('https://api.taxee.io/v2/calculate', {
-        income: parseFloat(income),
-        filing_status: 'single', // Change to 'married' or other options as needed
-        year: 2024,
-      }, {
-        headers: {
-          Authorization: `ed08a73cb6msh10b40dcc37782e4p15ac3djsnc47aab70f0dd`, // Replace with your Taxee API key
-        },
-      });
-      setTax(response.data.total_tax); // Update state with total tax
-    } catch (err) {
-      console.error(err);
-      setError('Failed to calculate income tax. Please check the income entered.');
+    setStateTax(null);
+    setFederalTax(null);
+    setTotalTax(null);
+
+    const incomeValue = parseFloat(income);
+    const dependentsValue = parseInt(dependents);
+
+    if (isNaN(incomeValue) || incomeValue <= 0 || isNaN(dependentsValue) || dependentsValue < 0) {
+      setError('Please enter valid income and dependents.');
+      return;
     }
+
+    // Michigan state tax: Flat 4.25%
+    const stateTaxAmount = incomeValue * 0.0425;
+
+    // Federal tax brackets for 2024
+    const federalBrackets = maritalStatus === 'single'
+      ? [
+          { threshold: 10275, rate: 0.10 },
+          { threshold: 41775, rate: 0.12 },
+          { threshold: 89075, rate: 0.22 },
+          { threshold: 170050, rate: 0.24 },
+          { threshold: 215950, rate: 0.32 },
+          { threshold: 539900, rate: 0.35 },
+          { threshold: Infinity, rate: 0.37 },
+        ]
+      : [
+          { threshold: 20550, rate: 0.10 },
+          { threshold: 83550, rate: 0.12 },
+          { threshold: 178150, rate: 0.22 },
+          { threshold: 340100, rate: 0.24 },
+          { threshold: 431900, rate: 0.32 },
+          { threshold: 647850, rate: 0.35 },
+          { threshold: Infinity, rate: 0.37 },
+        ];
+
+    // Calculate federal tax after accounting for dependents ($2,000 deduction per dependent)
+    const dependentDeduction = dependentsValue * 2000;
+    const taxableIncome = Math.max(incomeValue - dependentDeduction, 0);
+
+    let federalTaxAmount = 0;
+    let remainingIncome = taxableIncome;
+
+    for (let i = 0; i < federalBrackets.length; i++) {
+      const { threshold, rate } = federalBrackets[i];
+      const previousThreshold = i > 0 ? federalBrackets[i - 1].threshold : 0;
+
+      if (remainingIncome > threshold - previousThreshold) {
+        federalTaxAmount += (threshold - previousThreshold) * rate;
+        remainingIncome -= threshold - previousThreshold;
+      } else {
+        federalTaxAmount += remainingIncome * rate;
+        break;
+      }
+    }
+
+    // Total tax
+    const totalTaxAmount = stateTaxAmount + federalTaxAmount;
+
+    // Update state
+    setStateTax(stateTaxAmount);
+    setFederalTax(federalTaxAmount);
+    setTotalTax(totalTaxAmount);
   };
 
   return (
     <View>
       <ScrollView contentContainerStyle={isDarkMode ? styles.darkContainer : styles.container}>
-        <Title style={isDarkMode ? styles.darkTitle : styles.title}>Income Tax Calculator</Title>
+        <Title style={isDarkMode ? styles.darkTitle : styles.title}>Income Tax Calculator (Michigan)</Title>
 
         <Card style={isDarkMode ? styles.darkCard : styles.card}>
           <Card.Title
-            title="Enter Total Income"
-            left={(props) => <Avatar.Icon {...props} icon="cash" style={styles.icon} />}
+            title="Enter Your Details"
+            left={(props) => <Avatar.Icon {...props} icon="account" style={styles.icon} />}
             titleStyle={isDarkMode ? styles.darkCardTitle : styles.cardTitle}
           />
           <View style={styles.inputContainer}>
@@ -51,12 +114,36 @@ export default function TaxIntegrationScreen() {
               value={income}
               onChangeText={(text) => setIncome(text)}
             />
-            <Button title="Calculate Tax" onPress={fetchIncomeTax} />
+            {/* Marital Status Button */}
+            <TouchableOpacity style={styles.button} onPress={() => setMaritalStatusModalVisible(true)}>
+              <Text style={styles.buttonText}>Marital Status: {maritalStatus}</Text>
+            </TouchableOpacity>
+            {/* Dependents Button */}
+            <TouchableOpacity
+              style={styles.button}
+              onPress={() => {
+                setTempDependents(dependents.toString());
+                setDependentsModalVisible(true);
+              }}
+            >
+              <Text style={styles.buttonText}>Dependents: {dependents}</Text>
+            </TouchableOpacity>
+            <Button title="Calculate Tax" onPress={calculateTax} />
           </View>
 
-          {tax && (
+          {stateTax !== null && (
             <Text style={isDarkMode ? styles.darkText : styles.text}>
-              Estimated Tax: ${tax.toFixed(2)}
+              Michigan State Tax: ${stateTax.toFixed(2)}
+            </Text>
+          )}
+          {federalTax !== null && (
+            <Text style={isDarkMode ? styles.darkText : styles.text}>
+              Federal Tax: ${federalTax.toFixed(2)}
+            </Text>
+          )}
+          {totalTax !== null && (
+            <Text style={isDarkMode ? styles.darkText : styles.text}>
+              Total Tax: ${totalTax.toFixed(2)}
             </Text>
           )}
           {error && (
@@ -65,18 +152,88 @@ export default function TaxIntegrationScreen() {
             </Text>
           )}
         </Card>
+
+        {/* Marital Status Modal */}
+        <Modal
+          transparent={true}
+          animationType="slide"
+          visible={maritalStatusModalVisible}
+          onRequestClose={() => setMaritalStatusModalVisible(false)}
+        >
+          <View style={styles.modalContainer}>
+            <View style={styles.modalContent}>
+              <Text style={styles.modalTitle}>Select Marital Status</Text>
+              <TouchableOpacity
+                style={styles.modalButton}
+                onPress={() => {
+                  setMaritalStatus('single');
+                  setMaritalStatusModalVisible(false);
+                }}
+              >
+                <Text style={styles.modalButtonText}>Single</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.modalButton}
+                onPress={() => {
+                  setMaritalStatus('married');
+                  setMaritalStatusModalVisible(false);
+                }}
+              >
+                <Text style={styles.modalButtonText}>Married</Text>
+              </TouchableOpacity>
+              <Button title="Close" onPress={() => setMaritalStatusModalVisible(false)} />
+            </View>
+          </View>
+        </Modal>
+
+        {/* Dependents Modal */}
+        <Modal
+          transparent={true}
+          animationType="slide"
+          visible={dependentsModalVisible}
+          onRequestClose={() => setDependentsModalVisible(false)}
+        >
+          <View style={styles.modalContainer}>
+            <View style={styles.modalContent}>
+              <Text style={styles.modalTitle}>How many dependents are you claiming?</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="Enter number of dependents"
+                keyboardType="numeric"
+                value={tempDependents}
+                onChangeText={(text) => setTempDependents(text)}
+              />
+              <Button
+                title="Save"
+                onPress={() => {
+                  const parsedDependents = parseInt(tempDependents);
+                  if (isNaN(parsedDependents) || parsedDependents < 0) {
+                    setError('Please enter a valid number of dependents.');
+                  } else {
+                    setDependents(parsedDependents);
+                    setError('');
+                    setDependentsModalVisible(false);
+                  }
+                }}
+              />
+              <Button title="Cancel" onPress={() => setDependentsModalVisible(false)} />
+            </View>
+          </View>
+        </Modal>
       </ScrollView>
     </View>
   );
 }
-
-
 const styles = StyleSheet.create({
-  // Light mode styles
   container: {
     flexGrow: 1,
     padding: 20,
     backgroundColor: '#f7f9fc',
+  },
+  darkContainer: {
+    flexGrow: 1,
+    padding: 20,
+    backgroundColor: '#121212',
   },
   title: {
     fontSize: 22,
@@ -84,69 +241,23 @@ const styles = StyleSheet.create({
     color: '#333',
     marginBottom: 20,
   },
-  card: {
-    marginBottom: 25,
-    backgroundColor: '#ffffff',
-    borderRadius: 15,
-    shadowColor: '#000',
-    shadowOpacity: 0.3,
-    shadowOffset: { width: 0, height: 8 },
-    shadowRadius: 15,
-    elevation: 10,
-    padding: 15,
-  },
-  icon: {
-    backgroundColor: '#E8F5E9',
-  },
-  cardTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#333',
-  },
-  sliderContainer: {
-    marginTop: 20,
-  },
-  slider: {
-    width: '100%',
-    height: 40,
-  },
-  text: {
-    fontSize: 16,
-    color: '#555',
-    marginBottom: 10,
-  },
-  // Dark mode styles
-  darkContainer: {
-    flexGrow: 1,
-    padding: 20,
-    backgroundColor: '#121212',
-  },
   darkTitle: {
     fontSize: 22,
     fontWeight: 'bold',
     color: '#FFFFFF',
     marginBottom: 20,
   },
+  card: {
+    marginBottom: 25,
+    backgroundColor: '#ffffff',
+    borderRadius: 15,
+    padding: 15,
+  },
   darkCard: {
     marginBottom: 25,
     backgroundColor: '#1E1E1E',
     borderRadius: 15,
-    shadowColor: '#000',
-    shadowOpacity: 0.3,
-    shadowOffset: { width: 0, height: 8 },
-    shadowRadius: 15,
-    elevation: 10,
     padding: 15,
-  },
-  darkCardTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#FFFFFF',
-  },
-  darkText: {
-    fontSize: 16,
-    color: '#AAAAAA',
-    marginBottom: 10,
   },
   inputContainer: {
     marginTop: 10,
@@ -167,6 +278,47 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     marginBottom: 10,
     color: '#FFFFFF',
+  },
+  button: {
+    backgroundColor: '#007BFF',
+    padding: 10,
+    borderRadius: 5,
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  buttonText: {
+    color: '#FFFFFF',
+    fontWeight: 'bold',
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  modalContent: {
+    width: 300,
+    padding: 20,
+    backgroundColor: '#FFF',
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 20,
+  },
+  modalButton: {
+    width: '100%',
+    padding: 10,
+    backgroundColor: '#007BFF',
+    borderRadius: 5,
+    marginBottom: 10,
+    alignItems: 'center',
+  },
+  modalButtonText: {
+    color: '#FFFFFF',
+    fontWeight: 'bold',
   },
   error: {
     color: 'red',
