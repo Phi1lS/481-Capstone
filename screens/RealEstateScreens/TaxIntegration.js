@@ -1,143 +1,241 @@
-import React from 'react';
-import { View, StyleSheet, ScrollView, Text, useColorScheme } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import React, { useState } from 'react';
+import {
+  View,
+  StyleSheet,
+  ScrollView,
+  Text,
+  TextInput,
+  Button,
+  Modal,
+  TouchableOpacity,
+  useColorScheme,
+} from 'react-native';
 import { Title, Card, Avatar } from 'react-native-paper';
-import { PieChart } from 'react-native-chart-kit';
-import Slider from '@react-native-community/slider';
 
 export default function TaxIntegrationScreen() {
   const scheme = useColorScheme();
   const isDarkMode = scheme === 'dark';
 
-  const data = [
-    { name: 'Stocks', population: 60, color: '#00796B', legendFontColor: '#00796B', legendFontSize: 15 },
-    { name: 'Bonds', population: 20, color: '#004D40', legendFontColor: '#004D40', legendFontSize: 15 },
-    { name: 'Real Estate', population: 10, color: '#B2DFDB', legendFontColor: '#B2DFDB', legendFontSize: 15 },
-    { name: 'Cash', population: 10, color: '#4CAF50', legendFontColor: '#4CAF50', legendFontSize: 15 },
-  ];
+  const [income, setIncome] = useState('');
+  const [maritalStatus, setMaritalStatus] = useState('single'); // Default to 'single'
+  const [dependents, setDependents] = useState(0);
+  const [stateTax, setStateTax] = useState(null);
+  const [federalTax, setFederalTax] = useState(null);
+  const [totalTax, setTotalTax] = useState(null);
+  const [error, setError] = useState('');
+  const [maritalStatusModalVisible, setMaritalStatusModalVisible] = useState(false);
+  const [dependentsModalVisible, setDependentsModalVisible] = useState(false);
+  const [tempDependents, setTempDependents] = useState(dependents);
+
+  const calculateTax = () => {
+    setError('');
+    setStateTax(null);
+    setFederalTax(null);
+    setTotalTax(null);
+
+    const incomeValue = parseFloat(income);
+    const dependentsValue = parseInt(dependents);
+
+    if (isNaN(incomeValue) || incomeValue <= 0 || isNaN(dependentsValue) || dependentsValue < 0) {
+      setError('Please enter valid income and dependents.');
+      return;
+    }
+
+    // Michigan state tax: Flat 4.25%
+    const stateTaxAmount = incomeValue * 0.0425;
+
+    // Federal tax brackets for 2024
+    const federalBrackets = maritalStatus === 'single'
+      ? [
+          { threshold: 10275, rate: 0.10 },
+          { threshold: 41775, rate: 0.12 },
+          { threshold: 89075, rate: 0.22 },
+          { threshold: 170050, rate: 0.24 },
+          { threshold: 215950, rate: 0.32 },
+          { threshold: 539900, rate: 0.35 },
+          { threshold: Infinity, rate: 0.37 },
+        ]
+      : [
+          { threshold: 20550, rate: 0.10 },
+          { threshold: 83550, rate: 0.12 },
+          { threshold: 178150, rate: 0.22 },
+          { threshold: 340100, rate: 0.24 },
+          { threshold: 431900, rate: 0.32 },
+          { threshold: 647850, rate: 0.35 },
+          { threshold: Infinity, rate: 0.37 },
+        ];
+
+    // Calculate federal tax after accounting for dependents ($2,000 deduction per dependent)
+    const dependentDeduction = dependentsValue * 2000;
+    const taxableIncome = Math.max(incomeValue - dependentDeduction, 0);
+
+    let federalTaxAmount = 0;
+    let remainingIncome = taxableIncome;
+
+    for (let i = 0; i < federalBrackets.length; i++) {
+      const { threshold, rate } = federalBrackets[i];
+      const previousThreshold = i > 0 ? federalBrackets[i - 1].threshold : 0;
+
+      if (remainingIncome > threshold - previousThreshold) {
+        federalTaxAmount += (threshold - previousThreshold) * rate;
+        remainingIncome -= threshold - previousThreshold;
+      } else {
+        federalTaxAmount += remainingIncome * rate;
+        break;
+      }
+    }
+
+    // Total tax
+    const totalTaxAmount = stateTaxAmount + federalTaxAmount;
+
+    // Update state
+    setStateTax(stateTaxAmount);
+    setFederalTax(federalTaxAmount);
+    setTotalTax(totalTaxAmount);
+  };
 
   return (
     <View>
       <ScrollView contentContainerStyle={isDarkMode ? styles.darkContainer : styles.container}>
-        <Title style={isDarkMode ? styles.darkTitle : styles.title}>Tax Integration</Title>
-        {/*<Card style={isDarkMode ? styles.darkCard : styles.card}>
-          <Card.Title
-            title="Current Allocation"
-            left={(props) => <Avatar.Icon {...props} icon="chart-pie" style={styles.icon} />}
-            titleStyle={isDarkMode ? styles.darkCardTitle : styles.cardTitle}
-          />
-          <PieChart
-            data={data}
-            width={300}
-            height={220}
-            chartConfig={{
-              backgroundColor: isDarkMode ? '#1E1E1E' : '#FFFFFF',
-              backgroundGradientFrom: isDarkMode ? '#1E1E1E' : '#FFFFFF',
-              backgroundGradientTo: isDarkMode ? '#1E1E1E' : '#FFFFFF',
-              color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
-              labelColor: isDarkMode ? '#FFFFFF' : '#333',
-            }}
-            accessor="population"
-            backgroundColor="transparent"
-            paddingLeft="15"
-            absolute
-          />
-        </Card>*/}
-        
+        <Title style={isDarkMode ? styles.darkTitle : styles.title}>Income Tax Calculator (Michigan)</Title>
+
         <Card style={isDarkMode ? styles.darkCard : styles.card}>
           <Card.Title
-            title="Income"
-            left={(props) => <Avatar.Icon {...props} icon="tune" style={styles.icon} />}
+            title="Enter Your Details"
+            left={(props) => <Avatar.Icon {...props} icon="account" style={styles.icon} />}
             titleStyle={isDarkMode ? styles.darkCardTitle : styles.cardTitle}
           />
-          <View style={styles.sliderContainer}>
-         <Text style={isDarkMode ? styles.darkText : styles.text}>$XXX,XXX</Text>
-            </View> 
-
-            </Card>
-            <Card style={isDarkMode ? styles.darkCard : styles.card}>
-          <Card.Title
-            title="Notifications"
-            left={(props) => <Avatar.Icon {...props} icon="tune" style={styles.icon} />}
-            titleStyle={isDarkMode ? styles.darkCardTitle : styles.cardTitle}
-          />
-          <View style={styles.sliderContainer}>
-         <Text style={isDarkMode ? styles.darkText : styles.text}>XXXXXX</Text>
-            </View> 
-            </Card>
-
-    
-          
-            <Card style={isDarkMode ? styles.darkCard : styles.card}>
-          <Card.Title
-            title="Expence"
-            left={(props) => <Avatar.Icon {...props} icon="tune" style={styles.icon} />}
-            titleStyle={isDarkMode ? styles.darkCardTitle : styles.cardTitle}
-          />
-          <View style={styles.sliderContainer}>
-         <Text style={isDarkMode ? styles.darkText : styles.text}>$XXX,XXX</Text>
-            </View> 
-            </Card>
-
-
-         
-            <Card style={isDarkMode ? styles.darkCard : styles.card}>
-          <Card.Title
-            title="Lease Tracking"
-            left={(props) => <Avatar.Icon {...props} icon="tune" style={styles.icon} />}
-            titleStyle={isDarkMode ? styles.darkCardTitle : styles.cardTitle}
-          />
-          <View style={styles.sliderContainer}>
-         <Text style={isDarkMode ? styles.darkText : styles.text}>XXXXXX</Text>
-            </View> 
-            </Card>
-
-          
-            <Card style={isDarkMode ? styles.darkCard : styles.card}>
-          <Card.Title
-            title="Connect to tax software"
-            left={(props) => <Avatar.Icon {...props} icon="tune" style={styles.icon} />}
-            titleStyle={isDarkMode ? styles.darkCardTitle : styles.cardTitle}
-          />
-          <View style={styles.sliderContainer}>
-         <Text style={isDarkMode ? styles.darkText : styles.text}>XXXXXX</Text>
-            </View> 
-            </Card>
-          {/*<View style={styles.sliderContainer}>
-            <Text style={isDarkMode ? styles.darkText : styles.text}>Stocks: 60%</Text>
-            <Slider
-              style={styles.slider}
-              minimumValue={0}
-              maximumValue={100}
-              value={60}
-              minimumTrackTintColor="#00796B"
-              maximumTrackTintColor="#000000"
+          <View style={styles.inputContainer}>
+            <TextInput
+              style={isDarkMode ? styles.darkInput : styles.input}
+              placeholder="Enter Total Income"
+              placeholderTextColor={isDarkMode ? '#AAAAAA' : '#555'}
+              keyboardType="numeric"
+              value={income}
+              onChangeText={(text) => setIncome(text)}
             />
+            {/* Marital Status Button */}
+            <TouchableOpacity style={isDarkMode ? styles.darkButton : styles.button} onPress={() => setMaritalStatusModalVisible(true)}>
+              <Text style={styles.buttonText}>Marital Status: {maritalStatus}</Text>
+            </TouchableOpacity>
+            {/* Dependents Button */}
+            <TouchableOpacity
+              style={isDarkMode ? styles.darkButton : styles.button}
+              onPress={() => {
+                setTempDependents(dependents.toString());
+                setDependentsModalVisible(true);
+              }}
+            >
+              <Text style={styles.buttonText}>Dependents: {dependents}</Text>
+            </TouchableOpacity>
+            <Button color={isDarkMode ? '#00796B' : '#4CAF50'} title="Calculate Tax" onPress={calculateTax} />
           </View>
-          <View style={styles.sliderContainer}>
-            <Text style={isDarkMode ? styles.darkText : styles.text}>Bonds: 20%</Text>
-            <Slider
-              style={styles.slider}
-              minimumValue={0}
-              maximumValue={100}
-              value={20}
-              minimumTrackTintColor="#004D40"
-              maximumTrackTintColor="#000000"
-            />
-          </View> */}
-          {/* Add more sliders for other asset classes */}
-        
+
+          {stateTax !== null && (
+            <Text style={isDarkMode ? styles.darkText : styles.text}>
+              Michigan State Tax: ${stateTax.toFixed(2)}
+            </Text>
+          )}
+          {federalTax !== null && (
+            <Text style={isDarkMode ? styles.darkText : styles.text}>
+              Federal Tax: ${federalTax.toFixed(2)}
+            </Text>
+          )}
+          {totalTax !== null && (
+            <Text style={isDarkMode ? styles.darkText : styles.text}>
+              Total Tax: ${totalTax.toFixed(2)}
+            </Text>
+          )}
+          {error && (
+            <Text style={isDarkMode ? [styles.darkText, styles.error] : [styles.text, styles.error]}>
+              {error}
+            </Text>
+          )}
+        </Card>
+
+        {/* Marital Status Modal */}
+        <Modal
+          transparent={true}
+          animationType="slide"
+          visible={maritalStatusModalVisible}
+          onRequestClose={() => setMaritalStatusModalVisible(false)}
+        >
+          <View style={styles.modalContainer}>
+          <View style={isDarkMode ? styles.darkModalContent : styles.modalContent}>
+              <Text style={isDarkMode ? styles.darkModalTitle : styles.modalTitle}>Select Marital Status</Text>
+              <TouchableOpacity
+                style={isDarkMode ? styles.darkModalButton : styles.modalButton}
+                onPress={() => {
+                  setMaritalStatus('single');
+                  setMaritalStatusModalVisible(false);
+                }}
+              >
+                <Text style={styles.modalButtonText}>Single</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={isDarkMode ? styles.darkModalButton : styles.modalButton}
+                onPress={() => {
+                  setMaritalStatus('married');
+                  setMaritalStatusModalVisible(false);
+                }}
+              >
+                <Text style={styles.modalButtonText}>Married</Text>
+              </TouchableOpacity>
+              <Button color={isDarkMode ? '#00796B' : '#4CAF50'} title="Close" onPress={() => setMaritalStatusModalVisible(false)} />
+            </View>
+          </View>
+        </Modal>
+
+        {/* Dependents Modal */}
+        <Modal
+          transparent={true}
+          animationType="slide"
+          visible={dependentsModalVisible}
+          onRequestClose={() => setDependentsModalVisible(false)}
+        >
+          <View style={styles.modalContainer}>
+            <View style={isDarkMode ? styles.darkModalContent : styles.modalContent}>
+              <Text style={isDarkMode ? styles.darkModalTitle : styles.modalTitle}>How many dependents are you claiming?</Text>
+              <TextInput
+                style={isDarkMode ? styles.darkInput : styles.input}
+                placeholder="Enter number of dependents"
+                placeholderTextColor={isDarkMode ? '#FFFFFF' : '#333'}
+                keyboardType="numeric"
+                value={tempDependents}
+                onChangeText={(text) => setTempDependents(text)}
+              />
+              <Button
+                title="Save"
+                color={isDarkMode ? '#00796B' : '#4CAF50'}
+                onPress={() => {
+                  const parsedDependents = parseInt(tempDependents);
+                  if (isNaN(parsedDependents) || parsedDependents < 0) {
+                    setError('Please enter a valid number of dependents.');
+                  } else {
+                    setDependents(parsedDependents);
+                    setError('');
+                    setDependentsModalVisible(false);
+                  }
+                }}
+              />
+              <Button color={isDarkMode ? '#00796B' : '#4CAF50'}  title="Cancel" onPress={() => setDependentsModalVisible(false)} />
+            </View>
+          </View>
+        </Modal>
       </ScrollView>
     </View>
   );
 }
-
 const styles = StyleSheet.create({
-  // Light mode styles
   container: {
     flexGrow: 1,
     padding: 20,
     backgroundColor: '#f7f9fc',
+  },
+  darkContainer: {
+    flexGrow: 1,
+    padding: 20,
+    backgroundColor: '#121212',
   },
   title: {
     fontSize: 22,
@@ -145,68 +243,130 @@ const styles = StyleSheet.create({
     color: '#333',
     marginBottom: 20,
   },
-  card: {
-    marginBottom: 25,
-    backgroundColor: '#ffffff',
-    borderRadius: 15,
-    shadowColor: '#000',
-    shadowOpacity: 0.3,
-    shadowOffset: { width: 0, height: 8 },
-    shadowRadius: 15,
-    elevation: 10,
-    padding: 15,
-  },
-  icon: {
-    backgroundColor: '#E8F5E9',
-  },
-  cardTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#333',
-  },
-  sliderContainer: {
-    marginTop: 20,
-  },
-  slider: {
-    width: '100%',
-    height: 40,
-  },
-  text: {
-    fontSize: 16,
-    color: '#555',
-    marginBottom: 10,
-  },
-  // Dark mode styles
-  darkContainer: {
-    flexGrow: 1,
-    padding: 20,
-    backgroundColor: '#121212',
-  },
   darkTitle: {
     fontSize: 22,
     fontWeight: 'bold',
     color: '#FFFFFF',
     marginBottom: 20,
   },
+  card: {
+    marginBottom: 25,
+    backgroundColor: '#ffffff',
+    borderRadius: 15,
+    padding: 15,
+  },
   darkCard: {
     marginBottom: 25,
     backgroundColor: '#1E1E1E',
     borderRadius: 15,
-    shadowColor: '#000',
-    shadowOpacity: 0.3,
-    shadowOffset: { width: 0, height: 8 },
-    shadowRadius: 15,
-    elevation: 10,
     padding: 15,
   },
-  darkCardTitle: {
-    fontSize: 18,
+  inputContainer: {
+    marginTop: 10,
+  },
+  input: {
+    height: 40,
+    borderColor: '#ccc',
+    borderWidth: 1,
+    borderRadius: 5,
+    paddingHorizontal: 10,
+    marginBottom: 10,
+    color: '#333',
+  },
+  darkInput: {
+    height: 40,
+    borderColor: '#555',
+    borderWidth: 1,
+    borderRadius: 5,
+    paddingHorizontal: 10,
+    marginBottom: 10,
+    color: '#FFFFFF',
+  },
+  button: {
+    backgroundColor: '#00796B',
+    padding: 10,
+    borderRadius: 5,
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  darkButton: {
+    backgroundColor: '#4CAF50',
+    padding: 10,
+    borderRadius: 5,
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  buttonText: {
+    color: '#FFFFFF',
+    fontWeight: 'bold',
+  },
+  darkButtonText:{
+    color: '#FFFFFF',
+    fontWeight: 'bold',
+  },
+  text:{
+    fontWeight: 'bold',
+    color: '#333',
+  },
+  darkText:{
     fontWeight: 'bold',
     color: '#FFFFFF',
   },
-  darkText: {
-    fontSize: 16,
-    color: '#AAAAAA',
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  modalContent: {
+    width: 300,
+    padding: 20,
+    backgroundColor: '#FFF',
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  darkModalContent: {
+    width: 300,
+    padding: 20,
+    backgroundColor: '#121212',
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 20,
+    color: '#333'
+  },
+  darkModalTitle:{
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 20,
+     color: '#FFFFFF'
+  },
+  modalButton: {
+    width: '100%',
+    padding: 10,
+    backgroundColor: '#00796B',
+    borderRadius: 5,
     marginBottom: 10,
+    alignItems: 'center',
+  },
+  darkModalButton:{
+    width: '100%',
+    padding: 10,
+    backgroundColor: '#4CAF50',
+    borderRadius: 5,
+    marginBottom: 10,
+    alignItems: 'center',
+  },
+  modalButtonText: {
+    color: '#FFFFFF',
+    fontWeight: 'bold',
+  },
+  error: {
+    color: 'red',
+    marginTop: 10,
   },
 });
+//4CAF50
