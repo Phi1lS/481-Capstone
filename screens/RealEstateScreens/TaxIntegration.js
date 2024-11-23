@@ -115,12 +115,12 @@ export default function TaxIntegrationScreen() {
               onChangeText={(text) => setIncome(text)}
             />
             {/* Marital Status Button */}
-            <TouchableOpacity style={styles.button} onPress={() => setMaritalStatusModalVisible(true)}>
+            <TouchableOpacity style={isDarkMode ? styles.darkButton : styles.button} onPress={() => setMaritalStatusModalVisible(true)}>
               <Text style={styles.buttonText}>Marital Status: {maritalStatus}</Text>
             </TouchableOpacity>
             {/* Dependents Button */}
             <TouchableOpacity
-              style={styles.button}
+              style={isDarkMode ? styles.darkButton : styles.button}
               onPress={() => {
                 setTempDependents(dependents.toString());
                 setDependentsModalVisible(true);
@@ -128,7 +128,7 @@ export default function TaxIntegrationScreen() {
             >
               <Text style={styles.buttonText}>Dependents: {dependents}</Text>
             </TouchableOpacity>
-            <Button title="Calculate Tax" onPress={calculateTax} />
+            <Button color={isDarkMode ? '#00796B' : '#4CAF50'} title="Calculate Tax" onPress={calculateTax} />
           </View>
 
           {stateTax !== null && (
@@ -161,10 +161,10 @@ export default function TaxIntegrationScreen() {
           onRequestClose={() => setMaritalStatusModalVisible(false)}
         >
           <View style={styles.modalContainer}>
-            <View style={styles.modalContent}>
-              <Text style={styles.modalTitle}>Select Marital Status</Text>
+          <View style={isDarkMode ? styles.darkModalContent : styles.modalContent}>
+              <Text style={isDarkMode ? styles.darkModalTitle : styles.modalTitle}>Select Marital Status</Text>
               <TouchableOpacity
-                style={styles.modalButton}
+                style={isDarkMode ? styles.darkModalButton : styles.modalButton}
                 onPress={() => {
                   setMaritalStatus('single');
                   setMaritalStatusModalVisible(false);
@@ -173,7 +173,7 @@ export default function TaxIntegrationScreen() {
                 <Text style={styles.modalButtonText}>Single</Text>
               </TouchableOpacity>
               <TouchableOpacity
-                style={styles.modalButton}
+                style={isDarkMode ? styles.darkModalButton : styles.modalButton}
                 onPress={() => {
                   setMaritalStatus('married');
                   setMaritalStatusModalVisible(false);
@@ -181,7 +181,7 @@ export default function TaxIntegrationScreen() {
               >
                 <Text style={styles.modalButtonText}>Married</Text>
               </TouchableOpacity>
-              <Button title="Close" onPress={() => setMaritalStatusModalVisible(false)} />
+              <Button color={isDarkMode ? '#00796B' : '#4CAF50'} title="Close" onPress={() => setMaritalStatusModalVisible(false)} />
             </View>
           </View>
         </Modal>
@@ -194,17 +194,19 @@ export default function TaxIntegrationScreen() {
           onRequestClose={() => setDependentsModalVisible(false)}
         >
           <View style={styles.modalContainer}>
-            <View style={styles.modalContent}>
-              <Text style={styles.modalTitle}>How many dependents are you claiming?</Text>
+            <View style={isDarkMode ? styles.darkModalContent : styles.modalContent}>
+              <Text style={isDarkMode ? styles.darkModalTitle : styles.modalTitle}>How many dependents are you claiming?</Text>
               <TextInput
-                style={styles.input}
+                style={isDarkMode ? styles.darkInput : styles.input}
                 placeholder="Enter number of dependents"
+                placeholderTextColor={isDarkMode ? '#FFFFFF' : '#333'}
                 keyboardType="numeric"
                 value={tempDependents}
                 onChangeText={(text) => setTempDependents(text)}
               />
               <Button
                 title="Save"
+                color={isDarkMode ? '#00796B' : '#4CAF50'}
                 onPress={() => {
                   const parsedDependents = parseInt(tempDependents);
                   if (isNaN(parsedDependents) || parsedDependents < 0) {
@@ -216,7 +218,7 @@ export default function TaxIntegrationScreen() {
                   }
                 }}
               />
-              <Button title="Cancel" onPress={() => setDependentsModalVisible(false)} />
+              <Button color={isDarkMode ? '#00796B' : '#4CAF50'}  title="Cancel" onPress={() => setDependentsModalVisible(false)} />
             </View>
           </View>
         </Modal>
@@ -269,6 +271,7 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     paddingHorizontal: 10,
     marginBottom: 10,
+    color: '#333',
   },
   darkInput: {
     height: 40,
@@ -280,7 +283,14 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
   },
   button: {
-    backgroundColor: '#007BFF',
+    backgroundColor: '#00796B',
+    padding: 10,
+    borderRadius: 5,
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  darkButton: {
+    backgroundColor: '#4CAF50',
     padding: 10,
     borderRadius: 5,
     alignItems: 'center',
@@ -289,6 +299,18 @@ const styles = StyleSheet.create({
   buttonText: {
     color: '#FFFFFF',
     fontWeight: 'bold',
+  },
+  darkButtonText:{
+    color: '#FFFFFF',
+    fontWeight: 'bold',
+  },
+  text:{
+    fontWeight: 'bold',
+    color: '#333',
+  },
+  darkText:{
+    fontWeight: 'bold',
+    color: '#FFFFFF',
   },
   modalContainer: {
     flex: 1,
@@ -303,15 +325,37 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     alignItems: 'center',
   },
+  darkModalContent: {
+    width: 300,
+    padding: 20,
+    backgroundColor: '#121212',
+    borderRadius: 10,
+    alignItems: 'center',
+  },
   modalTitle: {
     fontSize: 18,
     fontWeight: 'bold',
     marginBottom: 20,
+    color: '#333'
+  },
+  darkModalTitle:{
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 20,
+     color: '#FFFFFF'
   },
   modalButton: {
     width: '100%',
     padding: 10,
-    backgroundColor: '#007BFF',
+    backgroundColor: '#00796B',
+    borderRadius: 5,
+    marginBottom: 10,
+    alignItems: 'center',
+  },
+  darkModalButton:{
+    width: '100%',
+    padding: 10,
+    backgroundColor: '#4CAF50',
     borderRadius: 5,
     marginBottom: 10,
     alignItems: 'center',
@@ -325,3 +369,4 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
 });
+//4CAF50
