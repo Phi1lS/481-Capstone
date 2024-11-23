@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
+import { UserContext } from '../../UserContext';
 import {
   View,
   StyleSheet,
@@ -11,12 +12,30 @@ import {
   useColorScheme,
 } from 'react-native';
 import { Title, Card, Avatar } from 'react-native-paper';
+import axios from 'axios';
+
+const BASE_URL = "https://api.taxapi.net/income" //base url for the tax API
 
 export default function TaxIntegrationScreen() {
   const scheme = useColorScheme();
   const isDarkMode = scheme === 'dark';
 
-  const [income, setIncome] = useState('');
+  const { userProfile, setUserProfile } = useContext(UserContext);
+
+  //function for inital updating values from database
+  useEffect(() => {
+    const calculateIncome = () => {
+      const totalIncome = userProfile?.incomes.reduce((total, income) => total + income.incomePerMonth, 0);
+      setIncome(totalIncome || 0);
+    };
+    if (userProfile.incomes.length > 0) {
+      calculateIncome();
+    }
+    
+
+  }, [userProfile]);
+
+  const [income, setIncome] = useState('0');
   const [maritalStatus, setMaritalStatus] = useState('single'); // Default to 'single'
   const [dependents, setDependents] = useState(0);
   const [stateTax, setStateTax] = useState(null);
@@ -27,6 +46,23 @@ export default function TaxIntegrationScreen() {
   const [dependentsModalVisible, setDependentsModalVisible] = useState(false);
   const [tempDependents, setTempDependents] = useState(dependents);
 
+  const calculateTax = async () => {
+    try {
+      const url = `${BASE_URL}/${maritalStatus}/${income}/`;
+      const response = await axios.get(url);
+  
+      const dependentsValue = parseInt(dependents);
+      const dependentDeduction = dependentsValue * 2000;
+
+      setTotalTax(response.data - dependentDeduction);
+      return response.data; // Returns the estimated tax data
+      
+    } catch (error) {
+      console.error("Error fetching tax data:", error.message);
+      throw error;
+    }
+  }
+  /*
   const calculateTax = () => {
     setError('');
     setStateTax(null);
@@ -93,7 +129,7 @@ export default function TaxIntegrationScreen() {
     setFederalTax(federalTaxAmount);
     setTotalTax(totalTaxAmount);
   };
-
+*/
   return (
     <View>
       <ScrollView contentContainerStyle={isDarkMode ? styles.darkContainer : styles.container}>
@@ -106,6 +142,7 @@ export default function TaxIntegrationScreen() {
             titleStyle={isDarkMode ? styles.darkCardTitle : styles.cardTitle}
           />
           <View style={styles.inputContainer}>
+            {/* Income Input
             <TextInput
               style={isDarkMode ? styles.darkInput : styles.input}
               placeholder="Enter Total Income"
@@ -114,6 +151,7 @@ export default function TaxIntegrationScreen() {
               value={income}
               onChangeText={(text) => setIncome(text)}
             />
+             */}
             {/* Marital Status Button */}
             <TouchableOpacity style={isDarkMode ? styles.darkButton : styles.button} onPress={() => setMaritalStatusModalVisible(true)}>
               <Text style={styles.buttonText}>Marital Status: {maritalStatus}</Text>
@@ -128,6 +166,7 @@ export default function TaxIntegrationScreen() {
             >
               <Text style={styles.buttonText}>Dependents: {dependents}</Text>
             </TouchableOpacity>
+            
             <Button color={isDarkMode ? '#00796B' : '#4CAF50'} title="Calculate Tax" onPress={calculateTax} />
           </View>
 
@@ -180,6 +219,15 @@ export default function TaxIntegrationScreen() {
                 }}
               >
                 <Text style={styles.modalButtonText}>Married</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={isDarkMode ? styles.darkModalButton : styles.modalButton}
+                onPress={() => {
+                  setMaritalStatus('hoh');
+                  setMaritalStatusModalVisible(false);
+                }}
+              >
+                <Text style={styles.modalButtonText}>Head of HouseHold</Text>
               </TouchableOpacity>
               <Button color={isDarkMode ? '#00796B' : '#4CAF50'} title="Close" onPress={() => setMaritalStatusModalVisible(false)} />
             </View>
