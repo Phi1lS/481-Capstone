@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
+import { UserContext } from '../../UserContext';
 import {
   View,
   StyleSheet,
@@ -16,7 +17,25 @@ export default function TaxIntegrationScreen() {
   const scheme = useColorScheme();
   const isDarkMode = scheme === 'dark';
 
-  const [income, setIncome] = useState('');
+
+ 
+
+  const { userProfile, setUserProfile } = useContext(UserContext);
+
+  //function for inital updating values from database
+  useEffect(() => {
+    const calculateIncome = () => {
+      const totalIncome = userProfile?.incomes.reduce((total, income) => total + income.incomePerMonth, 0);
+      setIncome(totalIncome || 0);
+    };
+    if (userProfile.incomes.length > 0) {
+      calculateIncome();
+    }
+    
+
+  }, [userProfile]);
+
+  const [income, setIncome] = useState('0');
   const [maritalStatus, setMaritalStatus] = useState('single'); // Default to 'single'
   const [dependents, setDependents] = useState(0);
   const [stateTax, setStateTax] = useState(null);
@@ -106,6 +125,7 @@ export default function TaxIntegrationScreen() {
             titleStyle={isDarkMode ? styles.darkCardTitle : styles.cardTitle}
           />
           <View style={styles.inputContainer}>
+            {/* Income Input
             <TextInput
               style={isDarkMode ? styles.darkInput : styles.input}
               placeholder="Enter Total Income"
@@ -114,6 +134,7 @@ export default function TaxIntegrationScreen() {
               value={income}
               onChangeText={(text) => setIncome(text)}
             />
+             */}
             {/* Marital Status Button */}
             <TouchableOpacity style={isDarkMode ? styles.darkButton : styles.button} onPress={() => setMaritalStatusModalVisible(true)}>
               <Text style={styles.buttonText}>Marital Status: {maritalStatus}</Text>
