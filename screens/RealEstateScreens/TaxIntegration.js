@@ -33,7 +33,7 @@ export default function TaxIntegrationScreen() {
       const totalIncome = userProfile?.incomes.reduce((total, income) => total + income.incomePerMonth, 0);
       setIncome(totalIncome || 0);
     };
-    if (userProfile.incomes.length > 0) {
+    if (userProfile?.incomes?.length > 0) {
       calculateIncome();
     }
   }, [userProfile]);
@@ -43,18 +43,18 @@ export default function TaxIntegrationScreen() {
     try {
       const incomeValue = parseFloat(income);
       const dependentsValue = parseInt(dependents);
-  
+
       if (isNaN(incomeValue) || incomeValue <= 0 || isNaN(dependentsValue) || dependentsValue < 0) {
         setError('Please enter valid income and dependents.');
         return;
       }
-  
+
       const deductionPerDependent = 2000;
       const adjustedIncome = Math.max(incomeValue - dependentsValue * deductionPerDependent, 0);
-  
+
       const url = `${BASE_URL}/${maritalStatus}/${adjustedIncome}`;
       const response = await axios.get(url);
-  
+
       setTotalTax(response.data);
     } catch (error) {
       console.error("Error fetching tax data:", error.message);
@@ -73,7 +73,6 @@ export default function TaxIntegrationScreen() {
           titleStyle={isDarkMode ? styles.darkCardTitle : styles.cardTitle}
         />
         <View style={styles.inputContainer}>
-          {/* Marital Status */}
           <TouchableOpacity
             style={isDarkMode ? styles.darkButton : styles.button}
             onPress={() => setMaritalStatusModalVisible(true)}
@@ -83,7 +82,6 @@ export default function TaxIntegrationScreen() {
             </Text>
           </TouchableOpacity>
 
-          {/* Dependents */}
           <TouchableOpacity
             style={isDarkMode ? styles.darkButton : styles.button}
             onPress={() => {
@@ -94,7 +92,6 @@ export default function TaxIntegrationScreen() {
             <Text style={styles.buttonText}>Dependents: {dependents}</Text>
           </TouchableOpacity>
 
-          {/* Calculate Tax Button */}
           <Button
             mode="contained"
             onPress={calculateTax}
@@ -105,7 +102,6 @@ export default function TaxIntegrationScreen() {
           </Button>
         </View>
 
-        {/* Total Tax */}
         {totalTax !== null && (
           <>
             <Text style={isDarkMode ? styles.darkResult : styles.result}>
