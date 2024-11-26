@@ -162,7 +162,7 @@ export default function TenantManagement({ navigation }) {
         icon="plus"
         color="rgba(255, 255, 255, 0.9)"
         style={isDarkMode ? styles.darkFab : styles.fab}
-        onPress={() => navigation.navigate("NewExpense")}
+        onPress={() => navigation.navigate("NewTenant")}
       />
     </View>
   );
