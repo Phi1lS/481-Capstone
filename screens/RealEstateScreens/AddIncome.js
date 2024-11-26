@@ -194,13 +194,14 @@ export default function AddIncomeScreen({ navigation }) {
             <Text style={styles.buttonText}>Add income</Text>
           </TouchableOpacity>
           
-          {/* Add Test Income Button */}
+          {/* Add Test Income Button 
           <TouchableOpacity 
             style={[styles.button, { marginTop: 20, backgroundColor: '#800000' }]} 
             onPress={handleAddTestIncome}
           >
             <Text style={styles.buttonText}>Add test income</Text>
-          </TouchableOpacity>
+          </TouchableOpacity> 
+          */}
         </View>
       ) : (
         <View style={isDarkMode ? styles.darkPlaceholder : styles.placeholder}>

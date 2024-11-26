@@ -28,19 +28,18 @@ InvestAlign is a financial management app designed to help users manage their in
 ### Installation
 
 1. Clone the repository:
-   ```bash
-   git clone https://github.com/yourusername/investalign.git
+   `git clone https://github.com/Phi1lS/481-Capstone`
 
 2. Navigate to the project directory:
-    cd investalign
+    `cd investalign`
 
 3. Install dependencies:
-    npm install
+    `npm install`
 
 4. Setup Firebase and update the configuration in firebaseConfig.js
 
 5. Start the app:
-    npm start
+    `npm start`
 
 ### Usage
 	•	Create an account or log in to track your finances.

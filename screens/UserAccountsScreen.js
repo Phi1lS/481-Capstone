@@ -110,7 +110,9 @@ export default function UserAccountsScreen() {
         {/* Cards for each account management feature */}
         {renderCard('Profile', 'View and edit your profile information', 'account-outline', 'Profile')}
         {renderCard('Security', 'Manage your security settings', 'lock-outline', 'Security')}
-        {renderCard('Notifications', 'Configure your notifications', 'bell-outline', 'Notifications')}
+        {/*
+          {renderCard('Notifications', 'Configure your notifications', 'bell-outline', 'Notifications')}
+        */}
         {renderCard('Preferences', 'Customize your app preferences', 'cog-outline', 'Preferences')}
       </ScrollView>
     </View>

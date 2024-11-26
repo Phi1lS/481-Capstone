@@ -19,7 +19,7 @@ export default function ProfileScreen() {
   const [isContactEditing, setIsContactEditing] = useState(false);
   const [editedPhone, setEditedPhone] = useState(userProfile.phone || '');
   const [editedAddress, setEditedAddress] = useState(userProfile.address || '');
-  const [accountType, setAccountType] = useState(userProfile.accountType || 'Checking');
+  const [accountType, setAccountType] = useState(userProfile.accountType || 'Personal');
   const [isAccountEditing, setIsAccountEditing] = useState(false);
 
   const user = auth.currentUser;
@@ -40,7 +40,7 @@ export default function ProfileScreen() {
             email: userData.email || '',
             phone: userData.phone || '',
             address: userData.address || '',
-            accountType: userData.accountType || 'Checking',
+            accountType: userData.accountType || 'Personal',
             avatarPath: userData.avatarPath || null,
             isAdmin: userData.isAdmin || false, // Fetch and set isAdmin
           }));          
@@ -347,26 +347,6 @@ export default function ProfileScreen() {
         </Card>
 
         <Card style={isDarkMode ? styles.darkCard : styles.card}>
-        <View style={styles.cardHeader}>
-          <Card.Title title="External Accounts" titleStyle={isDarkMode ? styles.darkCardTitle : styles.cardTitle} />
-          <View style={styles.editContainer}>
-            <TouchableOpacity onPress={() => navigation.navigate('AddExternalAccountsScreen')}>
-              <Text style={isDarkMode ? styles.darkEdit : styles.edit}>Add</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-
-        <View style={styles.divider} />
-
-        <View style={styles.detailsContainer}>
-          <Text style={isDarkMode ? styles.darkText : styles.text}>
-            As an InvestAlign user, you can transfer funds between accounts.
-          </Text>
-        </View>
-      </Card>
-
-
-        <Card style={isDarkMode ? styles.darkCard : styles.card}>
           <View style={styles.cardHeader}>
             <Card.Title title="Account Type" titleStyle={isDarkMode ? styles.darkCardTitle : styles.cardTitle} />
             <View style={styles.editContainer}>
@@ -399,12 +379,12 @@ export default function ProfileScreen() {
                   Business
                 </Text>
               </TouchableOpacity>
-              <TouchableOpacity onPress={() => setAccountType('Checking')}>
-                <Text style={accountType === 'Checking' 
+              <TouchableOpacity onPress={() => setAccountType('Personal')}>
+                <Text style={accountType === 'Personal' 
                   ? (isDarkMode ? styles.darkSelected : styles.selected) 
                   : (isDarkMode ? styles.darkText : styles.text)}
                 >
-                  Checking
+                  Personal
                 </Text>
               </TouchableOpacity>
             </View>
