@@ -140,7 +140,7 @@ export default function NewTenant({ navigation }) {
           </View>
 
           <TouchableOpacity style={isDarkMode ? styles.darkButton : styles.button} onPress={handleAddExpense}>
-            <Text style={styles.buttonText}>Add Expense</Text>
+            <Text style={styles.buttonText}>Add Tenant</Text>
           </TouchableOpacity>
         </View>
       ) : (

@@ -219,6 +219,10 @@ const styles = StyleSheet.create({
     right: 15,
     bottom: 125,
   },
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#F5F5F5',
+  },
 
   // Dark mode styles
   darkContainer: {
@@ -279,5 +283,8 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginBottom: 10,
   },
-
+  darkSafeArea: {
+    flex: 1,
+    backgroundColor: '#121212',
+  },
 });
