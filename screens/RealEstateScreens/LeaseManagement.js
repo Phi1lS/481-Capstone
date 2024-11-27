@@ -2,8 +2,8 @@ import React, { useState, useEffect, useContext } from 'react';
 import { View, StyleSheet, ScrollView, Text, useColorScheme, TouchableOpacity } from 'react-native';
 import { Title, Card, Avatar, Button } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
-import { Timestamp, doc, deleteDoc, collection, getDocs, getDoc, updateDoc } from 'firebase/firestore';
-import { getMonth, subMonths, getYear, format } from 'date-fns';
+import { Timestamp, doc, deleteDoc, collection, getDocs, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
+import { getMonth, subMonths, getYear, format, add, compareAsc } from 'date-fns';
 import { UserContext } from '../../UserContext';
 import { db, auth } from '../../firebaseConfig'
 
@@ -61,23 +61,21 @@ export default function LeaseManagementScreen() {
       const previousMonth = getMonth(previousMonthDate);
       const year = getYear(currentDate);
   
-      const monthlyTenants = [];
+      const nearExpiringTenants = [];
       const allTenants = [];
   
       userProfile?.tenants?.forEach((tenant) => {
         if (tenant?.timestamp && tenant.timestamp instanceof Timestamp) {
-          const tenantDate = tenant.timestamp.toDate();
-          const tenantMonth = getMonth(tenantDate);
-          const tenantYear = getYear(tenantDate);
-  
-          if (tenantMonth === currentMonth && tenantYear === year) {
-            monthlyTenants.push(tenant);
+          const leaseStartDate = tenant.leaseStartDate.toDate();
+          const nineMonthsFromLeaseStart = add(leaseStartDate, { months: 9 });
+          if (compareAsc(nineMonthsFromLeaseStart, currentDate) <= 0) {
+            nearExpiringTenants.push(tenant);
           } 
           allTenants.push(tenant);
         }
       });
     
-      return { monthlyTenants, allTenants };
+      return { monthlyTenants: nearExpiringTenants, allTenants };
     };
   
     const { monthlyTenants, allTenants } = processTenantData();
