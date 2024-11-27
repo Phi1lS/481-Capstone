@@ -2,10 +2,10 @@ import React, { useState, useEffect, useContext } from "react";
 import { Alert, View, StyleSheet, ScrollView, Text, useColorScheme, TouchableOpacity } from "react-native";
 import { getMonth, getYear, subMonths } from 'date-fns';
 import { UserContext } from '../../UserContext';
-import { Title, Card, Avatar, FAB } from "react-native-paper";
-import { PieChart } from "react-native-chart-kit";
+import { Title, Card, Avatar, FAB, Button } from "react-native-paper";
 import { Timestamp, doc, deleteDoc, collection, getDocs } from 'firebase/firestore';
 import { db, auth } from '../../firebaseConfig';
+import { format } from 'date-fns';
 
 export default function TenantManagement({ navigation }) {
   const scheme = useColorScheme();
@@ -17,7 +17,7 @@ export default function TenantManagement({ navigation }) {
 
 
 
-  const handleDeleteExpense = async (tenantId) => {
+  const handleDeleteTenant = async (tenantId) => {
     Alert.alert(
       "Confirm Deletion",
       "Are you sure you want to delete this tenant?",
@@ -33,10 +33,10 @@ export default function TenantManagement({ navigation }) {
               await deleteDoc(doc(db, 'tenants', tenantId));
               setUserProfile((prevProfile) => ({
                 ...prevProfile,
-                expenses: prevProfile.expenses.filter((tenant) => tenant.id !== tenantId),
+                tenants: prevProfile.tenants.filter((tenant) => tenant.id !== tenantId),
               }));
               setTenants((prev) => prev.filter((tenant) => tenant.id !== tenantId));
-              console.log('Expense deleted successfully');
+              console.log('Tenant deleted successfully');
             } catch (error) {
               console.error('Error deleting tenant:', error);
             }
@@ -73,51 +73,36 @@ export default function TenantManagement({ navigation }) {
     }
   }, [userProfile, setUserProfile]);
 
-  /*useEffect(() => {
-    /*const processTenantData = () => {
+  useEffect(() => {
+    const processTenantData = () => {
       const currentDate = new Date();
       const currentMonth = getMonth(currentDate);
       const previousMonthDate = subMonths(currentDate, 1);
       const previousMonth = getMonth(previousMonthDate);
       const year = getYear(currentDate);
 
-      let currentExpenseTotal = 0;
-      let previousExpenseTotal = 0;
-      const monthlyExpenses = [];
-      const allExpenses = [];
+      const allTenants = [];
 
-      userProfile?.expenses?.forEach((expense) => {
-        if (expense?.timestamp && expense.timestamp instanceof Timestamp) {
-          const expenseDate = expense.timestamp.toDate();
-          const expenseMonth = getMonth(expenseDate);
-          const expenseYear = getYear(expenseDate);
-
-          if (expenseMonth === currentMonth && expenseYear === year) {
-            currentExpenseTotal += expense.expenseAmount;
-            monthlyExpenses.push(expense);
-          } else if (expenseMonth === previousMonth && expenseYear === year) {
-            previousExpenseTotal += expense.expenseAmount;
-          }
-          allExpenses.push(expense);
+      userProfile?.tenants?.forEach((tenant) => {
+        if (tenant?.timestamp && tenant.timestamp instanceof Timestamp) {
+        
+          allTenants.push(tenant);
         }
       });
 
-      //setCurrentMonthExpenses(currentExpenseTotal);
-      //setPreviousMonthExpenses(previousExpenseTotal);
-
-      return { monthlyExpenses, allExpenses };
+      return { allTenants };
     };
 
-    const { monthlyExpenses, allExpenses } = processTenantData();
+    const { allTenants } = processTenantData();
 
     setTimeout(() => {
       setTenants(
-        (showAll ? allExpenses : monthlyExpenses).sort(
+        allTenants.sort(
           (a, b) => (b?.timestamp?.toDate() || 0) - (a?.timestamp?.toDate() || 0)
         )
       );
     }, 100);
-  }, [userProfile, showAll]);*/
+  }, [userProfile, showAll]);
 
 
   const getTextStyle = (amount) => ({
@@ -134,28 +119,46 @@ export default function TenantManagement({ navigation }) {
         </View>
 
         {tenants.map((tenant, index) => (
-          <Card key={index} style={isDarkMode ? styles.darkCard : styles.card}>
+          <>
+          {/*<Card key={index} style={isDarkMode ? styles.darkCard : styles.card}>
             <Card.Title
               title={tenant.name}
               left={(props) => <Avatar.Icon {...props} icon="cash" style={styles.icon} />}
-              titleStyle={isDarkMode ? styles.darkCardTitle : styles.cardTitle}
-            />
+              titleStyle={isDarkMode ? styles.darkCardTitle : styles.cardTitle} />
             <View style={styles.sliderContainer}>
               <Text style={isDarkMode ? styles.darkText : styles.text}>
-                Lease start date: {tenant.leaseStartDate}
+                Lease start date: {tenant.leaseStartDate === undefined ? "N/A" : format(tenant.leaseStartDate, "MM/dd/yyyy")}
               </Text>
               <Text style={isDarkMode ? styles.darkText : styles.text}>
-                Lease end date: {tenant.leaseEndDate}
+                Lease end date: {tenant.leaseStartDate === undefined ? "N/A" : format(tenant.leaseStartDate, "MM/dd/yyyy")}
               </Text>
               <Text style={isDarkMode ? styles.darkText : styles.text}>
                 Property: {tenant.apartmentNumber} {tenant.building}
               </Text>
-              
+
             </View>
-            <TouchableOpacity onPress={() => handleDeleteExpense(tenant.id)}>
+            <TouchableOpacity onPress={() => handleDeleteTenant(tenant.id)}>
               <Text style={isDarkMode ? styles.deleteText : styles.deleteText}>Delete</Text>
             </TouchableOpacity>
-          </Card>
+          </Card>*/}
+          <Card key={index} style={isDarkMode ? styles.darkCard : styles.card}>
+          <Card.Title
+            title={tenant.name}
+            left={(props) => <Avatar.Icon {...props} icon="account" style={styles.icon} />}
+            titleStyle={isDarkMode ? styles.darkCardTitle : styles.cardTitle}
+          />
+          <View style={styles.sliderContainer}>
+            <Text style={isDarkMode ? styles.darkText : styles.text}>Lease start date: {tenant.leaseStartDate ? format(tenant.leaseStartDate.toDate(), "MM/dd/yyyy") : "N/A"}</Text>
+            <Text style={isDarkMode ? styles.darkText : styles.text}>Lease end date: {tenant.leaseEndDate ? format(tenant.leaseEndDate.toDate(), "MM/dd/yyyy") : "N/A"}</Text>
+          </View>
+          <Card.Actions>
+            <Button textColor={isDarkMode ? styles.darkText.color : styles.text.color}>Renew</Button>
+            <Button mode="outlined" textColor={isDarkMode ? styles.darkText.color : styles.text.color}>
+              Terminate Lease
+            </Button>
+          </Card.Actions>
+        </Card>
+        </>
         ))}
       </ScrollView>
       <FAB
