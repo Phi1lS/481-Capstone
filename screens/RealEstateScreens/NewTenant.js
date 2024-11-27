@@ -5,6 +5,7 @@ import { Icon } from 'react-native-paper';
 import { addDoc, getDoc, collection, serverTimestamp } from 'firebase/firestore';
 import { auth, db } from '../../firebaseConfig';
 import { UserContext } from '../../UserContext';
+import { parse } from 'date-fns';
 
 export default function NewTenant({ navigation }) {
   const [selectedTab, setSelectedTab] = useState('addYourOwn');
@@ -25,7 +26,13 @@ export default function NewTenant({ navigation }) {
     return parseFloat(value.toString().replace(/,/g, '')).toLocaleString('en-US');
   };
 
-  const handleAddExpense = async () => {
+  // Parse date
+  const parseDate = (stringValue) => {
+    if (!stringValue) return 0;
+    return parse(stringValue, "MM/dd/yyyy", new Date());
+  };
+
+  const handleAddTenant = async () => {
     try {
       const user = auth.currentUser;
   
@@ -35,38 +42,38 @@ export default function NewTenant({ navigation }) {
       }
   
       // Validate fields
-      if (!tenantName || !category || !expenseAmount) {
+      if (!tenantName || !leaseStartDate || !leaseEndDate || !building || !apartmentNumber || !rentAmount) {
         Alert.alert('Error', 'Please fill out all fields before submitting.');
         return;
       }
   
-      // Add expense to Firestore with a timestamp
+      // Add tenant to Firestore with a timestamp
       const newTenant = {
         userId: user.uid,
         name: tenantName,
-        apartmentNumber: category,
-        expenseAmount: parseFloat(expenseAmount.replace(/,/g, '')), // Remove commas
+        leaseStartDate: parseDate(leaseStartDate), 
+        leaseEndDate: parseDate(leaseEndDate), 
+        building: building,
+        apartmentNumber: apartmentNumber,
+        rentAmount: parseFloat(rentAmount.replace(/,/g, '')), // Remove commas
         timestamp: serverTimestamp(),
       };
   
       const docRef = await addDoc(collection(db, 'tenants'), newTenant);
-      Alert.alert('Expense added successfully.');
+      Alert.alert('Tenant added successfully.');
   
       // Use sendNotification from UserContext
       await sendNotification(
         user.uid,
-        `Expense "${tenantName}" was added successfully.`,
-        'expense'
+        `Tenant "${tenantName}" was added successfully.`,
+        'tenant'
       );
   
-      // Reset the form inputs
-      setTenantName('');
-      setCategory(null);
-      setExpenseAmount('');
+      // Go back
       navigation.goBack();
     } catch (error) {
-      console.error('Error adding expense:', error);
-      Alert.alert('Error', 'Failed to add expense. Please try again.');
+      console.error('Error adding tenant:', error);
+      Alert.alert('Error', 'Failed to add tenant. Please try again.');
     }
   };
 
@@ -143,7 +150,7 @@ export default function NewTenant({ navigation }) {
             />
           </View>
 
-          <TouchableOpacity style={isDarkMode ? styles.darkButton : styles.button} onPress={handleAddExpense}>
+          <TouchableOpacity style={isDarkMode ? styles.darkButton : styles.button} onPress={handleAddTenant}>
             <Text style={styles.buttonText}>Add Tenant</Text>
           </TouchableOpacity>
         </View>
