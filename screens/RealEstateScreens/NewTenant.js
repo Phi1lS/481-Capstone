@@ -9,11 +9,15 @@ import { UserContext } from '../../UserContext';
 export default function NewTenant({ navigation }) {
   const [selectedTab, setSelectedTab] = useState('addYourOwn');
   const [tenantName, setTenantName] = useState("");
-  const [category, setCategory] = useState(null);
-  const [expenseAmount, setExpenseAmount] = useState("");
+  const [leaseStartDate, setLeaseStartDate] = useState("");
+  const [leaseEndDate, setLeaseEndDate] = useState("");
+  const [building, setBuilding] = useState("");
+  const [apartmentNumber, setApartmentNumber] = useState("");
+  const [rentAmount, setRentAmount] = useState("");
   const { userProfile, setUserProfile, sendNotification } = useContext(UserContext); 
   const scheme = useColorScheme();
   const isDarkMode = scheme === 'dark';
+
 
   // Format number with commas
   const formatNumberWithCommas = (value) => {
@@ -87,10 +91,10 @@ export default function NewTenant({ navigation }) {
           <View style={isDarkMode ? styles.darkInputCard : styles.inputCard}>
             <TextInput
               placeholder="Lease Start Date"
-              value={tenantName}
+              value={leaseStartDate}
               style={isDarkMode ? styles.darkInput : styles.input}
               placeholderTextColor={isDarkMode ? '#AAAAAA' : '#888'}
-              onChangeText={setTenantName}
+              onChangeText={setLeaseStartDate}
               selectionColor={isDarkMode ? '#4CAF50' : '#00796B'}
             />
           </View>
@@ -98,10 +102,10 @@ export default function NewTenant({ navigation }) {
           <View style={isDarkMode ? styles.darkInputCard : styles.inputCard}>
             <TextInput
               placeholder="Lease End Date"
-              value={tenantName}
+              value={leaseEndDate}
               style={isDarkMode ? styles.darkInput : styles.input}
               placeholderTextColor={isDarkMode ? '#AAAAAA' : '#888'}
-              onChangeText={setTenantName}
+              onChangeText={setLeaseEndDate}
               selectionColor={isDarkMode ? '#4CAF50' : '#00796B'}
             />
           </View>
@@ -109,10 +113,10 @@ export default function NewTenant({ navigation }) {
           <View style={isDarkMode ? styles.darkInputCard : styles.inputCard}>
             <TextInput
               placeholder="Building"
-              value={tenantName}
+              value={building}
               style={isDarkMode ? styles.darkInput : styles.input}
               placeholderTextColor={isDarkMode ? '#AAAAAA' : '#888'}
-              onChangeText={setTenantName}
+              onChangeText={setBuilding}
               selectionColor={isDarkMode ? '#4CAF50' : '#00796B'}
             />
           </View>
@@ -120,10 +124,10 @@ export default function NewTenant({ navigation }) {
           <View style={isDarkMode ? styles.darkInputCard : styles.inputCard}>
             <TextInput
               placeholder="Apartment Number"
-              value={tenantName}
+              value={apartmentNumber}
               style={isDarkMode ? styles.darkInput : styles.input}
               placeholderTextColor={isDarkMode ? '#AAAAAA' : '#888'}
-              onChangeText={setTenantName}
+              onChangeText={setApartmentNumber}
               selectionColor={isDarkMode ? '#4CAF50' : '#00796B'}
             />
           </View>
@@ -131,10 +135,10 @@ export default function NewTenant({ navigation }) {
           <View style={isDarkMode ? styles.darkInputCard : styles.inputCard}>
             <TextInput
               placeholder="Rent Amount Per Month"
-              value={tenantName}
+              value={rentAmount}
               style={isDarkMode ? styles.darkInput : styles.input}
               placeholderTextColor={isDarkMode ? '#AAAAAA' : '#888'}
-              onChangeText={setTenantName}
+              onChangeText={setRentAmount}
               selectionColor={isDarkMode ? '#4CAF50' : '#00796B'}
             />
           </View>
