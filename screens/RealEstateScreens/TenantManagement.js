@@ -119,28 +119,7 @@ export default function TenantManagement({ navigation }) {
         </View>
 
         {tenants.map((tenant, index) => (
-          <>
-          {/*<Card key={index} style={isDarkMode ? styles.darkCard : styles.card}>
-            <Card.Title
-              title={tenant.name}
-              left={(props) => <Avatar.Icon {...props} icon="cash" style={styles.icon} />}
-              titleStyle={isDarkMode ? styles.darkCardTitle : styles.cardTitle} />
-            <View style={styles.sliderContainer}>
-              <Text style={isDarkMode ? styles.darkText : styles.text}>
-                Lease start date: {tenant.leaseStartDate === undefined ? "N/A" : format(tenant.leaseStartDate, "MM/dd/yyyy")}
-              </Text>
-              <Text style={isDarkMode ? styles.darkText : styles.text}>
-                Lease end date: {tenant.leaseStartDate === undefined ? "N/A" : format(tenant.leaseStartDate, "MM/dd/yyyy")}
-              </Text>
-              <Text style={isDarkMode ? styles.darkText : styles.text}>
-                Property: {tenant.apartmentNumber} {tenant.building}
-              </Text>
-
-            </View>
-            <TouchableOpacity onPress={() => handleDeleteTenant(tenant.id)}>
-              <Text style={isDarkMode ? styles.deleteText : styles.deleteText}>Delete</Text>
-            </TouchableOpacity>
-          </Card>*/}
+          
           <Card key={index} style={isDarkMode ? styles.darkCard : styles.card}>
           <Card.Title
             title={tenant.name}
@@ -158,7 +137,7 @@ export default function TenantManagement({ navigation }) {
             </Button>
           </Card.Actions>
         </Card>
-        </>
+        
         ))}
       </ScrollView>
       <FAB
