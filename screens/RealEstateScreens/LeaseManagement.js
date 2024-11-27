@@ -32,16 +32,7 @@ export default function LeaseManagementScreen() {
             }
             titleStyle={isDarkMode ? styles.darkCardTitle : styles.cardTitle}
           />
-          <View style={styles.sliderContainer}>
-            <Text style={isDarkMode ? styles.darkText : styles.text}>Lease start date: MM/DD/YYYY</Text>
-            <Text style={isDarkMode ? styles.darkText : styles.text}>Lease end date: MM/DD/YYYY</Text>
-          </View>
-          <Card.Actions>
-            <Button textColor={isDarkMode ? styles.darkText.color : styles.text.color}>Renew</Button>
-            <Button mode="outlined" textColor={isDarkMode ? styles.darkText.color : styles.text.color}>
-              Terminate Lease
-            </Button>
-          </Card.Actions>
+          
         </Card>
 
 
