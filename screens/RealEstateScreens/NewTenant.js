@@ -5,13 +5,12 @@ import { Icon } from 'react-native-paper';
 import { addDoc, getDoc, collection, serverTimestamp } from 'firebase/firestore';
 import { auth, db } from '../../firebaseConfig';
 import { UserContext } from '../../UserContext';
-import { parse } from 'date-fns';
+import { parse, add } from 'date-fns';
 
 export default function NewTenant({ navigation }) {
   const [selectedTab, setSelectedTab] = useState('addYourOwn');
   const [tenantName, setTenantName] = useState("");
   const [leaseStartDate, setLeaseStartDate] = useState("");
-  const [leaseEndDate, setLeaseEndDate] = useState("");
   const [building, setBuilding] = useState("");
   const [apartmentNumber, setApartmentNumber] = useState("");
   const [rentAmount, setRentAmount] = useState("");
@@ -42,7 +41,7 @@ export default function NewTenant({ navigation }) {
       }
   
       // Validate fields
-      if (!tenantName || !leaseStartDate || !leaseEndDate || !building || !apartmentNumber || !rentAmount) {
+      if (!tenantName || !leaseStartDate || !building || !apartmentNumber || !rentAmount) {
         Alert.alert('Error', 'Please fill out all fields before submitting.');
         return;
       }
@@ -52,7 +51,7 @@ export default function NewTenant({ navigation }) {
         userId: user.uid,
         name: tenantName,
         leaseStartDate: parseDate(leaseStartDate), 
-        leaseEndDate: parseDate(leaseEndDate), 
+        leaseEndDate: add(parseDate(leaseStartDate), {years: 1}), 
         building: building,
         apartmentNumber: apartmentNumber,
         rentAmount: parseFloat(rentAmount.replace(/,/g, '')), // Remove commas
@@ -68,7 +67,7 @@ export default function NewTenant({ navigation }) {
         `Tenant "${tenantName}" was added successfully.`,
         'tenant'
       );
-  
+
       // Go back
       navigation.goBack();
     } catch (error) {
@@ -102,17 +101,6 @@ export default function NewTenant({ navigation }) {
               style={isDarkMode ? styles.darkInput : styles.input}
               placeholderTextColor={isDarkMode ? '#AAAAAA' : '#888'}
               onChangeText={setLeaseStartDate}
-              selectionColor={isDarkMode ? '#4CAF50' : '#00796B'}
-            />
-          </View>
-          
-          <View style={isDarkMode ? styles.darkInputCard : styles.inputCard}>
-            <TextInput
-              placeholder="Lease End Date"
-              value={leaseEndDate}
-              style={isDarkMode ? styles.darkInput : styles.input}
-              placeholderTextColor={isDarkMode ? '#AAAAAA' : '#888'}
-              onChangeText={setLeaseEndDate}
               selectionColor={isDarkMode ? '#4CAF50' : '#00796B'}
             />
           </View>
