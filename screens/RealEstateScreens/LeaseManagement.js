@@ -1,16 +1,17 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { View, StyleSheet, ScrollView, Text, useColorScheme, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, ScrollView, Text, useColorScheme, TouchableOpacity, Alert } from 'react-native';
 import { Title, Card, Avatar, Button } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
-import { Timestamp, doc, deleteDoc, collection, getDocs, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
+import { Timestamp, doc, deleteDoc, collection, getDocs, addDoc, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { getMonth, subMonths, getYear, format, add, compareAsc } from 'date-fns';
 import { UserContext } from '../../UserContext';
-import { db, auth } from '../../firebaseConfig'
+import { db, auth } from '../../firebaseConfig';
+import { TenantCard } from './TenantManagement';
 
 
 
 export default function LeaseManagementScreen() {
-  const { userProfile, setUserProfile } = useContext(UserContext);
+  const { userProfile, setUserProfile, sendNotification } = useContext(UserContext);
   const [showAll, setShowAll] = useState(false);
   const [tenants, setTenants] = useState([]);
   const [monthlyExpenses, setMonthlyExpenses] = useState(0);  // New state for monthly expenses
@@ -21,6 +22,8 @@ export default function LeaseManagementScreen() {
   const handleManageTenants = () => {
     navigation.navigate("TenantManagement");
   };
+
+  
 
   // Logic to re-fetch tenants if tenants is missing or empty
   useEffect(() => {
@@ -163,23 +166,8 @@ export default function LeaseManagementScreen() {
         </View>
 
         {tenants.map((tenant, index) => (
-          <Card key={index} style={isDarkMode ? styles.darkCard : styles.card}>
-          <Card.Title
-            title={tenant.name}
-            left={(props) => <Avatar.Icon {...props} icon="account" style={styles.icon} />}
-            titleStyle={isDarkMode ? styles.darkCardTitle : styles.cardTitle}
-          />
-          <View style={styles.sliderContainer}>
-            <Text style={isDarkMode ? styles.darkText : styles.text}>Lease start date: {tenant.leaseStartDate ? format(tenant.leaseStartDate.toDate(), "MM/dd/yyyy") : "N/A"}</Text>
-            <Text style={isDarkMode ? styles.darkText : styles.text}>Lease end date: {tenant.leaseStartDate ? format(add(tenant.leaseStartDate.toDate(), {years: 1}), "MM/dd/yyyy") : "N/A"}</Text>
-          </View>
-          <Card.Actions>
-            <Button textColor={isDarkMode ? styles.darkText.color : styles.text.color}>Renew</Button>
-            <Button mode="outlined" textColor={isDarkMode ? styles.darkText.color : styles.text.color}>
-              Terminate Lease
-            </Button>
-          </Card.Actions>
-        </Card>
+          <TenantCard key={index} tenant={tenant} style={isDarkMode ? styles.darkCard : styles.card}/>
+          
         ))}
         
 

@@ -3,9 +3,78 @@ import { Alert, View, StyleSheet, ScrollView, Text, useColorScheme, TouchableOpa
 import { getMonth, getYear, subMonths } from 'date-fns';
 import { UserContext } from '../../UserContext';
 import { Title, Card, Avatar, FAB, Button } from "react-native-paper";
-import { Timestamp, doc, deleteDoc, collection, getDocs } from 'firebase/firestore';
+import { Timestamp, doc, deleteDoc, collection, getDocs, addDoc, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { db, auth } from '../../firebaseConfig';
 import { format, add } from 'date-fns';
+
+export function TenantCard({ tenant, style }) {
+  const { userProfile, setUserProfile, sendNotification } = useContext(UserContext); 
+
+  const scheme = useColorScheme();
+  const isDarkMode = scheme === 'dark';
+
+  const handleRenew = async (tenant) => {
+    try {
+      const user = auth.currentUser;
+
+      if (!user) {
+        console.error('User not logged in');
+        return;
+      }
+
+
+
+      // Add tenant to Firestore with a timestamp
+      const newTenant = {
+        userId: user.uid,
+        name: tenant.name,
+        leaseStartDate: add(tenant.leaseStartDate.toDate() ?? serverTimestamp().toDate(), { years: 1 }),
+        building: tenant.building,
+        apartmentNumber: tenant.apartmentNumber,
+        rentAmount: tenant.rentAmount, // Remove commas
+        timestamp: serverTimestamp(),
+      };
+
+      const docRef = await addDoc(collection(db, 'tenants'), newTenant);
+      Alert.alert('Tenant added successfully.');
+
+      // Use sendNotification from UserContext
+      await sendNotification(
+        user.uid,
+        `Tenant "${tenant.name}" was renewed successfully.`,
+        'tenant'
+      );
+
+
+    } catch (error) {
+      console.error('Error renewing tenant:', error);
+      Alert.alert('Error', 'Failed to renew tenant. Please try again.');
+    }
+  };
+
+  const handleTerminate = (tenant) => {
+
+  };
+  return (
+    <Card style={style}>
+      <Card.Title
+        title={tenant.name}
+        left={(props) => <Avatar.Icon {...props} icon="account" style={styles.icon} />}
+        titleStyle={isDarkMode ? styles.darkCardTitle : styles.cardTitle}
+      />
+      <View style={styles.sliderContainer}>
+        <Text style={isDarkMode ? styles.darkText : styles.text}>Lease start date: {tenant.leaseStartDate ? format(tenant.leaseStartDate.toDate(), "MM/dd/yyyy") : "N/A"}</Text>
+        <Text style={isDarkMode ? styles.darkText : styles.text}>Lease end date: {tenant.leaseStartDate ? format(add(tenant.leaseStartDate.toDate(), { years: 1 }), "MM/dd/yyyy") : "N/A"}</Text>
+      </View>
+      <Card.Actions>
+        <Button textColor={isDarkMode ? styles.darkText.color : styles.text.color} onPress={() => handleRenew(tenant)}>Renew</Button>
+        <Button mode="outlined" textColor={isDarkMode ? styles.darkText.color : styles.text.color} onPress={() => handleTerminate(tenant)}>
+          Terminate Lease
+        </Button>
+      </Card.Actions>
+    </Card>
+  )
+}
 
 export default function TenantManagement({ navigation }) {
   const scheme = useColorScheme();
@@ -85,7 +154,7 @@ export default function TenantManagement({ navigation }) {
 
       userProfile?.tenants?.forEach((tenant) => {
         if (tenant?.timestamp && tenant.timestamp instanceof Timestamp) {
-        
+
           allTenants.push(tenant);
         }
       });
@@ -112,32 +181,14 @@ export default function TenantManagement({ navigation }) {
 
   return (
     <View style={isDarkMode ? styles.darkSafeArea : styles.safeArea}>
-      <ScrollView contentContainerStyle={isDarkMode ? styles.darkContainer : styles.container}>    
+      <ScrollView contentContainerStyle={isDarkMode ? styles.darkContainer : styles.container}>
 
         <View style={styles.titleRow}>
           <Title style={isDarkMode ? styles.darkTitle : styles.title}>Tenants</Title>
         </View>
 
         {tenants.map((tenant, index) => (
-          
-          <Card key={index} style={isDarkMode ? styles.darkCard : styles.card}>
-          <Card.Title
-            title={tenant.name}
-            left={(props) => <Avatar.Icon {...props} icon="account" style={styles.icon} />}
-            titleStyle={isDarkMode ? styles.darkCardTitle : styles.cardTitle}
-          />
-          <View style={styles.sliderContainer}>
-            <Text style={isDarkMode ? styles.darkText : styles.text}>Lease start date: {tenant.leaseStartDate ? format(tenant.leaseStartDate.toDate(), "MM/dd/yyyy") : "N/A"}</Text>
-            <Text style={isDarkMode ? styles.darkText : styles.text}>Lease end date: {tenant.leaseStartDate ? format(add(tenant.leaseStartDate.toDate(), {years: 1}), "MM/dd/yyyy") : "N/A"}</Text>
-          </View>
-          <Card.Actions>
-            <Button textColor={isDarkMode ? styles.darkText.color : styles.text.color}>Renew</Button>
-            <Button mode="outlined" textColor={isDarkMode ? styles.darkText.color : styles.text.color}>
-              Terminate Lease
-            </Button>
-          </Card.Actions>
-        </Card>
-        
+          <TenantCard key={index} style={isDarkMode ? styles.darkCard : styles.card} tenant={tenant} />
         ))}
       </ScrollView>
       <FAB
