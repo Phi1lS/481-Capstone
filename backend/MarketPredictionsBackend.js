@@ -29,46 +29,50 @@ let openCloseData = [];
         
         const { marketSymbol } = req.body;
         if (marketSymbol) {
-        console.log(`Market Symbol received: ${marketSymbol}`);
-
-        try {
-            await fetchPrevMonthsOpenClose(marketSymbol, 5); // first fetch data
-            await extractOpenClose(); // then extract data
-            
-            res.status(200).send({ message: 'Market symbol received and data processed successfully' });
-        } catch (error) {
-            console.error('Error processing data:', error);
-            res.status(500).send({ message: 'An error occurred while processing the data' });
-        }
-        
+            console.log(`Market Symbol received: ${marketSymbol}`);
+    
+            try {
+                await fetchPrevMonthsOpenClose(marketSymbol, 5); // first fetch data
+                await extractOpenClose(); // then extract data
+                
+                res.status(200).send({ message: 'Market symbol received and data processed successfully.' });
+            } catch (error) {
+                console.error('Error processing data:', error);
+    
+                // Handling different types of errors and sending appropriate response
+                if (error.message === 'Too many requests') {
+                    res.status(429).send({ message: 'Too many requests. Please try again later.' });
+                } else if (error.message === 'Invalid market symbol') {
+                    res.status(404).send({ message: `Market symbol not found.` });
+                } else if (error.message === 'Data not found') {
+                    res.status(404).send({ message: `No data found for the symbol.` });
+                } else {
+                    res.status(500).send({ message: 'An error occurred while processing the data' });
+                }
+            }
         } else {
-        console.log('Market symbol is missing');
-        res.status(400).send({ message: 'Market symbol is required' });
+            console.log('Market symbol is missing');
+            res.status(400).send({ message: 'Market symbol is required' });
+        }
+    });    
+
+    app.get('/data-algorithms', async (req, res) => {
+        try {
+            const data = await extractOpenClose();
+    
+            if (data.error) {
+                return res.status(500).json({ error: data.error });
+            }
+    
+            res.json(data); // Send all variables as a structured response
+        } catch (err) {
+            res.status(500).json({ error: 'Internal server error.' });
         }
     });
-
-    app.get('/market-data', (req, res) => {
-        const marketData = {
-          netIncreasing: "The market is net increasing",
-          monthlyPercentChanges: [
-            { start: "2024-07-25", end: "2024-08-27", change: 3.33 },
-            { start: "2024-08-27", end: "2024-09-26", change: 4.72 },
-            { start: "2024-09-26", end: "2024-10-24", change: 4.47 },
-            { start: "2024-10-24", end: "2024-11-26", change: -1.36 }
-          ],
-          standardDeviation: "2.45%",
-          riskLevel: "Moderate Risk"
-        };
-        
-        res.json(marketData);
-      });
 
     app.listen(port, () => {
         console.log(`Server running at http://localhost:${port}`);
     });
-
-    { /* DEBUGGING / RUNTIME TESTING */ }
-    main(); 
 
 
     {/* Operations */}
@@ -81,7 +85,7 @@ let openCloseData = [];
         // if today, move one day back (completed market)
         const isToday = adjustedDate.toDateString() === new Date().toDateString();
         if (isToday) {
-            adjustedDate.setDate(adjustedDate.getDate() - 1); // move back one day
+            adjustedDate.setDate(adjustedDate.getDate() - 2); // move back one day
             dayOfWeek = adjustedDate.getDay(); 
             console.log('prev date:', adjustedDate.toISOString().split('T')[0]);
         }
@@ -103,56 +107,44 @@ let openCloseData = [];
     async function fetchPrevMonthsOpenClose(symbol, months) {
         const today = new Date();
         const results = []; // arr to store results in json
-
+    
         for (let i = 0; i < months; i++) {
             let targetDate = new Date(today);
             targetDate.setMonth(targetDate.getMonth() - i); // subtract months
-
+    
             // adjust if the targetDate exceeds the last day of the previous month
             if (targetDate.getDate() !== today.getDate()) {
                 targetDate.setDate(0);
             }
-
+    
             targetDate = getPreviousWeekday(targetDate);
-
+    
             const dynamicDate = getDynamicDates(targetDate);
             console.log(`Fetching data for: ${dynamicDate} \n`);
-
-
-            { /* This stuff still appears to be broken */ }
+    
             try {
-                // API call to fetch daily open and close data
                 const data = await rest.stocks.dailyOpenClose(symbol, dynamicDate);
-
+            
                 if (data.status === 'ERROR') {
-                    console.error(`Too many requests. Please try again later.`);
                     throw new Error('Too many requests');
                 } else if (data.status === 'NOT_FOUND') {
-                    console.error(`Market symbol "${symbol}" not found.`);
                     throw new Error('Invalid market symbol');
+                } else if (data.status === 'DATA_NOT_FOUND') {
+                    throw new Error('Data not found');
                 }
-
-                console.log(data); // log successful response
-                results.push(data); // save data to results array
-
+            
+                console.log(data);
+                results.push(data);
+            
                 if (results.length === months) {
-                    await saveDataToFile(results); // save data to file after all months data is fetched
+                    await saveDataToFile(results);
                 }
             } catch (e) {
-                if (e.message === 'Too many requests') {
-                    console.error(
-                        `Error: ${e.message}. The user is making requests too quickly.`
-                    );
-                } else if (e.message === 'Invalid market symbol') {
-                    console.error(
-                        `Error: ${e.message}. Please verify the input market symbol "${symbol}".`
-                    );
-                } else {
-                    console.error(`An unexpected error occurred: ${e.message}`);
-                }
+                throw e;
             }
         }
     }
+    
 
     async function saveDataToFile(data) {
         const filePath = './backend/open_close_data.json';
@@ -165,17 +157,16 @@ let openCloseData = [];
     }
 
     async function extractOpenClose() {
-
         const inputFilePath = './backend/open_close_data.json';
         const outputFilePath = './backend/MarketData.json';
-
+    
         try {
             const fileContent = await fs.readFile(inputFilePath, 'utf8');
             const dataArray = JSON.parse(fileContent);
-
+    
             const openCloseData = [];
-
-            // extract file
+    
+            // Extract file data
             dataArray.forEach((data) => {
                 if (data.from && data.open !== undefined && data.close !== undefined) {
                     openCloseData.push({
@@ -186,55 +177,83 @@ let openCloseData = [];
                     });
                 }
             });
-
+    
             openCloseData.sort((a, b) => new Date(a.date) - new Date(b.date));
-            
-            // write to MarketData.json
             await fs.writeFile(outputFilePath, JSON.stringify(openCloseData, null, 2), 'utf8');
-
-            // debug
-            console.log(`Processed data has been written to ${outputFilePath}`);
-
-            determineMarketTrend(openCloseData);
-            calculateMonthlyPercentChange(openCloseData);
-
-            return openCloseData;
+    
+            const marketTrend = await determineMarketTrend(openCloseData);
+            const { 
+                monthlyPercentChanges, 
+                standardDeviation, 
+                riskLevel 
+            } = await calculateMonthlyPercentChange(openCloseData);
+    
+            return {
+                marketTrend,
+                monthlyPercentChanges,
+                standardDeviation,
+                riskLevel
+            };
         } catch (err) {
             console.error('Error reading or processing file:', err);
+            return { error: 'Failed to process the data.' };
         }
     }
 
 
+    { /* Algorithms */ }
+
+    { /* DetermineMarketTrend uses linear regression to determine if 
+         the market is increasing, decreasing, or stable. */ }
     async function determineMarketTrend(openCloseData) { 
-
         console.log('Sorted Open-Close Data:', openCloseData);
-
+    
         if (!openCloseData || openCloseData.length === 0) {
             console.log("No data available to determine market trend.");
             return null;
         }
-
+    
+        const n = openCloseData.length;
+        let sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0;
+    
+        openCloseData.forEach((data, index) => {
+            const x = index;
+            const y = data.close;
+            sumX += x;
+            sumY += y;
+            sumXY += x * y;
+            sumX2 += x * x;
+        });
+    
+        const numerator = (n * sumXY) - (sumX * sumY);
+        const denominator = (n * sumX2) - (sumX * sumX);
+        const slope = numerator / denominator;
+    
+        let trend = 'Stable';
+        if (slope > 0) {
+            console.log("\nThe market is increasing.");
+            trend = 'Increasing';
+        } else if (slope < 0) {
+            console.log("\nThe market is decreasing.");
+            trend = 'Decreasing';
+        } else {
+            console.log("\nThe market is stable (no significant trend).");
+        }
+    
         const firstOpen = openCloseData[0].open;
         const lastClose = openCloseData[openCloseData.length - 1].close;
-
         const netChange = lastClose - firstOpen;
-
-        if (netChange > 0) {
-            console.log("\nThe market is net increasing.");
-        } else if (netChange < 0) {
-            console.log("\nThe market is net decreasing.");
-        } else {
-            console.log("\nThe market is stable (no net change).");
-        }
-
+    
         return {
             firstOpen,
             lastClose,
             netChange,
-            trend: netChange > 0 ? "increasing" : netChange < 0 ? "decreasing" : "stable"
+            trend
         };
     }
-
+    
+    { /* calculateMonthlyPercentChange uses the close data between two months and determines
+         their percent change. */ }
     async function calculateMonthlyPercentChange(openCloseData) {
         if (!openCloseData || openCloseData.length === 0) {
             console.log("No data available to calculate monthly percent change.");
@@ -289,7 +308,8 @@ let openCloseData = [];
         }
     }
 
-    // Calculate standard deviation (volatility)
+    { /* calculateStandardDeviation tells us the volatility of the market, (how spread the points are). 
+         This shows the spread of data. */ } 
     function calculateStandardDeviation(percentChanges) {
         const n = percentChanges.length;
         const mean = percentChanges.reduce((sum, change) => sum + change, 0) / n;
@@ -298,12 +318,12 @@ let openCloseData = [];
         return Math.sqrt(variance); // standard deviation (volatility)
     }
 
-    // Calculate risk level based on standard deviation and average percent change
+    { /* If the spread is too wide, it would be considered high risk (unstable investment). */ }
     function calculateRiskLevel(percentChanges, standardDeviation) {
         const mean = percentChanges.reduce((sum, change) => sum + change, 0) / percentChanges.length;
 
         // Risk level classification
-        if (standardDeviation > 5 && mean < 0) {
+        if (standardDeviation > 10 && mean < 0) {
             return 'High Risk';  // high volatility, negative average trend
         } else if (standardDeviation > 5 || Math.abs(mean) > 5) {
             return 'Moderate Risk';  // moderate or high volatility, or large percent changes
@@ -317,10 +337,4 @@ let openCloseData = [];
     export function getMonthlyCloseData() {
         const closeData = openCloseData.map((data) => data.close);
         return closeData;
-    }
-
-    async function main() {
-
-        // await fetchPrevMonthsOpenClose('NFLX', 5); // first fetch data in order
-        // await extractOpenClose(); // then extract data
     }

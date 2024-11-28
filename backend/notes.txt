@@ -1,19 +1,4 @@
 /*
-    - Update the risk analysis + add monthly percent changes into frontend
-    - Risk analysis : if the data returns static volatility at a consistent rate, risk is low.
-                    if the data constantly fluctuates in per-month percent change, risk is high.
-
-                    RISK: LOW                RISK: HIGH
-                    +2.34%                   +10.34%
-                    +3.46%                   -3.49%
-                    +5.25%                   -12.32%
-                    +8.25%                   +5.43%
-
-    - backend server must stay running with app. api must be ready to call for any change in stock data.
-    - cut recent predictions, investment opportunities
-
-
-
 - HOME STRETCH 
     --- All data is collected, just need to send it from backend as variables and retrieve it from API to use in frontend.
     *EXAMPLE*
@@ -48,4 +33,15 @@
     - trim date, status, open, close keys and sort them, by month, in another json
     - after file processing, run it through various algorithms
     - send the rest of the data back to frontend
+
+
+    EVERYTHING IS COMPLETE
+
+    may need to add .env folder with POLY_API_KEY
+
+    to run: 
+    git bash 1: node backend/MarketPredictionsBackend.js
+    npm start
+
+    
 */
