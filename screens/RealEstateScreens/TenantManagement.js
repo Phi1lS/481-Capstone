@@ -247,6 +247,17 @@ const styles = StyleSheet.create({
     color: "#333",
     marginBottom: 20,
   },
+  summaryLabel: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#333333',
+  },
+  summaryValue: {
+    fontSize: 18,
+    color: '#00796B',
+    marginTop: 5,
+  },
+  
   card: {
     marginBottom: 25,
     backgroundColor: "#ffffff",
@@ -301,6 +312,11 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "#FFFFFF",
     marginBottom: 20,
+  },
+  darkSummaryLabel: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
   },
   darkCard: {
     marginBottom: 25,

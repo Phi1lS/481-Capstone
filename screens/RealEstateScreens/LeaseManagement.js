@@ -163,8 +163,10 @@ export default function LeaseManagementScreen() {
           <TouchableOpacity onPress={() => setShowAll(!showAll)}>
             <Text style={styles.showAllButton}>Show {showAll ? "Less" : "All"}</Text>
           </TouchableOpacity>
-        </View>
 
+        </View>
+        <Text style={isDarkMode ? styles.darkText : styles.text}>{showAll ? "Here are all tenants renting from you in the last year" : "Here are all tenants with leases expiring in the next three months"}</Text>
+        
         {tenants.map((tenant, index) => (
           <TenantCard
             key={index}
@@ -195,7 +197,29 @@ const styles = StyleSheet.create({
     color: '#333',
     marginBottom: 20,
   },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 10,
+  },
   manageLeasesText: {
+    color: 'green',
+    fontWeight: 'bold',
+    marginBottom: 10,
+    marginRight: 15,
+  },
+  summaryLabel: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#333333',
+  },
+  summaryValue: {
+    fontSize: 18,
+    color: '#00796B',
+    marginTop: 5,
+  },
+  showAllButton: {
     color: 'green',
     fontWeight: 'bold',
     marginBottom: 10,
@@ -249,6 +273,11 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#FFFFFF',
     marginBottom: 20,
+  },
+  darkSummaryLabel: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
   },
   darkCard: {
     marginBottom: 25,
