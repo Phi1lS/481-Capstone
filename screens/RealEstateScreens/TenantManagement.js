@@ -7,7 +7,7 @@ import { Timestamp, doc, deleteDoc, collection, getDocs, addDoc, getDoc, updateD
 import { db, auth } from '../../firebaseConfig';
 import { format, add } from 'date-fns';
 
-export function TenantCard({ tenant, style }) {
+export function TenantCard({ tenant, style, setTenants }) {
   const { userProfile, setUserProfile, sendNotification } = useContext(UserContext); 
 
   const scheme = useColorScheme();
@@ -53,7 +53,35 @@ export function TenantCard({ tenant, style }) {
   };
 
   const handleTerminate = (tenant) => {
-
+    const tenantId = tenant.id;
+    Alert.alert(
+      "Confirm Deletion",
+      "Are you sure you want to terminate this lease?",
+      [
+        {
+          text: "Cancel",
+          style: "default",
+        },
+        {
+          text: "Delete",
+          onPress: async () => {
+            try {
+              await deleteDoc(doc(db, 'tenants', tenantId));
+              setUserProfile((prevProfile) => ({
+                ...prevProfile,
+                tenants: prevProfile.tenants.filter((tenant) => tenant.id !== tenantId),
+              }));
+              setTenants((prev) => prev.filter((tenant) => tenant.id !== tenantId));
+              console.log('Lease terminated successfully');
+            } catch (error) {
+              console.error('Error deleting tenant:', error);
+            }
+          },
+          style: "destructive",
+        },
+      ],
+      { cancelable: true }
+    );
   };
   return (
     <Card style={style}>
@@ -188,7 +216,12 @@ export default function TenantManagement({ navigation }) {
         </View>
 
         {tenants.map((tenant, index) => (
-          <TenantCard key={index} style={isDarkMode ? styles.darkCard : styles.card} tenant={tenant} />
+          <TenantCard 
+          key={index} 
+          style={isDarkMode ? styles.darkCard : styles.card} 
+          tenant={tenant} 
+          setTenants={setTenants}
+          />
         ))}
       </ScrollView>
       <FAB

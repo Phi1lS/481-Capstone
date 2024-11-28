@@ -23,7 +23,7 @@ export default function LeaseManagementScreen() {
     navigation.navigate("TenantManagement");
   };
 
-  
+
 
   // Logic to re-fetch tenants if tenants is missing or empty
   useEffect(() => {
@@ -39,7 +39,7 @@ export default function LeaseManagementScreen() {
               id: doc.id,
               ...doc.data(),
             }));
-          
+
           // Update the userProfile context with the fetched tenants
           setUserProfile(prevProfile => ({
             ...prevProfile,
@@ -50,7 +50,7 @@ export default function LeaseManagementScreen() {
         }
       }
     };
-  
+
     // Re-fetch if tenants are missing
     if (!userProfile?.tenants || userProfile.tenants.length === 0) {
       fetchTenants();
@@ -64,26 +64,26 @@ export default function LeaseManagementScreen() {
       const previousMonthDate = subMonths(currentDate, 1);
       const previousMonth = getMonth(previousMonthDate);
       const year = getYear(currentDate);
-  
+
       const nearExpiringTenants = [];
       const allTenants = [];
-  
+
       userProfile?.tenants?.forEach((tenant) => {
         if (tenant?.timestamp && tenant.timestamp instanceof Timestamp) {
           const leaseStartDate = tenant.leaseStartDate.toDate();
           const nineMonthsFromLeaseStart = add(leaseStartDate, { months: 9 });
           if (compareAsc(nineMonthsFromLeaseStart, currentDate) <= 0) {
             nearExpiringTenants.push(tenant);
-          } 
+          }
           allTenants.push(tenant);
         }
       });
-    
+
       return { monthlyTenants: nearExpiringTenants, allTenants };
     };
-  
+
     const { monthlyTenants, allTenants } = processTenantData();
-    
+
     // Use a small delay to ensure the component refreshes state correctly
     setTimeout(() => {
       setTenants(
@@ -129,16 +129,16 @@ export default function LeaseManagementScreen() {
           <Card.Title
             title="Tenants"
             left={(props) => <Avatar.Icon {...props} icon="tune" style={styles.icon} />}
-            right={(props) => 
-              <TouchableOpacity 
-              onPress={() => handleManageTenants()} 
-              style={{/* alignSelf: 'flex-end'*/ }}>
-              <Text style={isDarkMode ? styles.manageLeasesText : styles.manageLeasesText}>Manage</Text>
-            </TouchableOpacity>
+            right={(props) =>
+              <TouchableOpacity
+                onPress={() => handleManageTenants()}
+                style={{/* alignSelf: 'flex-end'*/ }}>
+                <Text style={isDarkMode ? styles.manageLeasesText : styles.manageLeasesText}>Manage</Text>
+              </TouchableOpacity>
             }
             titleStyle={isDarkMode ? styles.darkCardTitle : styles.cardTitle}
           />
-          
+
         </Card>
 
 
@@ -166,10 +166,15 @@ export default function LeaseManagementScreen() {
         </View>
 
         {tenants.map((tenant, index) => (
-          <TenantCard key={index} tenant={tenant} style={isDarkMode ? styles.darkCard : styles.card}/>
-          
+          <TenantCard
+            key={index}
+            tenant={tenant}
+            style={isDarkMode ? styles.darkCard : styles.card}
+            setTenants={setTenants}
+          />
+
         ))}
-        
+
 
         {/* Add more sliders for other asset classes as needed */}
       </ScrollView>
@@ -266,5 +271,5 @@ const styles = StyleSheet.create({
     color: '#AAAAAA',
     marginBottom: 10,
   },
-  
+
 });
