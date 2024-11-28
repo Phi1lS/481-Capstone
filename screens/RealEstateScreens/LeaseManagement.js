@@ -13,6 +13,7 @@ export default function LeaseManagementScreen() {
   const { userProfile, setUserProfile } = useContext(UserContext);
   const [showAll, setShowAll] = useState(false);
   const [tenants, setTenants] = useState([]);
+  const [monthlyExpenses, setMonthlyExpenses] = useState(0);  // New state for monthly expenses
   const navigation = useNavigation();
   const scheme = useColorScheme();
   const isDarkMode = scheme === 'dark';
@@ -90,6 +91,30 @@ export default function LeaseManagementScreen() {
     }, 100); // Delay to trigger the correct update
   }, [userProfile, showAll]);
 
+  // Calculate monthly expenses
+  useEffect(() => {
+    const calculateMonthlyExpenses = () => {
+      const currentDate = new Date();
+      const currentMonth = getMonth(currentDate);
+      const currentYear = getYear(currentDate);
+
+      const currentMonthExpenses = userProfile?.expenses?.filter((expense) => {
+        const expenseDate = expense.timestamp && expense.timestamp.toDate ? expense.timestamp.toDate() : null;
+        if (expenseDate) {
+          const expenseMonth = getMonth(expenseDate);
+          const expenseYear = getYear(expenseDate);
+          return expenseMonth === currentMonth && expenseYear === currentYear;
+        }
+        return false;
+      });
+
+      const totalExpenses = currentMonthExpenses?.reduce((total, expense) => total + expense.expenseAmount, 0);
+      setMonthlyExpenses(totalExpenses || 0);
+    };
+
+    calculateMonthlyExpenses();
+  }, [userProfile]);
+
 
   return (
     <View>
@@ -122,7 +147,10 @@ export default function LeaseManagementScreen() {
             titleStyle={isDarkMode ? styles.darkCardTitle : styles.cardTitle}
           />
           <View style={styles.sliderContainer}>
-            <Text style={isDarkMode ? styles.darkText : styles.text}>$XXX,XXX</Text>
+            <Text style={isDarkMode ? styles.darkSummaryLabel : styles.summaryLabel}>Expenses for the Month</Text>
+            <Text style={[styles.expensesText]}>
+              ${monthlyExpenses.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            </Text>
           </View>
         </Card>
 
@@ -211,7 +239,11 @@ const styles = StyleSheet.create({
     color: '#555',
     marginBottom: 10,
   },
-
+  expensesText: {
+    fontSize: 18,
+    color: 'red',
+    marginTop: 5,
+  },
 
   // Dark mode styles
   darkContainer: {
