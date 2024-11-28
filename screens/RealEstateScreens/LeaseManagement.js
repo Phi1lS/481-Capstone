@@ -165,7 +165,7 @@ export default function LeaseManagementScreen() {
           </TouchableOpacity>
 
         </View>
-        <Text style={isDarkMode ? styles.darkText : styles.text}>{showAll ? "Here are all tenants renting from you in the last year" : "Here are all tenants with leases expiring in the next three months"}</Text>
+        <Text style={isDarkMode ? styles.darkText : styles.text}>{showAll ? "Here are all tenants" : "Here are all tenants with leases expiring in the next three months"}</Text>
         
         {tenants.map((tenant, index) => (
           <TenantCard

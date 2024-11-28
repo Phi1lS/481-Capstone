@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext } from "react";
 import { Alert, View, StyleSheet, ScrollView, Text, useColorScheme, TouchableOpacity } from "react-native";
-import { getMonth, getYear, subMonths } from 'date-fns';
+import { compareAsc, getMonth, getYear, subMonths } from 'date-fns';
 import { UserContext } from '../../UserContext';
 import { Title, Card, Avatar, FAB, Button } from "react-native-paper";
 import { Timestamp, doc, deleteDoc, collection, getDocs, addDoc, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
@@ -12,6 +12,7 @@ export function TenantCard({ tenant, style, setTenants }) {
 
   const scheme = useColorScheme();
   const isDarkMode = scheme === 'dark';
+  
 
   const handleRenew = async (tenant) => {
     try {
@@ -83,6 +84,9 @@ export function TenantCard({ tenant, style, setTenants }) {
       { cancelable: true }
     );
   };
+
+  const leaseEndDate = add(tenant.leaseStartDate.toDate(), {years: 1});
+
   return (
     <Card style={style}>
       <Card.Title
@@ -92,7 +96,8 @@ export function TenantCard({ tenant, style, setTenants }) {
       />
       <View style={styles.sliderContainer}>
         <Text style={isDarkMode ? styles.darkText : styles.text}>Lease start date: {tenant.leaseStartDate ? format(tenant.leaseStartDate.toDate(), "MM/dd/yyyy") : "N/A"}</Text>
-        <Text style={isDarkMode ? styles.darkText : styles.text}>Lease end date: {tenant.leaseStartDate ? format(add(tenant.leaseStartDate.toDate(), { years: 1 }), "MM/dd/yyyy") : "N/A"}</Text>
+        <Text style={isDarkMode ? styles.darkText : styles.text}>Lease end date: {tenant.leaseStartDate ? format(leaseEndDate, "MM/dd/yyyy") : "N/A"}</Text>
+        <Text style={isDarkMode ? styles.darkText : styles.text}>Status: {compareAsc(leaseEndDate, Date.now()) > 0 ? "Current" : "Expired"}</Text>
       </View>
       <Card.Actions>
         <Button textColor={isDarkMode ? styles.darkText.color : styles.text.color} onPress={() => handleRenew(tenant)}>Renew</Button>
