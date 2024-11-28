@@ -5,7 +5,7 @@ import { UserContext } from '../../UserContext';
 import { Title, Card, Avatar, FAB, Button } from "react-native-paper";
 import { Timestamp, doc, deleteDoc, collection, getDocs } from 'firebase/firestore';
 import { db, auth } from '../../firebaseConfig';
-import { format } from 'date-fns';
+import { format, add } from 'date-fns';
 
 export default function TenantManagement({ navigation }) {
   const scheme = useColorScheme();
@@ -128,7 +128,7 @@ export default function TenantManagement({ navigation }) {
           />
           <View style={styles.sliderContainer}>
             <Text style={isDarkMode ? styles.darkText : styles.text}>Lease start date: {tenant.leaseStartDate ? format(tenant.leaseStartDate.toDate(), "MM/dd/yyyy") : "N/A"}</Text>
-            <Text style={isDarkMode ? styles.darkText : styles.text}>Lease end date: {tenant.leaseEndDate ? format(tenant.leaseEndDate.toDate(), "MM/dd/yyyy") : "N/A"}</Text>
+            <Text style={isDarkMode ? styles.darkText : styles.text}>Lease end date: {tenant.leaseStartDate ? format(add(tenant.leaseStartDate.toDate(), {years: 1}), "MM/dd/yyyy") : "N/A"}</Text>
           </View>
           <Card.Actions>
             <Button textColor={isDarkMode ? styles.darkText.color : styles.text.color}>Renew</Button>

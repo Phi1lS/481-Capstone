@@ -51,7 +51,6 @@ export default function NewTenant({ navigation }) {
         userId: user.uid,
         name: tenantName,
         leaseStartDate: parseDate(leaseStartDate), 
-        leaseEndDate: add(parseDate(leaseStartDate), {years: 1}), 
         building: building,
         apartmentNumber: apartmentNumber,
         rentAmount: parseFloat(rentAmount.replace(/,/g, '')), // Remove commas

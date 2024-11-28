@@ -171,7 +171,7 @@ export default function LeaseManagementScreen() {
           />
           <View style={styles.sliderContainer}>
             <Text style={isDarkMode ? styles.darkText : styles.text}>Lease start date: {tenant.leaseStartDate ? format(tenant.leaseStartDate.toDate(), "MM/dd/yyyy") : "N/A"}</Text>
-            <Text style={isDarkMode ? styles.darkText : styles.text}>Lease end date: {tenant.leaseEndDate ? format(tenant.leaseEndDate.toDate(), "MM/dd/yyyy") : "N/A"}</Text>
+            <Text style={isDarkMode ? styles.darkText : styles.text}>Lease end date: {tenant.leaseStartDate ? format(add(tenant.leaseStartDate.toDate(), {years: 1}), "MM/dd/yyyy") : "N/A"}</Text>
           </View>
           <Card.Actions>
             <Button textColor={isDarkMode ? styles.darkText.color : styles.text.color}>Renew</Button>
