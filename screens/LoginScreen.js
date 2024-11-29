@@ -60,11 +60,11 @@ export default function LoginScreen({ navigation }) {
       {/* Spacer View */}
       <View style={{ flex: 0.10 }} />
   
-      {/* Demo credentials at the bottom */}
+      {/* Demo credentials at the bottom 
       <View style={styles.demoCredentialsContainer}>
         <Text style={isDarkMode ? styles.darkText : styles.text}>Demo login: demo@example.com</Text>
         <Text style={isDarkMode ? styles.darkText : styles.text}>Password: password</Text>
-      </View>
+      </View>*/}
     </View>
   );
 }
