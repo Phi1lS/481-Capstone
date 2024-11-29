@@ -86,7 +86,7 @@ export default function RealEstateScreen() {
         {renderCard('Income Tracking', 'Track income from your properties', 'cash-multiple', 'IncomeTracking')}
         {renderCard('Expense Tracking', 'Monitor and manage expenses', 'bank', 'ExpenseTracking')}
         {renderCard('Lease Management', 'Manage and track lease agreements', 'file-document-edit-outline', 'LeaseManagement')}
-        {renderCard('Tax Integration', 'Integrate with tax software', 'file-cabinet', 'TaxIntegration')}
+        {renderCard('Income Tax Calculator', 'Calculate your income tax for the year', 'file-cabinet', 'TaxIntegration')}
         
         <TouchableOpacity
         activeOpacity={0.8}
