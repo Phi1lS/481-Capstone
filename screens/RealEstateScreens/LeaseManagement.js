@@ -120,67 +120,65 @@ export default function LeaseManagementScreen() {
 
 
   return (
-    <View>
-      <ScrollView contentContainerStyle={isDarkMode ? styles.darkContainer : styles.container}>
-        <Title style={isDarkMode ? styles.darkTitle : styles.title}>Lease Management</Title>
+    <ScrollView contentContainerStyle={isDarkMode ? styles.darkContainer : styles.container}>
+      <Title style={isDarkMode ? styles.darkTitle : styles.title}>Lease Management</Title>
 
-        {/* Lease Information Card */}
-        <Card style={isDarkMode ? styles.darkCard : styles.card}>
-          <Card.Title
-            title="Tenants"
-            left={(props) => <Avatar.Icon {...props} icon="tune" style={styles.icon} />}
-            right={(props) =>
-              <TouchableOpacity
-                onPress={() => handleManageTenants()}
-                style={{/* alignSelf: 'flex-end'*/ }}>
-                <Text style={isDarkMode ? styles.manageLeasesText : styles.manageLeasesText}>Manage</Text>
-              </TouchableOpacity>
-            }
-            titleStyle={isDarkMode ? styles.darkCardTitle : styles.cardTitle}
-          />
+      {/* Lease Information Card */}
+      <Card style={isDarkMode ? styles.darkCard : styles.card}>
+        <Card.Title
+          title="Tenants"
+          left={(props) => <Avatar.Icon {...props} icon="tune" style={styles.icon} />}
+          right={(props) =>
+            <TouchableOpacity
+              onPress={() => handleManageTenants()}
+              style={{/* alignSelf: 'flex-end'*/ }}>
+              <Text style={isDarkMode ? styles.manageLeasesText : styles.manageLeasesText}>Manage</Text>
+            </TouchableOpacity>
+          }
+          titleStyle={isDarkMode ? styles.darkCardTitle : styles.cardTitle}
+        />
 
-        </Card>
+      </Card>
 
 
-        {/* Expense Card */}
-        <Card style={isDarkMode ? styles.darkCard : styles.card}>
-          <Card.Title
-            title="Expenses"
-            left={(props) => <Avatar.Icon {...props} icon="currency-usd" style={styles.icon} />}
-            titleStyle={isDarkMode ? styles.darkCardTitle : styles.cardTitle}
-          />
-          <View style={styles.sliderContainer}>
-            <Text style={isDarkMode ? styles.darkSummaryLabel : styles.summaryLabel}>Expenses for the Month</Text>
-            <Text style={[styles.expensesText]}>
-              ${monthlyExpenses.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-            </Text>
-          </View>
-        </Card>
-
-        {/* Lease Tracking with "Show All" button */}
-        <View style={styles.titleRow}>
-          <Title style={isDarkMode ? styles.darkTitle : styles.title}>Lease Tracking</Title>
-          <TouchableOpacity onPress={() => setShowAll(!showAll)}>
-            <Text style={styles.showAllButton}>Show {showAll ? "Less" : "All"}</Text>
-          </TouchableOpacity>
-
+      {/* Expense Card */}
+      <Card style={isDarkMode ? styles.darkCard : styles.card}>
+        <Card.Title
+          title="Expenses"
+          left={(props) => <Avatar.Icon {...props} icon="currency-usd" style={styles.icon} />}
+          titleStyle={isDarkMode ? styles.darkCardTitle : styles.cardTitle}
+        />
+        <View style={styles.sliderContainer}>
+          <Text style={isDarkMode ? styles.darkSummaryLabel : styles.summaryLabel}>Expenses for the Month</Text>
+          <Text style={[styles.expensesText]}>
+            ${monthlyExpenses.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+          </Text>
         </View>
-        <Text style={isDarkMode ? styles.darkText : styles.text}>{showAll ? "Here are all tenants" : "Here are all tenants with leases expiring in the next three months"}</Text>
-        
-        {tenants.map((tenant, index) => (
-          <TenantCard
-            key={index}
-            tenant={tenant}
-            style={isDarkMode ? styles.darkCard : styles.card}
-            setTenants={setTenants}
-          />
+      </Card>
 
-        ))}
+      {/* Lease Tracking with "Show All" button */}
+      <View style={styles.titleRow}>
+        <Title style={isDarkMode ? styles.darkTitle : styles.title}>Lease Tracking</Title>
+        <TouchableOpacity onPress={() => setShowAll(!showAll)}>
+          <Text style={styles.showAllButton}>Show {showAll ? "Less" : "All"}</Text>
+        </TouchableOpacity>
+
+      </View>
+      <Text style={isDarkMode ? styles.darkText : styles.text}>{showAll ? "Here are all tenants" : "Here are all tenants with leases expiring in the next three months"}</Text>
+      
+      {tenants.map((tenant, index) => (
+        <TenantCard
+          key={index}
+          tenant={tenant}
+          style={isDarkMode ? styles.darkCard : styles.card}
+          setTenants={setTenants}
+        />
+
+      ))}
 
 
-        {/* Add more sliders for other asset classes as needed */}
-      </ScrollView>
-    </View>
+      {/* Add more sliders for other asset classes as needed */}
+    </ScrollView>
   );
 }
 
