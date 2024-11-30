@@ -167,8 +167,8 @@ export default function RetirementSavingsScreen() {
 
   }
   return (
-    <View>
-      <ScrollView contentContainerStyle={isDarkMode ? styles.darkContainer : styles.container}>
+    <ScrollView contentContainerStyle={isDarkMode ? styles.darkContainer : styles.container}>
+      <View>
         <Title style={isDarkMode ? styles.darkTitle : styles.title}>Retirement Savings</Title>
         {/*Modal for changing goal*/}
         <Modal
@@ -383,8 +383,8 @@ export default function RetirementSavingsScreen() {
           </Modal>
 
         </Card>
-      </ScrollView>
-    </View>
+      </View>
+    </ScrollView>
   );
 }
 

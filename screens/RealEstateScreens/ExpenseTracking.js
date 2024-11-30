@@ -175,10 +175,10 @@ export default function ExpenseTracking({ navigation }) {
   });
 
   return (
-    <View style={isDarkMode ? styles.darkSafeArea : styles.safeArea}>
-      <ScrollView contentContainerStyle={isDarkMode ? styles.darkContainer : styles.container}>
+    <View style={{ flex: 1, backgroundColor: isDarkMode ? "#121212" : "#f7f9fc" }}>
+      <ScrollView contentContainerStyle={styles.container}>
         <Title style={isDarkMode ? styles.darkTitle : styles.title}>Expense Tracking</Title>
-
+  
         <Card style={isDarkMode ? styles.darkCard : styles.card}>
           <Card.Title
             title="Expenses for Month"
@@ -191,7 +191,7 @@ export default function ExpenseTracking({ navigation }) {
             </Text>
           </View>
         </Card>
-
+  
         <Card style={isDarkMode ? styles.darkCard : styles.card}>
           <Card.Title
             title="Change from Last Month"
@@ -204,7 +204,7 @@ export default function ExpenseTracking({ navigation }) {
             </Text>
           </View>
         </Card>
-
+  
         <Card style={isDarkMode ? styles.darkCard : styles.card}>
           <Card.Title
             title="Expense Chart"
@@ -230,14 +230,14 @@ export default function ExpenseTracking({ navigation }) {
             />
           </View>
         </Card>
-
+  
         <View style={styles.titleRow}>
           <Title style={isDarkMode ? styles.darkTitle : styles.title}>Expense Sources</Title>
           <TouchableOpacity onPress={() => setShowAll(!showAll)}>
             <Text style={styles.showAllButton}>Show {showAll ? "Less" : "All"}</Text>
           </TouchableOpacity>
         </View>
-
+  
         {expenses.map((expense, index) => (
           <Card key={index} style={isDarkMode ? styles.darkCard : styles.card}>
             <Card.Title

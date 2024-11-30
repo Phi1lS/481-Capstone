@@ -84,8 +84,8 @@ export default function RebalancingScreen() {
   );
 
   return (
-    <View>
-      <ScrollView contentContainerStyle={isDarkMode ? styles.darkContainer : styles.container}>
+    <ScrollView contentContainerStyle={isDarkMode ? styles.darkContainer : styles.container}>
+      <View>
         <Title style={isDarkMode ? styles.darkTitle : styles.title}>Rebalancing</Title>
 
         <Card style={isDarkMode ? styles.darkCard : styles.card}>
@@ -204,8 +204,8 @@ export default function RebalancingScreen() {
             </Button>
           </View>
         </Card>
-      </ScrollView>
-    </View>
+      </View>
+    </ScrollView>
   );
 }
 

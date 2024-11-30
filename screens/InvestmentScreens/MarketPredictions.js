@@ -158,9 +158,9 @@ export default function MarketPredictionsScreen() {
   
 
   return (
-    <View>
+    <ScrollView contentContainerStyle={isDarkMode ? styles.darkContainer : styles.container}>
       
-      <ScrollView contentContainerStyle={isDarkMode ? styles.darkContainer : styles.container}>
+      <View contentContainerStyle={isDarkMode ? styles.darkContainer : styles.container}>
   <Title style={isDarkMode ? styles.darkTitle : styles.title}>Market Predictions</Title>
 
   {/* Market Overview + Graph */}
@@ -309,8 +309,8 @@ export default function MarketPredictionsScreen() {
 
   { /* Removed investment opportunities and market sentiment */ }
 
-      </ScrollView>
-    </View>
+      </View>
+    </ScrollView>
   );
 }
 

@@ -68,8 +68,8 @@ export default function SecurityScreen() {
   };
 
   return (
-    <View>
-      <ScrollView contentContainerStyle={isDarkMode ? styles.darkContainer : styles.container}>
+    <ScrollView contentContainerStyle={isDarkMode ? styles.darkContainer : styles.container}>
+      <View>
         {/* Password Section */}
         <Card style={isDarkMode ? styles.darkCard : styles.card}>
           <Card.Title
@@ -178,8 +178,8 @@ export default function SecurityScreen() {
             <Text style={styles.exitText}>Close Account</Text>
           </View>
         </Card>
-      </ScrollView>
-    </View>
+      </View>
+    </ScrollView>
   );
 }
 

@@ -30,8 +30,8 @@ export default function MarketPredictionsScreen() {
   };
 
   return (
-    <View>
-      <ScrollView contentContainerStyle={isDarkMode ? styles.darkContainer : styles.container}>
+    <ScrollView contentContainerStyle={isDarkMode ? styles.darkContainer : styles.container}>
+      <View>
         <Title style={isDarkMode ? styles.darkTitle : styles.title}>Retirement Overview</Title>
         <Text variant = "bodyMedium" style = {styles.generalText}> 
             The Retiremnt page allows you to rebalance your portfolio and set goals for your retirement.
@@ -128,8 +128,8 @@ export default function MarketPredictionsScreen() {
         </Card>
          
         </View>
-      </ScrollView>
-    </View>
+      </View>
+    </ScrollView>
   );
 }
 

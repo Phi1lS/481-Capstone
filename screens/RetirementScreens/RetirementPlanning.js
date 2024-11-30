@@ -160,12 +160,12 @@ export default function RetirementPlanningScreen() {
   };
 
   return (
-    <View>
-      <ScrollView
+    <ScrollView
         contentContainerStyle={
           isDarkMode ? styles.darkContainer : styles.container
         }
       >
+      <View>
         <Title style={isDarkMode ? styles.darkTitle : styles.title}>
           Retirement Planning
         </Title>
@@ -339,8 +339,8 @@ export default function RetirementPlanningScreen() {
         </Card>
 
         
-      </ScrollView>
-    </View>
+      </View>
+    </ScrollView>
   );
 }
 

@@ -30,8 +30,8 @@ export default function MarketPredictionsScreen() {
   };
 
   return (
-    <View>
-      <ScrollView contentContainerStyle={isDarkMode ? styles.darkContainer : styles.container}>
+    <ScrollView contentContainerStyle={isDarkMode ? styles.darkContainer : styles.container}>
+      <View>
         <Title style={isDarkMode ? styles.darkTitle : styles.title}>Investment Overview</Title>
         <Text variant = "bodyMedium" style = {styles.generalText}> 
             The Investment page allows you to predict and analyze current market trends, Rebalance your portfolio to maintain the desired allocation,
@@ -111,8 +111,8 @@ export default function MarketPredictionsScreen() {
             Rebalancing will allow you to adjust your portfolio to maintain the desired allocation.
           </Text>
         </View>
-      </ScrollView>
-    </View>
+      </View>
+    </ScrollView>
   );
 }
 

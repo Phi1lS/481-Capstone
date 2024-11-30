@@ -56,8 +56,8 @@ export default function ProfileScreen() {
     }
 
   return (
-    <View>
-      <ScrollView contentContainerStyle={isDarkMode ? styles.darkContainer : styles.container}>
+    <ScrollView contentContainerStyle={isDarkMode ? styles.darkContainer : styles.container}>
+      <View>
         <Card style={isDarkMode ? styles.darkCard : styles.card}>
           <Card.Title
             title="Theme Display"
@@ -170,8 +170,8 @@ export default function ProfileScreen() {
               </View>
             </TouchableOpacity>
           </Card>
-      </ScrollView>
-    </View>
+      </View>
+    </ScrollView>
   );
 }
 

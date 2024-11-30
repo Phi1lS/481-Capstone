@@ -17,8 +17,8 @@ export default function NotificationsScreen() {
   };
 
   return (
-    <View>
-      <ScrollView contentContainerStyle={isDarkMode ? styles.darkContainer : styles.container}>
+    <ScrollView contentContainerStyle={isDarkMode ? styles.darkContainer : styles.container}>
+      <View>
         <Card style={isDarkMode ? styles.darkCard : styles.card}>
           <Card.Title
             title="Notifications"
@@ -100,8 +100,8 @@ export default function NotificationsScreen() {
         </View>
 
         </Card>
-      </ScrollView>
-    </View>
+      </View>
+    </ScrollView>
   );
 }
 

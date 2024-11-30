@@ -30,8 +30,8 @@ export default function MarketPredictionsScreen() {
   };
 
   return (
-    <View>
-      <ScrollView contentContainerStyle={isDarkMode ? styles.darkContainer : styles.container}>
+    <ScrollView contentContainerStyle={isDarkMode ? styles.darkContainer : styles.container}>
+      <View>
         <Title style={isDarkMode ? styles.darkTitle : styles.title}>Real Estate Overview</Title>
         <Text variant = "bodyMedium" style = {styles.generalText}> 
             The Real Estate page allows you to manage your properties and finances with features that let you
@@ -118,8 +118,8 @@ export default function MarketPredictionsScreen() {
             Random Text... Will be filled with information on how to link bank account later on.
           </Text>
         </View>
-      </ScrollView>
-    </View>
+      </View>
+    </ScrollView>
   );
 }
 

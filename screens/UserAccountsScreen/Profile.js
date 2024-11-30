@@ -221,8 +221,8 @@ export default function ProfileScreen() {
   };  
 
   return (
-    <View>
-      <ScrollView contentContainerStyle={isDarkMode ? styles.darkContainer : styles.container}>
+    <ScrollView contentContainerStyle={isDarkMode ? styles.darkContainer : styles.container}>
+      <View>
         <Card style={isDarkMode ? styles.darkCard : styles.card}>
           <View style={styles.profileHeader}>
             <View style={styles.avatarContainer}>
@@ -432,8 +432,8 @@ export default function ProfileScreen() {
             </View>
           </Card>
         )}
-      </ScrollView>
-    </View>
+      </View>
+    </ScrollView>
   );
 }
 

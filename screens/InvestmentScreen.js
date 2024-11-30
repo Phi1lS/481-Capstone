@@ -88,7 +88,6 @@ export default function InvestmentScreen() {
         {renderCard('Asset Allocation', 'Distribute assets across various investments', 'chart-pie', 'AssetAllocation')}
         {renderCard('Market Predictions', 'Analyze and predict market trends', 'trending-up', 'MarketPredictions')}
         {renderCard('Rebalancing', 'Adjust your portfolio to maintain desired allocation', 'swap-horizontal-bold', 'Rebalancing')}
-        {renderCard('Investment Analytics', 'Review detailed analytics and performance', 'chart-bar', 'InvestmentAnalytics')}
       
         <TouchableOpacity
           activeOpacity={0.8}
@@ -176,7 +175,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#00796B',
     textAlign: 'right',
-    bottom: 552,
+    bottom: 425,
   },
   darkNeedHelpText:{
     fontSize: 16,
