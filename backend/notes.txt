@@ -43,5 +43,6 @@
     git bash 1: node backend/MarketPredictionsBackend.js
     npm start
 
+    THE IP ADDRESS NEEDS TO BE CHANGED WITH YOUR LOCAL IP ADDRESS IN BACKEND AND PREDICTIONS
     
 */

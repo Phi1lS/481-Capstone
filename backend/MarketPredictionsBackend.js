@@ -9,15 +9,15 @@ const app = express();
 const port = 3000;
 
 let openCloseData = [];
-// console.log("API KEY: "+process.env.POLY_API_KEY);
+console.log("API KEY: "+process.env.POLY_API_KEY);
 
     {/* Middleware setup */}
     app.use(cors({
         origin: [
-            'exp://192.168.1.236:8081',
+            'exp://10.0.0.176:8081',
             'http://localhost:8081', 
             'http://localhost:3000',
-            'http://192.168.1.236:8081'
+            'http://10.0.0.176:8081'
         ]  // Add other origins as needed
       }));
     app.use(express.json());
@@ -106,13 +106,13 @@ let openCloseData = [];
 
     async function fetchPrevMonthsOpenClose(symbol, months) {
         const today = new Date();
-        const results = []; // arr to store results in json
+        const results = []; // Array to store results in JSON format
     
         for (let i = 0; i < months; i++) {
             let targetDate = new Date(today);
-            targetDate.setMonth(targetDate.getMonth() - i); // subtract months
+            targetDate.setMonth(targetDate.getMonth() - i); // Subtract months
     
-            // adjust if the targetDate exceeds the last day of the previous month
+            // Adjust if the targetDate exceeds the last day of the previous month
             if (targetDate.getDate() !== today.getDate()) {
                 targetDate.setDate(0);
             }
@@ -124,25 +124,44 @@ let openCloseData = [];
     
             try {
                 const data = await rest.stocks.dailyOpenClose(symbol, dynamicDate);
-            
+    
+                // Handle specific error statuses from the API
                 if (data.status === 'ERROR') {
-                    throw new Error('Too many requests');
+                    console.error(`Too many requests. Retry later for: ${dynamicDate}`);
+                    continue; // Skip to the next date
                 } else if (data.status === 'NOT_FOUND') {
-                    throw new Error('Invalid market symbol');
+                    console.error(`Invalid market symbol for: ${symbol}`);
+                    throw new Error('Invalid market symbol'); // Stop further processing
                 } else if (data.status === 'DATA_NOT_FOUND') {
-                    throw new Error('Data not found');
+                    console.warn(`No data found for: ${dynamicDate}`);
+                    continue; // Skip to the next date
                 }
-            
-                console.log(data);
+    
+                // Validate and log the fetched data
+                if (!data.close || isNaN(data.close)) {
+                    console.warn(`Invalid or incomplete data for: ${dynamicDate}`);
+                    continue;
+                }
+    
+                console.log(`Data fetched for ${dynamicDate}:`, data);
                 results.push(data);
-            
+    
+                // Save data if we have fetched the required number of months
                 if (results.length === months) {
                     await saveDataToFile(results);
+                    console.log('Data saved successfully.');
+                    break;
                 }
             } catch (e) {
-                throw e;
+                console.error(`Error fetching data for ${dynamicDate}:`, e.message);
             }
         }
+    
+        if (results.length < months) {
+            console.warn(`Could not fetch all data. Fetched ${results.length}/${months} entries.`);
+        }
+    
+        return results;
     }
     
 
