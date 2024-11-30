@@ -1,6 +1,6 @@
 import React, { useState, useContext } from 'react';
 import { View, Text, TouchableOpacity, TextInput, StyleSheet, useColorScheme, Alert } from 'react-native';
-import RNPickerSelect from 'react-native-picker-select';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { Icon } from 'react-native-paper';
 import { addDoc, getDoc, collection, serverTimestamp } from 'firebase/firestore';
 import { auth, db } from '../../firebaseConfig';
@@ -10,14 +10,14 @@ import { parse, add } from 'date-fns';
 export default function NewTenant({ navigation }) {
   const [selectedTab, setSelectedTab] = useState('addYourOwn');
   const [tenantName, setTenantName] = useState("");
-  const [leaseStartDate, setLeaseStartDate] = useState("");
+  const [leaseStartDate, setLeaseStartDate] = useState(new Date());
   const [building, setBuilding] = useState("");
   const [apartmentNumber, setApartmentNumber] = useState("");
   const [rentAmount, setRentAmount] = useState("");
+  const [showPicker, setShowPicker] = useState(false);
   const { userProfile, setUserProfile, sendNotification } = useContext(UserContext); 
   const scheme = useColorScheme();
   const isDarkMode = scheme === 'dark';
-
 
   // Format number with commas
   const formatNumberWithCommas = (value) => {
@@ -93,16 +93,30 @@ export default function NewTenant({ navigation }) {
             />
           </View>
 
-          <View style={isDarkMode ? styles.darkInputCard : styles.inputCard}>
+          <TouchableOpacity style={isDarkMode ? styles.darkInputCard : styles.inputCard} onPress={() => setShowPicker(true)}>
             <TextInput
               placeholder="Lease Start Date"
               value={leaseStartDate}
               style={isDarkMode ? styles.darkInput : styles.input}
+              editable={false}
+              selectTextOnFocus={false}
               placeholderTextColor={isDarkMode ? '#AAAAAA' : '#888'}
               onChangeText={setLeaseStartDate}
               selectionColor={isDarkMode ? '#4CAF50' : '#00796B'}
             />
-          </View>
+            {showPicker && (
+              <DateTimePicker
+              value={leaseStartDate}
+              mode="date"
+              onChange={(event, date) => {
+                setShowPicker(false);
+                setLeaseStartDate(date);
+                
+              }}
+              />
+            )}
+          </TouchableOpacity>
+          
           
           <View style={isDarkMode ? styles.darkInputCard : styles.inputCard}>
             <TextInput
