@@ -2,6 +2,14 @@
 
 InvestAlign is a financial management app designed to help users manage their investments, real estate income, retirement accounts, and personal finances. The app offers tools for income tracking, expense management, and investment analysis, all in a user-friendly interface.
 
+
+- [Web App](https://investalign-f0168.web.app)
+
+- Expo Go App:
+  - Open the following link in the Expo Go app on your mobile device:
+    [exp://u.expo.dev/0c2ad90c-c922-4d20-9f1d-482704eb61a2/group/52bf8be3-8c20-4578-91e4-96b69e32ddba](exp://u.expo.dev/0c2ad90c-c922-4d20-9f1d-482704eb61a2/group/52bf8be3-8c20-4578-91e4-96b69e32ddba)
+  - Alternatively, copy and paste the link manually if it doesn't open automatically.
+
 ## Features
 
 - User authentication with Firebase
