@@ -1,16 +1,16 @@
 import React, { useState, useContext } from 'react';
-import { View, Text, TouchableOpacity, TextInput, StyleSheet, useColorScheme, Alert } from 'react-native';
+import { View, Text, TouchableOpacity, TextInput, StyleSheet, useColorScheme, Alert, Pressable } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Icon } from 'react-native-paper';
 import { addDoc, getDoc, collection, serverTimestamp } from 'firebase/firestore';
 import { auth, db } from '../../firebaseConfig';
 import { UserContext } from '../../UserContext';
-import { parse, add } from 'date-fns';
+import { parse, add, format } from 'date-fns';
 
 export default function NewTenant({ navigation }) {
   const [selectedTab, setSelectedTab] = useState('addYourOwn');
   const [tenantName, setTenantName] = useState("");
-  const [leaseStartDate, setLeaseStartDate] = useState(new Date());
+  const [leaseStartDate, setLeaseStartDate] = useState(null);
   const [building, setBuilding] = useState("");
   const [apartmentNumber, setApartmentNumber] = useState("");
   const [rentAmount, setRentAmount] = useState("");
@@ -50,7 +50,7 @@ export default function NewTenant({ navigation }) {
       const newTenant = {
         userId: user.uid,
         name: tenantName,
-        leaseStartDate: parseDate(leaseStartDate), 
+        leaseStartDate: leaseStartDate, 
         building: building,
         apartmentNumber: apartmentNumber,
         rentAmount: parseFloat(rentAmount.replace(/,/g, '')), // Remove commas
@@ -93,20 +93,23 @@ export default function NewTenant({ navigation }) {
             />
           </View>
 
-          <TouchableOpacity style={isDarkMode ? styles.darkInputCard : styles.inputCard} onPress={() => setShowPicker(true)}>
+          <Pressable 
+          style={isDarkMode ? styles.darkInputCard : styles.inputCard} 
+          onPress={() => setShowPicker(true)}         
+          >
+            
             <TextInput
-              placeholder="Lease Start Date"
-              value={leaseStartDate}
+              placeholder={"Lease Start Date"}
+              value={leaseStartDate && format(leaseStartDate, "MM/dd/yyyy")}
               style={isDarkMode ? styles.darkInput : styles.input}
               editable={false}
-              selectTextOnFocus={false}
               placeholderTextColor={isDarkMode ? '#AAAAAA' : '#888'}
               onChangeText={setLeaseStartDate}
               selectionColor={isDarkMode ? '#4CAF50' : '#00796B'}
             />
             {showPicker && (
               <DateTimePicker
-              value={leaseStartDate}
+              value={leaseStartDate ?? new Date()}
               mode="date"
               onChange={(event, date) => {
                 setShowPicker(false);
@@ -115,7 +118,8 @@ export default function NewTenant({ navigation }) {
               }}
               />
             )}
-          </TouchableOpacity>
+            
+          </Pressable>
           
           
           <View style={isDarkMode ? styles.darkInputCard : styles.inputCard}>
