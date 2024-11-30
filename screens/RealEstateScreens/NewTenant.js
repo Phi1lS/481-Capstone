@@ -1,73 +1,58 @@
 import React, { useState, useContext } from 'react';
-import { View, Text, TouchableOpacity, TextInput, StyleSheet, useColorScheme, Alert, Pressable } from 'react-native';
+import { View, Text, TouchableOpacity, TextInput, StyleSheet, useColorScheme, Alert, Pressable, Platform } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Icon } from 'react-native-paper';
 import { addDoc, getDoc, collection, serverTimestamp } from 'firebase/firestore';
 import { auth, db } from '../../firebaseConfig';
 import { UserContext } from '../../UserContext';
 import { parse, add, format } from 'date-fns';
+import { ScrollView } from 'react-native-gesture-handler';
 
 export default function NewTenant({ navigation }) {
-  const [selectedTab, setSelectedTab] = useState('addYourOwn');
-  const [tenantName, setTenantName] = useState("");
-  const [leaseStartDate, setLeaseStartDate] = useState(null);
-  const [building, setBuilding] = useState("");
-  const [apartmentNumber, setApartmentNumber] = useState("");
-  const [rentAmount, setRentAmount] = useState("");
+  const [tenantName, setTenantName] = useState('');
+  const [leaseStartDate, setLeaseStartDate] = useState(new Date());
+  const [building, setBuilding] = useState('');
+  const [apartmentNumber, setApartmentNumber] = useState('');
+  const [rentAmount, setRentAmount] = useState('');
   const [showPicker, setShowPicker] = useState(false);
-  const { userProfile, setUserProfile, sendNotification } = useContext(UserContext); 
+
+  const { sendNotification } = useContext(UserContext);
   const scheme = useColorScheme();
   const isDarkMode = scheme === 'dark';
-
-  // Format number with commas
-  const formatNumberWithCommas = (value) => {
-    if (!value) return '';
-    return parseFloat(value.toString().replace(/,/g, '')).toLocaleString('en-US');
-  };
-
-  // Parse date
-  const parseDate = (stringValue) => {
-    if (!stringValue) return 0;
-    return parse(stringValue, "MM/dd/yyyy", new Date());
-  };
 
   const handleAddTenant = async () => {
     try {
       const user = auth.currentUser;
-  
+
       if (!user) {
         console.error('User not logged in');
         return;
       }
-  
-      // Validate fields
+
       if (!tenantName || !leaseStartDate || !building || !apartmentNumber || !rentAmount) {
         Alert.alert('Error', 'Please fill out all fields before submitting.');
         return;
       }
-  
-      // Add tenant to Firestore with a timestamp
+
       const newTenant = {
         userId: user.uid,
         name: tenantName,
-        leaseStartDate: leaseStartDate, 
-        building: building,
-        apartmentNumber: apartmentNumber,
-        rentAmount: parseFloat(rentAmount.replace(/,/g, '')), // Remove commas
+        leaseStartDate,
+        building,
+        apartmentNumber,
+        rentAmount: parseFloat(rentAmount.replace(/,/g, '')),
         timestamp: serverTimestamp(),
       };
-  
-      const docRef = await addDoc(collection(db, 'tenants'), newTenant);
+
+      await addDoc(collection(db, 'tenants'), newTenant);
       Alert.alert('Tenant added successfully.');
-  
-      // Use sendNotification from UserContext
+
       await sendNotification(
         user.uid,
         `Tenant "${tenantName}" was added successfully.`,
         'tenant'
       );
 
-      // Go back
       navigation.goBack();
     } catch (error) {
       console.error('Error adding tenant:', error);
@@ -76,95 +61,106 @@ export default function NewTenant({ navigation }) {
   };
 
   return (
-    <View style={isDarkMode ? styles.darkSafeArea : styles.safeArea}>
+    <ScrollView style={isDarkMode ? styles.darkSafeArea : styles.safeArea}>
       <Text style={isDarkMode ? styles.darkHeader : styles.header}>Add Tenant</Text>
+      <View style={isDarkMode ? styles.darkContainer : styles.container}>
+        {/* Tenant Name */}
+        <View style={isDarkMode ? styles.darkInputCard : styles.inputCard}>
+          <TextInput
+            placeholder="Tenant Name"
+            value={tenantName}
+            style={isDarkMode ? styles.darkInput : styles.input}
+            placeholderTextColor={isDarkMode ? '#AAAAAA' : '#888'}
+            onChangeText={setTenantName}
+          />
+        </View>
 
-
-      {selectedTab === 'addYourOwn' ? (
-        <View style={isDarkMode ? styles.darkContainer : styles.container}>
+        {/* Lease Start Date */}
+        {Platform.OS === 'web' ? (
           <View style={isDarkMode ? styles.darkInputCard : styles.inputCard}>
-            <TextInput
-              placeholder="Tenant Name"
-              value={tenantName}
-              style={isDarkMode ? styles.darkInput : styles.input}
-              placeholderTextColor={isDarkMode ? '#AAAAAA' : '#888'}
-              onChangeText={setTenantName}
-              selectionColor={isDarkMode ? '#4CAF50' : '#00796B'}
+            <input
+              type="date"
+              value={leaseStartDate.toISOString().split('T')[0]} // Format for input[type="date"]
+              onChange={(e) => setLeaseStartDate(new Date(e.target.value))}
+              style={{
+                width: '100%',
+                height: '100%',
+                border: 'none',
+                fontSize: 16,
+                padding: 10,
+                color: isDarkMode ? '#FFFFFF' : '#000000',
+                backgroundColor: isDarkMode ? '#1E1E1E' : '#FFFFFF',
+              }}
             />
           </View>
-
-          <Pressable 
-          style={isDarkMode ? styles.darkInputCard : styles.inputCard} 
-          onPress={() => setShowPicker(true)}         
-          >
-            
-            <TextInput
-              placeholder={"Lease Start Date"}
-              value={leaseStartDate && format(leaseStartDate, "MM/dd/yyyy")}
-              style={isDarkMode ? styles.darkInput : styles.input}
-              editable={false}
-              placeholderTextColor={isDarkMode ? '#AAAAAA' : '#888'}
-              onChangeText={setLeaseStartDate}
-              selectionColor={isDarkMode ? '#4CAF50' : '#00796B'}
-            />
+        ) : (
+          <>
+            <TouchableOpacity
+              style={isDarkMode ? styles.darkInputCard : styles.inputCard}
+              onPress={() => setShowPicker(true)}
+            >
+              <Text style={[isDarkMode ? styles.darkInput : styles.input, styles.centeredText]}>
+                {leaseStartDate ? format(leaseStartDate, 'MM/dd/yyyy') : 'Select Lease Start Date'}
+              </Text>
+            </TouchableOpacity>
             {showPicker && (
               <DateTimePicker
-              value={leaseStartDate ?? new Date()}
-              mode="date"
-              onChange={(event, date) => {
-                setShowPicker(false);
-                setLeaseStartDate(date);
-                
-              }}
+                value={leaseStartDate || new Date()}
+                mode="date"
+                display={Platform.OS === 'ios' ? 'inline' : 'default'}
+                onChange={(event, date) => {
+                  setShowPicker(false);
+                  if (date) setLeaseStartDate(date);
+                }}
+                style={[Platform.OS === 'ios' && styles.iosPicker]}
               />
             )}
-            
-          </Pressable>
-          
-          
-          <View style={isDarkMode ? styles.darkInputCard : styles.inputCard}>
-            <TextInput
-              placeholder="Building"
-              value={building}
-              style={isDarkMode ? styles.darkInput : styles.input}
-              placeholderTextColor={isDarkMode ? '#AAAAAA' : '#888'}
-              onChangeText={setBuilding}
-              selectionColor={isDarkMode ? '#4CAF50' : '#00796B'}
-            />
-          </View>
+          </>
+        )}
 
-          <View style={isDarkMode ? styles.darkInputCard : styles.inputCard}>
-            <TextInput
-              placeholder="Apartment Number"
-              value={apartmentNumber}
-              style={isDarkMode ? styles.darkInput : styles.input}
-              placeholderTextColor={isDarkMode ? '#AAAAAA' : '#888'}
-              onChangeText={setApartmentNumber}
-              selectionColor={isDarkMode ? '#4CAF50' : '#00796B'}
-            />
-          </View>
+        {/* Add spacing below the picker for iOS */}
+        {Platform.OS === 'ios' && <View style={styles.extraSpace} />}
 
-          <View style={isDarkMode ? styles.darkInputCard : styles.inputCard}>
-            <TextInput
-              placeholder="Rent Amount Per Month"
-              value={rentAmount}
-              style={isDarkMode ? styles.darkInput : styles.input}
-              placeholderTextColor={isDarkMode ? '#AAAAAA' : '#888'}
-              onChangeText={setRentAmount}
-              selectionColor={isDarkMode ? '#4CAF50' : '#00796B'}
-            />
-          </View>
-
-          <TouchableOpacity style={isDarkMode ? styles.darkButton : styles.button} onPress={handleAddTenant}>
-            <Text style={styles.buttonText}>Add Tenant</Text>
-          </TouchableOpacity>
+        {/* Building */}
+        <View style={isDarkMode ? styles.darkInputCard : styles.inputCard}>
+          <TextInput
+            placeholder="Building"
+            value={building}
+            style={isDarkMode ? styles.darkInput : styles.input}
+            placeholderTextColor={isDarkMode ? '#AAAAAA' : '#888'}
+            onChangeText={setBuilding}
+          />
         </View>
-      ) : (
-        <View style={isDarkMode ? styles.darkPlaceholder : styles.placeholder}>
-          <Text style={isDarkMode ? styles.darkText : styles.text}>Plaid API Integration Placeholder</Text>
+
+        {/* Apartment Number */}
+        <View style={isDarkMode ? styles.darkInputCard : styles.inputCard}>
+          <TextInput
+            placeholder="Apartment Number"
+            value={apartmentNumber}
+            style={isDarkMode ? styles.darkInput : styles.input}
+            placeholderTextColor={isDarkMode ? '#AAAAAA' : '#888'}
+            onChangeText={setApartmentNumber}
+          />
         </View>
-      )}
-    </View>
+
+        {/* Rent Amount */}
+        <View style={isDarkMode ? styles.darkInputCard : styles.inputCard}>
+          <TextInput
+            placeholder="Rent Amount Per Month"
+            value={rentAmount}
+            style={isDarkMode ? styles.darkInput : styles.input}
+            placeholderTextColor={isDarkMode ? '#AAAAAA' : '#888'}
+            onChangeText={setRentAmount}
+            keyboardType="numeric"
+          />
+        </View>
+
+        {/* Add Tenant Button */}
+        <TouchableOpacity style={isDarkMode ? styles.darkButton : styles.button} onPress={handleAddTenant}>
+          <Text style={styles.buttonText}>Add Tenant</Text>
+        </TouchableOpacity>
+      </View>
+    </ScrollView>
   );
 }
 
@@ -247,6 +243,10 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#555',
   },
+  centeredText: {
+    textAlign: 'left',
+    paddingTop: 13,
+  },
   // Dark mode styles
   darkSafeArea: {
     flex: 1,
@@ -307,5 +307,30 @@ const styles = StyleSheet.create({
   darkText: {
     fontSize: 16,
     color: '#AAAAAA',
+  },
+  iosPicker: {
+    backgroundColor: '#FFFFFF',
+    marginTop: 10,
+    borderRadius: 10,
+  },
+  extraSpace: {
+    height: 20, // Add extra spacing for iOS
+  },
+  // Web-specific styles
+  webDateContainer: {
+    marginBottom: 20,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 15,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    padding: 10,
+  },
+  webDatePicker: {
+    width: '100%',
+    fontSize: 16,
+    padding: 10,
+    borderRadius: 8,
+    borderColor: '#ccc',
+    borderWidth: 1,
   },
 });
