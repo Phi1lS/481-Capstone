@@ -1,0 +1,48 @@
+/*
+- HOME STRETCH 
+    --- All data is collected, just need to send it from backend as variables and retrieve it from API to use in frontend.
+    *EXAMPLE*
+
+        The market is net increasing.
+
+        Monthly Percent Changes:
+        From 2024-07-25 to 2024-08-27: +3.33%
+        From 2024-08-27 to 2024-09-26: +4.72%
+        From 2024-09-26 to 2024-10-24: +4.47%
+        From 2024-10-24 to 2024-11-26: -1.36%
+
+        Standard Deviation (Volatility): 2.45%
+        Risk Level: Moderate Risk
+
+    --- Just change text for different market mentions. 
+    --- Monthly changes will view as a chart. 
+    --- Risk analysis will have a progress bar similar to how it is viewed for risk levels and market volatility.
+    --- Styling should be finalized, maybe change input marketSymbol styling. Cut unnecessary cards this patch.
+
+    --- Maybe convert determineMarketTrend to linear regression? and depending on slope its negative/neutral/positive? 
+
+    --- BUGS:
+    ----- Does not return an error when user enters an invalid symbol, as well as user timeout (for API calls)
+    ----- marketSymbol is asynchronous with the graph + errors, sometimes returns graph that is not the current marketSymbol
+    ----- Day of week still sometimes gets markets wrong and returns closed markets (idk man) 
+
+    Operations in backend: 
+    - retrieve the marketsymbol from frontend
+    - send it to backend and call the api
+    - returns a json of all the files, unsorted
+    - trim date, status, open, close keys and sort them, by month, in another json
+    - after file processing, run it through various algorithms
+    - send the rest of the data back to frontend
+
+
+    EVERYTHING IS COMPLETE
+
+    may need to add .env folder with POLY_API_KEY
+
+    to run: 
+    git bash 1: node backend/MarketPredictionsBackend.js
+    npm start
+
+    THE IP ADDRESS NEEDS TO BE CHANGED WITH YOUR LOCAL IP ADDRESS IN BACKEND AND PREDICTIONS
+    
+*/

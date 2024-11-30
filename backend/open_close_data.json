@@ -1,0 +1,62 @@
+[
+  {
+    "status": "OK",
+    "from": "2024-11-22",
+    "symbol": "AAPL",
+    "open": 228.06,
+    "high": 230.7199,
+    "low": 228.06,
+    "close": 229.87,
+    "volume": 35459680,
+    "afterHours": 229.95,
+    "preMarket": 228.5
+  },
+  {
+    "status": "OK",
+    "from": "2024-10-30",
+    "symbol": "AAPL",
+    "open": 232.61,
+    "high": 233.2299,
+    "low": 229.55,
+    "close": 230.1,
+    "volume": 44279666,
+    "afterHours": 230.7,
+    "preMarket": 233.03
+  },
+  {
+    "status": "OK",
+    "from": "2024-09-27",
+    "symbol": "AAPL",
+    "open": 228.46,
+    "high": 229.52,
+    "low": 227.3,
+    "close": 227.79,
+    "volume": 31421839,
+    "afterHours": 227.4982,
+    "preMarket": 226.4
+  },
+  {
+    "status": "OK",
+    "from": "2024-08-30",
+    "symbol": "AAPL",
+    "open": 230.19,
+    "high": 230.4,
+    "low": 227.48,
+    "close": 229,
+    "volume": 50340308,
+    "afterHours": 229.1114,
+    "preMarket": 230.55
+  },
+  {
+    "status": "OK",
+    "from": "2024-07-30",
+    "symbol": "AAPL",
+    "open": 219.19,
+    "high": 220.325,
+    "low": 216.12,
+    "close": 218.8,
+    "volume": 40681625,
+    "afterHours": 218.1,
+    "preMarket": 218.42
+  }
+]

@@ -1,0 +1,32 @@
+[
+  {
+    "symbol": "AAPL",
+    "date": "2024-07-30",
+    "open": 219.19,
+    "close": 218.8
+  },
+  {
+    "symbol": "AAPL",
+    "date": "2024-08-30",
+    "open": 230.19,
+    "close": 229
+  },
+  {
+    "symbol": "AAPL",
+    "date": "2024-09-27",
+    "open": 228.46,
+    "close": 227.79
+  },
+  {
+    "symbol": "AAPL",
+    "date": "2024-10-30",
+    "open": 232.61,
+    "close": 230.1
+  },
+  {
+    "symbol": "AAPL",
+    "date": "2024-11-22",
+    "open": 228.06,
+    "close": 229.87
+  }
+]
