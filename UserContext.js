@@ -91,6 +91,21 @@ export const UserProvider = ({ children }) => {
             expenses,
           }));
         });
+
+        // Listen for tenant updates
+        const tenantRef = collection(db, 'tenants');
+        unsubscribeTenantListener = onSnapshot(tenantRef, (snapshot) => {
+          const tenants = snapshot.docs
+            .filter((doc) => doc.data().userId === user.uid)
+            .map((doc) => ({
+              id: doc.id,
+              ...doc.data(),
+            }));
+          setUserProfile((prevProfile) => ({
+            ...prevProfile,
+            tenants,
+          }));
+        });
       } else {
         // Reset user profile and avatar on logout
         setUserProfile({
@@ -101,6 +116,7 @@ export const UserProvider = ({ children }) => {
           incomes: [],
           assets: [],
           expenses: [],
+          tenants: [],
           totalSavings: 0,
           isAdmin: false, // Reset isAdmin
         });
@@ -111,6 +127,7 @@ export const UserProvider = ({ children }) => {
         if (unsubscribeAssetListener) unsubscribeAssetListener();
         if (unsubscribeSavingsListener) unsubscribeSavingsListener();
         if (unsubscribeExpenseListener) unsubscribeExpenseListener();
+        if (unsubscribeTenantListener) unsubscribeTenantListener();
       }
     });
 
